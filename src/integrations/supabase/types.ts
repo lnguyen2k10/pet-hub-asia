@@ -14,7 +14,140 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      deals: {
+        Row: {
+          created_at: string
+          description: string | null
+          discount_label: string | null
+          ends_at: string | null
+          id: string
+          image_url: string | null
+          is_featured: boolean
+          shop_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          discount_label?: string | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean
+          shop_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          discount_label?: string | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean
+          shop_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deals_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shops: {
+        Row: {
+          address: string | null
+          category: string
+          city: string
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          hero_subtitle: string | null
+          hero_title: string | null
+          id: string
+          is_featured: boolean
+          is_published: boolean
+          logo_url: string | null
+          name: string
+          owner_id: string | null
+          phone: string | null
+          rating: number
+          review_count: number
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          category?: string
+          city?: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string | null
+          id?: string
+          is_featured?: boolean
+          is_published?: boolean
+          logo_url?: string | null
+          name: string
+          owner_id?: string | null
+          phone?: string | null
+          rating?: number
+          review_count?: number
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          category?: string
+          city?: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string | null
+          id?: string
+          is_featured?: boolean
+          is_published?: boolean
+          logo_url?: string | null
+          name?: string
+          owner_id?: string | null
+          phone?: string | null
+          rating?: number
+          review_count?: number
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
