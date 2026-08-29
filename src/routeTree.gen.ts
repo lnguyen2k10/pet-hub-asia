@@ -10,13 +10,20 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DangNhapRouteImport } from './routes/dang-nhap'
 import { Route as GioiThieuRouteImport } from './routes/gioi-thieu'
 import { Route as ShopsRouteImport } from './routes/shops'
 import { Route as UuDaiRouteImport } from './routes/uu-dai'
+import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DangNhapRoute = DangNhapRouteImport.update({
+  id: '/dang-nhap',
+  path: '/dang-nhap',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GioiThieuRoute = GioiThieuRouteImport.update({
@@ -34,39 +41,60 @@ const UuDaiRoute = UuDaiRouteImport.update({
   path: '/uu-dai',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShopSlugRoute = ShopSlugRouteImport.update({
+  id: '/shop/$slug',
+  path: '/shop/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dang-nhap': typeof DangNhapRoute
   '/gioi-thieu': typeof GioiThieuRoute
   '/shops': typeof ShopsRoute
   '/uu-dai': typeof UuDaiRoute
+  '/shop/$slug': typeof ShopSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dang-nhap': typeof DangNhapRoute
   '/gioi-thieu': typeof GioiThieuRoute
   '/shops': typeof ShopsRoute
   '/uu-dai': typeof UuDaiRoute
+  '/shop/$slug': typeof ShopSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dang-nhap': typeof DangNhapRoute
   '/gioi-thieu': typeof GioiThieuRoute
   '/shops': typeof ShopsRoute
   '/uu-dai': typeof UuDaiRoute
+  '/shop/$slug': typeof ShopSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/gioi-thieu' | '/shops' | '/uu-dai'
+  fullPaths:
+    '/' | '/dang-nhap' | '/gioi-thieu' | '/shops' | '/uu-dai' | '/shop/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/gioi-thieu' | '/shops' | '/uu-dai'
-  id: '__root__' | '/' | '/gioi-thieu' | '/shops' | '/uu-dai'
+  to: '/' | '/dang-nhap' | '/gioi-thieu' | '/shops' | '/uu-dai' | '/shop/$slug'
+  id:
+    | '__root__'
+    | '/'
+    | '/dang-nhap'
+    | '/gioi-thieu'
+    | '/shops'
+    | '/uu-dai'
+    | '/shop/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DangNhapRoute: typeof DangNhapRoute
   GioiThieuRoute: typeof GioiThieuRoute
   ShopsRoute: typeof ShopsRoute
   UuDaiRoute: typeof UuDaiRoute
+  ShopSlugRoute: typeof ShopSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -76,6 +104,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dang-nhap': {
+      id: '/dang-nhap'
+      path: '/dang-nhap'
+      fullPath: '/dang-nhap'
+      preLoaderRoute: typeof DangNhapRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/gioi-thieu': {
@@ -99,14 +134,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UuDaiRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/shop/$slug': {
+      id: '/shop/$slug'
+      path: '/shop/$slug'
+      fullPath: '/shop/$slug'
+      preLoaderRoute: typeof ShopSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DangNhapRoute: DangNhapRoute,
   GioiThieuRoute: GioiThieuRoute,
   ShopsRoute: ShopsRoute,
   UuDaiRoute: UuDaiRoute,
+  ShopSlugRoute: ShopSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
