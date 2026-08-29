@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DangNhapRouteImport } from './routes/dang-nhap'
 import { Route as GioiThieuRouteImport } from './routes/gioi-thieu'
+import { Route as QuanLyRouteImport } from './routes/quan-ly'
 import { Route as ShopsRouteImport } from './routes/shops'
 import { Route as UuDaiRouteImport } from './routes/uu-dai'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
@@ -29,6 +30,11 @@ const DangNhapRoute = DangNhapRouteImport.update({
 const GioiThieuRoute = GioiThieuRouteImport.update({
   id: '/gioi-thieu',
   path: '/gioi-thieu',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuanLyRoute = QuanLyRouteImport.update({
+  id: '/quan-ly',
+  path: '/quan-ly',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShopsRoute = ShopsRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dang-nhap': typeof DangNhapRoute
   '/gioi-thieu': typeof GioiThieuRoute
+  '/quan-ly': typeof QuanLyRoute
   '/shops': typeof ShopsRoute
   '/uu-dai': typeof UuDaiRoute
   '/shop/$slug': typeof ShopSlugRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dang-nhap': typeof DangNhapRoute
   '/gioi-thieu': typeof GioiThieuRoute
+  '/quan-ly': typeof QuanLyRoute
   '/shops': typeof ShopsRoute
   '/uu-dai': typeof UuDaiRoute
   '/shop/$slug': typeof ShopSlugRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dang-nhap': typeof DangNhapRoute
   '/gioi-thieu': typeof GioiThieuRoute
+  '/quan-ly': typeof QuanLyRoute
   '/shops': typeof ShopsRoute
   '/uu-dai': typeof UuDaiRoute
   '/shop/$slug': typeof ShopSlugRoute
@@ -75,14 +84,28 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/dang-nhap' | '/gioi-thieu' | '/shops' | '/uu-dai' | '/shop/$slug'
+    | '/'
+    | '/dang-nhap'
+    | '/gioi-thieu'
+    | '/quan-ly'
+    | '/shops'
+    | '/uu-dai'
+    | '/shop/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dang-nhap' | '/gioi-thieu' | '/shops' | '/uu-dai' | '/shop/$slug'
+  to:
+    | '/'
+    | '/dang-nhap'
+    | '/gioi-thieu'
+    | '/quan-ly'
+    | '/shops'
+    | '/uu-dai'
+    | '/shop/$slug'
   id:
     | '__root__'
     | '/'
     | '/dang-nhap'
     | '/gioi-thieu'
+    | '/quan-ly'
     | '/shops'
     | '/uu-dai'
     | '/shop/$slug'
@@ -92,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DangNhapRoute: typeof DangNhapRoute
   GioiThieuRoute: typeof GioiThieuRoute
+  QuanLyRoute: typeof QuanLyRoute
   ShopsRoute: typeof ShopsRoute
   UuDaiRoute: typeof UuDaiRoute
   ShopSlugRoute: typeof ShopSlugRoute
@@ -118,6 +142,13 @@ declare module '@tanstack/react-router' {
       path: '/gioi-thieu'
       fullPath: '/gioi-thieu'
       preLoaderRoute: typeof GioiThieuRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quan-ly': {
+      id: '/quan-ly'
+      path: '/quan-ly'
+      fullPath: '/quan-ly'
+      preLoaderRoute: typeof QuanLyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/shops': {
@@ -148,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DangNhapRoute: DangNhapRoute,
   GioiThieuRoute: GioiThieuRoute,
+  QuanLyRoute: QuanLyRoute,
   ShopsRoute: ShopsRoute,
   UuDaiRoute: UuDaiRoute,
   ShopSlugRoute: ShopSlugRoute,
