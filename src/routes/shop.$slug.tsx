@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
+import { DealDialog } from "@/components/deal-dialog";
+import { ShopHeroCarousel } from "@/components/shop-hero-carousel";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { categoryLabel, dealImage, shopInitials } from "@/lib/pet";
+import { categoryLabel, shopInitials } from "@/lib/pet";
 import { shopBySlugQuery } from "@/lib/queries";
 
 export const Route = createFileRoute("/shop/$slug")({
@@ -49,29 +51,7 @@ function ShopLanding() {
           <>
             <section className="relative overflow-hidden">
               <div className="mx-auto max-w-6xl px-5 pt-6">
-                <div className="relative overflow-hidden rounded-3xl ring-1 ring-border">
-                  {shop.cover_url ? (
-                    <img
-                      src={shop.cover_url}
-                      alt={shop.name}
-                      className="h-[340px] w-full object-cover sm:h-[420px]"
-                    />
-                  ) : (
-                    <div className="h-[340px] w-full bg-sand-deep sm:h-[420px]" />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/30 to-transparent" />
-                  <div className="absolute inset-x-0 bottom-0 p-6 sm:p-10">
-                    <p className="font-hand text-2xl text-background/90">
-                      {categoryLabel(shop.category)} · {shop.city}
-                    </p>
-                    <h1 className="mt-1 max-w-2xl font-display text-3xl font-bold text-background sm:text-5xl">
-                      {shop.hero_title ?? shop.name}
-                    </h1>
-                    {shop.hero_subtitle ? (
-                      <p className="mt-3 max-w-xl text-background/85">{shop.hero_subtitle}</p>
-                    ) : null}
-                  </div>
-                </div>
+                <ShopHeroCarousel shop={shop} />
               </div>
             </section>
 
@@ -109,23 +89,7 @@ function ShopLanding() {
                   <div className="mt-4 grid gap-5 sm:grid-cols-2">
                     {shop.deals?.length ? (
                       shop.deals.map((deal, i) => (
-                        <div key={deal.id} className="rounded-2xl bg-card p-5 ring-1 ring-border">
-                          <img
-                            src={dealImage(i, deal.image_url)}
-                            alt={deal.title}
-                            loading="lazy"
-                            className="mb-4 aspect-[4/3] w-full rounded-xl object-cover ring-1 ring-border"
-                          />
-                          {deal.discount_label ? (
-                            <span className="rounded-full bg-terra px-2.5 py-1 text-xs font-bold text-primary-foreground">
-                              {deal.discount_label}
-                            </span>
-                          ) : null}
-                          <h4 className="mt-2 font-display text-lg font-semibold">{deal.title}</h4>
-                          {deal.description ? (
-                            <p className="mt-1 text-sm text-ink-soft">{deal.description}</p>
-                          ) : null}
-                        </div>
+                        <DealDialog key={deal.id} deal={deal} index={i} shopName={shop.name} />
                       ))
                     ) : (
                       <p className="text-sm text-ink-soft">Shop chưa đăng ưu đãi nào.</p>
