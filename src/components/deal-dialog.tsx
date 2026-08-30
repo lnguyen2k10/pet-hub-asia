@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 
 import {
   Dialog,
@@ -14,9 +15,10 @@ type Props = {
   deal: Deal;
   index: number;
   shopName?: string;
+  shopSlug?: string;
 };
 
-export function DealDialog({ deal, index, shopName }: Props) {
+export function DealDialog({ deal, index, shopName, shopSlug }: Props) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -73,6 +75,15 @@ export function DealDialog({ deal, index, shopName }: Props) {
                 Hạn áp dụng: đến hết ngày{" "}
                 {new Date(deal.ends_at).toLocaleDateString("vi-VN")}
               </p>
+            ) : null}
+            {shopSlug ? (
+              <Link
+                to="/shop/$slug"
+                params={{ slug: shopSlug }}
+                className="mt-5 block rounded-full bg-terra px-5 py-2.5 text-center text-sm font-semibold text-primary-foreground"
+              >
+                Xem shop {shopName ?? ""} →
+              </Link>
             ) : null}
           </div>
         </DialogContent>
