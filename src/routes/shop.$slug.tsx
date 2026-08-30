@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
+import { DealDialog } from "@/components/deal-dialog";
+import { ShopHeroCarousel } from "@/components/shop-hero-carousel";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { categoryLabel, dealImage, shopInitials } from "@/lib/pet";
+import { categoryLabel, shopInitials } from "@/lib/pet";
 import { shopBySlugQuery } from "@/lib/queries";
 
 export const Route = createFileRoute("/shop/$slug")({
