@@ -18,14 +18,11 @@ export function SearchBar({ initial }: Props) {
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        navigate({
-          to: "/shops",
-          search: {
-            q: q || undefined,
-            category: category || undefined,
-            city: city || undefined,
-          },
-        });
+        const search: { q?: string; category?: string; city?: string } = {};
+        if (q) search.q = q;
+        if (category) search.category = category;
+        if (city) search.city = city;
+        navigate({ to: "/shops", search });
       }}
       className="flex flex-col gap-3 rounded-3xl bg-background p-3 shadow-lift ring-1 ring-border sm:flex-row sm:items-center"
     >

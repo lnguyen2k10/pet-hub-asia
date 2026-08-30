@@ -41,17 +41,26 @@ export function HeroCarousel() {
 
       <div className="absolute inset-x-0 bottom-0">
         <div className="mx-auto max-w-6xl px-5 pb-10">
-          <p className="mb-3 inline-block rounded-full bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-terra-deep">
-            {HERO_SLIDES[active].eyebrow}
-          </p>
-          <h1 className="max-w-[30ch] font-display text-4xl font-semibold leading-[1.05] sm:text-5xl lg:text-6xl">
-            {HERO_SLIDES[active].title.split(HERO_SLIDES[active].highlight)[0]}
-            <span className="text-terra">{HERO_SLIDES[active].highlight}</span>
-            {HERO_SLIDES[active].title.split(HERO_SLIDES[active].highlight)[1]}
-          </h1>
-          <p className="mt-4 max-w-[48ch] text-base text-ink-soft sm:text-lg">
-            {HERO_SLIDES[active].subtitle}
-          </p>
+          {(() => {
+            const slide = HERO_SLIDES[active];
+            if (!slide) return null;
+            const [before, after] = slide.title.split(slide.highlight);
+            return (
+              <>
+                <p className="mb-3 inline-block rounded-full bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-terra-deep">
+                  {slide.eyebrow}
+                </p>
+                <h1 className="max-w-[30ch] font-display text-4xl font-semibold leading-[1.05] sm:text-5xl lg:text-6xl">
+                  {before}
+                  <span className="text-terra">{slide.highlight}</span>
+                  {after}
+                </h1>
+                <p className="mt-4 max-w-[48ch] text-base text-ink-soft sm:text-lg">
+                  {slide.subtitle}
+                </p>
+              </>
+            );
+          })()}
         </div>
       </div>
 

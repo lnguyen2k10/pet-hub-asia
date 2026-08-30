@@ -14,12 +14,14 @@ const DESC =
 type ShopSearch = { q?: string; category?: string; city?: string };
 
 export const Route = createFileRoute("/shops")({
-  validateSearch: (search: Record<string, unknown>): ShopSearch => ({
-    q: typeof search.q === "string" && search.q ? search.q : undefined,
-    category:
-      typeof search.category === "string" && search.category ? search.category : undefined,
-    city: typeof search.city === "string" && search.city ? search.city : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): ShopSearch => {
+    const result: ShopSearch = {};
+    if (typeof search["q"] === "string" && search["q"]) result.q = search["q"];
+    if (typeof search["category"] === "string" && search["category"])
+      result.category = search["category"];
+    if (typeof search["city"] === "string" && search["city"]) result.city = search["city"];
+    return result;
+  },
   head: () => ({
     meta: [
       { title: TITLE },
