@@ -22,7 +22,7 @@ function buildSlides(shop: Shop & { deals: Deal[] }): Slide[] {
   };
 
   const dealSlides: Slide[] = shop.deals.slice(0, 2).map((deal, i) => ({
-    image: dealImage(i + 1, deal.image_url),
+    image: dealImage(i + 1, deal.image_url) ?? HERO_SLIDES[0].image,
     eyebrow: deal.discount_label ?? "Ưu đãi tại shop",
     title: deal.title,
     subtitle:

@@ -14,8 +14,8 @@ import type { Deal } from "@/lib/queries";
 type Props = {
   deal: Deal;
   index: number;
-  shopName?: string;
-  shopSlug?: string;
+  shopName?: string | undefined;
+  shopSlug?: string | undefined;
 };
 
 export function DealDialog({ deal, index, shopName, shopSlug }: Props) {
