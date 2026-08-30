@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 
-import { dealImage } from "@/lib/pet";
+import { DealDialog } from "@/components/deal-dialog";
 import type { Deal } from "@/lib/queries";
 
 type Props = {
@@ -9,41 +9,17 @@ type Props = {
 };
 
 export function DealCard({ deal, index }: Props) {
-  const body = (
-    <>
-      <img
-        src={dealImage(index, deal.image_url)}
-        alt={deal.title}
-        loading="lazy"
-        width={1024}
-        height={768}
-        className="mb-4 aspect-[4/3] w-full rounded-xl object-cover ring-1 ring-border"
-      />
-      <div className="flex items-center justify-between gap-2">
-        {deal.discount_label ? (
-          <span className="rounded-full bg-terra px-2.5 py-1 text-xs font-bold text-primary-foreground">
-            {deal.discount_label}
-          </span>
-        ) : (
-          <span />
-        )}
-        {deal.shops ? (
-          <span className="truncate text-sm font-semibold">{deal.shops.name}</span>
-        ) : null}
-      </div>
-      <h3 className="mt-2 font-display text-lg font-semibold leading-snug">{deal.title}</h3>
-      {deal.description ? <p className="mt-1 text-sm text-ink-soft">{deal.description}</p> : null}
-    </>
-  );
+  return <DealDialog deal={deal} index={index} shopName={deal.shops?.name} />;
+}
 
-  const className =
-    "block rounded-2xl bg-card p-5 ring-1 ring-border transition-transform duration-300 hover:-translate-y-1.5";
-
+export function DealShopLink({ deal }: Props) {
   return deal.shops ? (
-    <Link to="/shop/$slug" params={{ slug: deal.shops.slug }} className={className}>
-      {body}
+    <Link
+      to="/shop/$slug"
+      params={{ slug: deal.shops.slug }}
+      className="text-sm font-semibold text-terra-deep underline-offset-4 hover:underline"
+    >
+      Xem shop {deal.shops.name} →
     </Link>
-  ) : (
-    <div className={className}>{body}</div>
-  );
+  ) : null;
 }
