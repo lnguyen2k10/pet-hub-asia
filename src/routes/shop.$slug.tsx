@@ -2,11 +2,22 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { DealDialog } from "@/components/deal-dialog";
+import { ProductDialog } from "@/components/product-dialog";
 import { ShopHeroCarousel } from "@/components/shop-hero-carousel";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { categoryLabel, shopInitials } from "@/lib/pet";
-import { shopBySlugQuery } from "@/lib/queries";
+import { shopBySlugQuery, type Product } from "@/lib/queries";
+
+function groupProducts(products: Product[]) {
+  const map = new Map<string, Product[]>();
+  for (const p of [...products].sort((a, b) => a.sort_order - b.sort_order)) {
+    const key = p.category?.trim() || "Sản phẩm khác";
+    map.set(key, [...(map.get(key) ?? []), p]);
+  }
+  return [...map.entries()];
+}
+
 
 export const Route = createFileRoute("/shop/$slug")({
   head: ({ params }) => {
