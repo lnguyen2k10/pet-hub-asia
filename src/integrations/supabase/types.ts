@@ -61,6 +61,75 @@ export type Database = {
           },
         ]
       }
+      partner_listings: {
+        Row: {
+          category: string | null
+          city: string | null
+          company_name: string
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          investment_note: string | null
+          is_featured: boolean
+          is_published: boolean
+          listing_type: string
+          logo_url: string | null
+          owner_id: string | null
+          summary: string | null
+          title: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          category?: string | null
+          city?: string | null
+          company_name: string
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          investment_note?: string | null
+          is_featured?: boolean
+          is_published?: boolean
+          listing_type?: string
+          logo_url?: string | null
+          owner_id?: string | null
+          summary?: string | null
+          title: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          category?: string | null
+          city?: string | null
+          company_name?: string
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          investment_note?: string | null
+          is_featured?: boolean
+          is_published?: boolean
+          listing_type?: string
+          logo_url?: string | null
+          owner_id?: string | null
+          summary?: string | null
+          title?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           category: string | null
