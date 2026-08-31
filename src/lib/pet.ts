@@ -80,3 +80,9 @@ export function slugify(value: string) {
     .replace(/^-+|-+$/g, "")
     .slice(0, 48);
 }
+
+export function formatPrice(price: number | null | undefined, currency = "VND") {
+  if (price == null) return "Liên hệ";
+  if (currency === "VND") return `${new Intl.NumberFormat("vi-VN").format(price)}₫`;
+  return `${new Intl.NumberFormat("vi-VN").format(price)} ${currency}`;
+}

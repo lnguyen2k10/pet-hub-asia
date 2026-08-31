@@ -2,11 +2,22 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { DealDialog } from "@/components/deal-dialog";
+import { ProductDialog } from "@/components/product-dialog";
 import { ShopHeroCarousel } from "@/components/shop-hero-carousel";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { categoryLabel, shopInitials } from "@/lib/pet";
-import { shopBySlugQuery } from "@/lib/queries";
+import { shopBySlugQuery, type Product } from "@/lib/queries";
+
+function groupProducts(products: Product[]) {
+  const map = new Map<string, Product[]>();
+  for (const p of [...products].sort((a, b) => a.sort_order - b.sort_order)) {
+    const key = p.category?.trim() || "Sản phẩm khác";
+    map.set(key, [...(map.get(key) ?? []), p]);
+  }
+  return [...map.entries()];
+}
+
 
 export const Route = createFileRoute("/shop/$slug")({
   head: ({ params }) => {
@@ -95,6 +106,23 @@ function ShopLanding() {
                       <p className="text-sm text-ink-soft">Shop chưa đăng ưu đãi nào.</p>
                     )}
                   </div>
+
+                  <h3 className="mt-12 font-display text-xl font-semibold">Sản phẩm của shop</h3>
+                  {shop.products?.length ? (
+                    groupProducts(shop.products).map(([group, items]) => (
+                      <div key={group} className="mt-6">
+                        <p className="font-hand text-xl text-terra-deep">{group}</p>
+                        <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-3">
+                          {items.map((p) => (
+                            <ProductDialog key={p.id} product={p} shopName={shop.name} />
+                          ))}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="mt-4 text-sm text-ink-soft">Shop chưa đăng sản phẩm nào.</p>
+                  )}
+
                 </div>
 
                 <aside className="h-fit rounded-2xl bg-sand-deep/50 p-6 ring-1 ring-border">

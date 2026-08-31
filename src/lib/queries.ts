@@ -33,11 +33,26 @@ export type Deal = {
   is_featured: boolean;
 };
 
+export type Product = {
+  id: string;
+  shop_id: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+  price: number | null;
+  currency: string;
+  image_url: string | null;
+  in_stock: boolean;
+  is_featured: boolean;
+  sort_order: number;
+};
+
 export type SearchFilters = {
   q?: string;
   category?: string;
   city?: string;
 };
+
 
 export const featuredShopsQuery = queryOptions({
   queryKey: ["shops", "featured"],
@@ -88,11 +103,11 @@ export function shopBySlugQuery(slug: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("shops")
-        .select("*, deals(*)")
+        .select("*, deals(*), products(*)")
         .eq("slug", slug)
         .maybeSingle();
       if (error) throw error;
-      return data as (Shop & { deals: Deal[] }) | null;
+      return data as (Shop & { deals: Deal[]; products: Product[] }) | null;
     },
   });
 }
@@ -105,10 +120,10 @@ export const myShopQuery = queryOptions({
     if (!user) return null;
     const { data, error } = await supabase
       .from("shops")
-      .select("*, deals(*)")
+      .select("*, deals(*), products(*)")
       .eq("owner_id", user.id)
       .maybeSingle();
     if (error) throw error;
-    return data as (Shop & { deals: Deal[] }) | null;
+    return data as (Shop & { deals: Deal[]; products: Product[] }) | null;
   },
 });
