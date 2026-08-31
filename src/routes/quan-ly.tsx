@@ -8,7 +8,8 @@ import { SiteHeader } from "@/components/site-header";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES, CITIES, slugify } from "@/lib/pet";
-import { myShopQuery, type Deal, type Shop } from "@/lib/queries";
+import { formatPrice } from "@/lib/pet";
+import { myShopQuery, type Deal, type Product, type Shop } from "@/lib/queries";
 
 const TITLE = "Trang quản lý shop — 1Pet.Asia";
 const DESC = "Chủ shop tạo và chỉnh sửa landing page, thông tin liên hệ và ưu đãi trên 1Pet.Asia.";
@@ -91,6 +92,7 @@ function DashboardPage() {
           <>
             <ShopForm shop={shopQ.data ?? null} userId={user.id} />
             {shopQ.data ? <DealsManager shop={shopQ.data} /> : null}
+            {shopQ.data ? <ProductsManager shop={shopQ.data} /> : null}
           </>
         )}
       </main>
@@ -99,7 +101,7 @@ function DashboardPage() {
   );
 }
 
-type ShopWithDeals = Shop & { deals: Deal[] };
+type ShopWithDeals = Shop & { deals: Deal[]; products: Product[] };
 
 function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string }) {
   const qc = useQueryClient();
@@ -423,6 +425,247 @@ function DealsManager({ shop }: { shop: ShopWithDeals }) {
             className="rounded-full bg-ink px-6 py-2.5 text-sm font-semibold text-background disabled:opacity-60"
           >
             Thêm ưu đãi
+          </button>
+        </div>
+      </form>
+    </section>
+  );
+}
+
+const PRODUCT_TEMPLATE = [
+  ["name", "description", "category", "price", "image_url", "in_stock"],
+  ["Hạt cho mèo 1kg", "Hạt khô vị cá hồi", "Thức ăn", 250000, "", "co"],
+];
+
+function ProductsManager({ shop }: { shop: ShopWithDeals }) {
+  const qc = useQueryClient();
+  const [draft, setDraft] = useState({
+    name: "",
+    category: "",
+    price: "",
+    image_url: "",
+    description: "",
+  });
+  const [importing, setImporting] = useState(false);
+
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ["shop"] });
+  };
+
+  const addProduct = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("products").insert({
+        shop_id: shop.id,
+        name: draft.name,
+        category: draft.category || null,
+        price: draft.price ? Number(draft.price) : null,
+        image_url: draft.image_url || null,
+        description: draft.description || null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Đã thêm sản phẩm!");
+      setDraft({ name: "", category: "", price: "", image_url: "", description: "" });
+      invalidate();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const removeProduct = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("products").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Đã xoá sản phẩm.");
+      invalidate();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  async function downloadTemplate() {
+    const XLSX = await import("xlsx");
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(PRODUCT_TEMPLATE), "san-pham");
+    XLSX.writeFile(wb, "mau-nhap-san-pham.xlsx");
+  }
+
+  async function handleFile(file: File) {
+    setImporting(true);
+    try {
+      const XLSX = await import("xlsx");
+      const wb = XLSX.read(await file.arrayBuffer(), { type: "array" });
+      const sheetName = wb.SheetNames[0];
+      const sheet = sheetName ? wb.Sheets[sheetName] : undefined;
+      if (!sheet) throw new Error("File không có dữ liệu.");
+      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: "" });
+      const payload = rows
+        .map((r, i) => {
+          const pick = (...keys: string[]) => {
+            for (const k of keys) {
+              const found = Object.keys(r).find(
+                (key) => key.trim().toLowerCase() === k.toLowerCase(),
+              );
+              if (found && String(r[found]).trim() !== "") return String(r[found]).trim();
+            }
+            return "";
+          };
+          const name = pick("name", "ten", "tên", "tên sản phẩm", "san pham");
+          if (!name) return null;
+          const rawPrice = pick("price", "gia", "giá");
+          const stock = pick("in_stock", "con hang", "còn hàng").toLowerCase();
+          return {
+            shop_id: shop.id,
+            name,
+            description: pick("description", "mo ta", "mô tả") || null,
+            category: pick("category", "danh muc", "danh mục") || null,
+            price: rawPrice ? Number(rawPrice.replace(/[^0-9.]/g, "")) || null : null,
+            image_url: pick("image_url", "anh", "ảnh", "hinh anh") || null,
+            in_stock: stock === "" ? true : !["khong", "không", "no", "false", "0", "het"].includes(stock),
+            sort_order: i,
+          };
+        })
+        .filter((r): r is NonNullable<typeof r> => r !== null);
+
+      if (!payload.length) throw new Error("Không tìm thấy dòng sản phẩm hợp lệ (thiếu cột tên).");
+      const { error } = await supabase.from("products").insert(payload);
+      if (error) throw error;
+      toast.success(`Đã nhập ${payload.length} sản phẩm!`);
+      invalidate();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Không đọc được file.");
+    } finally {
+      setImporting(false);
+    }
+  }
+
+  const products = [...(shop.products ?? [])].sort((a, b) => a.sort_order - b.sort_order);
+
+  return (
+    <section className="mt-8 rounded-3xl bg-card p-6 ring-1 ring-border sm:p-8">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-display text-xl font-semibold">Sản phẩm của shop</h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={downloadTemplate}
+            className="rounded-full bg-sand-deep px-4 py-2 text-sm font-semibold text-terra-deep"
+          >
+            Tải file mẫu Excel
+          </button>
+          <label className="cursor-pointer rounded-full bg-ink px-4 py-2 text-sm font-semibold text-background">
+            {importing ? "Đang nhập..." : "Nhập từ Excel"}
+            <input
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              className="hidden"
+              disabled={importing}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                e.target.value = "";
+                if (file) void handleFile(file);
+              }}
+            />
+          </label>
+        </div>
+      </div>
+      <p className="mt-2 text-sm text-ink-soft">
+        Các cột hỗ trợ: name, description, category, price, image_url, in_stock.
+      </p>
+
+      <ul className="mt-5 space-y-3">
+        {products.length ? (
+          products.map((p) => (
+            <li
+              key={p.id}
+              className="flex items-center justify-between gap-4 rounded-2xl bg-sand-deep/40 p-4 ring-1 ring-border"
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                {p.image_url ? (
+                  <img
+                    src={p.image_url}
+                    alt={p.name}
+                    className="size-12 shrink-0 rounded-xl object-cover ring-1 ring-border"
+                  />
+                ) : null}
+                <div className="min-w-0">
+                  <p className="truncate font-semibold">{p.name}</p>
+                  <p className="text-sm text-ink-soft">
+                    {p.category ? `${p.category} · ` : ""}
+                    {formatPrice(p.price, p.currency)}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => removeProduct.mutate(p.id)}
+                className="shrink-0 text-sm font-medium text-ink-soft hover:text-terra-deep"
+              >
+                Xoá
+              </button>
+            </li>
+          ))
+        ) : (
+          <li className="text-sm text-ink-soft">Chưa có sản phẩm nào.</li>
+        )}
+      </ul>
+
+      <form
+        className="mt-6 grid gap-4 sm:grid-cols-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          addProduct.mutate();
+        }}
+      >
+        <Field label="Tên sản phẩm">
+          <input
+            required
+            className={inputCls}
+            value={draft.name}
+            onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
+          />
+        </Field>
+        <Field label="Danh mục">
+          <input
+            className={inputCls}
+            placeholder="Thức ăn, Phụ kiện..."
+            value={draft.category}
+            onChange={(e) => setDraft((d) => ({ ...d, category: e.target.value }))}
+          />
+        </Field>
+        <Field label="Giá (VNĐ)">
+          <input
+            type="number"
+            min="0"
+            className={inputCls}
+            value={draft.price}
+            onChange={(e) => setDraft((d) => ({ ...d, price: e.target.value }))}
+          />
+        </Field>
+        <Field label="Ảnh sản phẩm (URL)">
+          <input
+            className={inputCls}
+            value={draft.image_url}
+            onChange={(e) => setDraft((d) => ({ ...d, image_url: e.target.value }))}
+          />
+        </Field>
+        <div className="sm:col-span-2">
+          <Field label="Mô tả">
+            <textarea
+              rows={3}
+              className={inputCls}
+              value={draft.description}
+              onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
+            />
+          </Field>
+        </div>
+        <div className="sm:col-span-2">
+          <button
+            type="submit"
+            disabled={addProduct.isPending}
+            className="rounded-full bg-terra px-6 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+          >
+            Thêm sản phẩm
           </button>
         </div>
       </form>
