@@ -103,11 +103,11 @@ export function shopBySlugQuery(slug: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("shops")
-        .select("*, deals(*)")
+        .select("*, deals(*), products(*)")
         .eq("slug", slug)
         .maybeSingle();
       if (error) throw error;
-      return data as (Shop & { deals: Deal[] }) | null;
+      return data as (Shop & { deals: Deal[]; products: Product[] }) | null;
     },
   });
 }
@@ -120,10 +120,10 @@ export const myShopQuery = queryOptions({
     if (!user) return null;
     const { data, error } = await supabase
       .from("shops")
-      .select("*, deals(*)")
+      .select("*, deals(*), products(*)")
       .eq("owner_id", user.id)
       .maybeSingle();
     if (error) throw error;
-    return data as (Shop & { deals: Deal[] }) | null;
+    return data as (Shop & { deals: Deal[]; products: Product[] }) | null;
   },
 });
