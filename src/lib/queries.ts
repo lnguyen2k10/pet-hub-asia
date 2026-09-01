@@ -168,3 +168,22 @@ export const partnerListingsQuery = queryOptions({
   },
 });
 
+export type MyPartnerListing = PartnerListing & { is_published: boolean };
+
+export const myPartnerListingsQuery = queryOptions({
+  queryKey: ["partner_listings", "mine"],
+  queryFn: async (): Promise<MyPartnerListing[]> => {
+    const { data: userData } = await supabase.auth.getUser();
+    const user = userData.user;
+    if (!user) return [];
+    const { data, error } = await supabase
+      .from("partner_listings")
+      .select("*")
+      .eq("owner_id", user.id)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as unknown as MyPartnerListing[];
+  },
+});
+
+
