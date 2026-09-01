@@ -3,12 +3,14 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { DealCard } from "@/components/deal-card";
 import { HeroCarousel } from "@/components/hero-carousel";
+import { PartnerCard } from "@/components/partner-card";
 import { SearchBar } from "@/components/search-bar";
 import { ShopCard } from "@/components/shop-card";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { CATEGORIES } from "@/lib/pet";
-import { featuredDealsQuery, featuredShopsQuery } from "@/lib/queries";
+import { featuredDealsQuery, featuredShopsQuery, partnerListingsQuery } from "@/lib/queries";
+
 
 const TITLE = "1Pet.Asia — Danh bạ shop chó mèo & dịch vụ thú cưng";
 const DESC =
