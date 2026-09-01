@@ -148,6 +148,16 @@ export function PartnerCard({ listing }: { listing: PartnerListing }) {
                 Gọi {listing.contact_phone}
               </a>
             ) : null}
+
+            {!listing.contact_phone && !listing.contact_email && !listing.contact_name ? (
+              <a
+                href="/dang-nhap"
+                className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-terra px-5 py-3 text-sm font-semibold text-primary-foreground"
+              >
+                Đăng nhập để xem thông tin liên hệ
+              </a>
+            ) : null}
+
           </div>
         </DialogContent>
       </Dialog>
