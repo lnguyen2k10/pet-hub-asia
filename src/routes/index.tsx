@@ -31,6 +31,7 @@ export const Route = createFileRoute("/")({
 function Home() {
   const shops = useQuery(featuredShopsQuery);
   const deals = useQuery(featuredDealsQuery);
+  const partners = useQuery(partnerListingsQuery);
 
   return (
     <div className="min-h-screen">
@@ -106,6 +107,33 @@ function Home() {
                     ?.slice(0, 3)
                     .map((deal, i) => <DealCard key={deal.id} deal={deal} index={i} />)}
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="pb-20">
+        <div className="mx-auto max-w-6xl px-5">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="font-hand text-2xl text-terra-deep">cơ hội kinh doanh</p>
+              <h2 className="mt-1 text-3xl leading-tight sm:text-4xl">
+                Doanh nghiệp tìm đại lý & nhà phân phối
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm text-ink-soft">
+                Các công ty trong ngành thú cưng đang tìm đối tác kinh doanh, đại lý, nhà phân phối
+                và nhượng quyền trên khắp Việt Nam.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {partners.isLoading
+              ? Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-80 animate-pulse rounded-2xl bg-sand-deep/60" />
+                ))
+              : partners.data
+                  ?.slice(0, 6)
+                  .map((listing) => <PartnerCard key={listing.id} listing={listing} />)}
           </div>
         </div>
       </section>
