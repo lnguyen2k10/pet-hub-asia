@@ -8,36 +8,51 @@ export function ShopCard({ shop }: { shop: Shop }) {
     <Link
       to="/shop/$slug"
       params={{ slug: shop.slug }}
-      className="group block rounded-2xl bg-sand-deep/50 p-5 ring-1 ring-border transition-transform duration-300 hover:-translate-y-1.5"
+      className="group block overflow-hidden rounded-2xl bg-card ring-1 ring-border transition-transform duration-300 hover:-translate-y-1.5"
     >
-      <div className="flex items-center gap-3">
-        {shop.logo_url ? (
+      <div className="relative">
+        {shop.cover_url ? (
           <img
-            src={shop.logo_url}
-            alt={shop.name}
+            src={shop.cover_url}
+            alt={`Ảnh bìa ${shop.name}`}
             loading="lazy"
-            className="size-14 shrink-0 rounded-full object-cover ring-1 ring-border"
+            className="aspect-[16/7] w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <span className="grid size-14 shrink-0 place-items-center rounded-full bg-background font-display text-lg font-semibold text-terra-deep ring-1 ring-border">
-            {shopInitials(shop.name)}
-          </span>
+          <div className="grid aspect-[16/7] w-full place-items-center bg-terra/15 font-hand text-3xl text-terra-deep">
+            1Pet.Asia
+          </div>
         )}
-        <div className="min-w-0">
-          <h3 className="truncate font-display text-lg font-semibold">{shop.name}</h3>
-          <p className="truncate text-sm text-ink-soft">
-            {categoryLabel(shop.category)} · {shop.city}
-          </p>
-        </div>
-      </div>
-      <div className="mt-4 flex items-center justify-between gap-2">
-        <span className="flex items-center gap-1 text-sm font-semibold">
-          <span className="text-terra">★</span> {shop.rating}
-          <span className="font-normal text-ink-soft">({shop.review_count})</span>
-        </span>
-        <span className="rounded-full bg-terra/15 px-2.5 py-1 text-xs font-medium text-terra-deep">
+        <span className="absolute right-3 top-3 rounded-full bg-background/90 px-2.5 py-1 text-xs font-medium text-terra-deep">
           {categoryLabel(shop.category)}
         </span>
+
+        <div className="absolute -bottom-7 left-5">
+          {shop.logo_url ? (
+            <img
+              src={shop.logo_url}
+              alt={shop.name}
+              loading="lazy"
+              className="size-16 rounded-full object-cover ring-4 ring-card"
+            />
+          ) : (
+            <span className="grid size-16 place-items-center rounded-full bg-sand-deep font-display text-lg font-semibold text-terra-deep ring-4 ring-card">
+              {shopInitials(shop.name)}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="px-5 pb-5 pt-10">
+        <h3 className="truncate font-display text-lg font-semibold">{shop.name}</h3>
+        <p className="truncate text-sm text-ink-soft">{shop.city}</p>
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <span className="flex items-center gap-1 text-sm font-semibold">
+            <span className="text-terra">★</span> {shop.rating}
+            <span className="font-normal text-ink-soft">({shop.review_count})</span>
+          </span>
+          <span className="text-sm font-semibold text-terra-deep">Xem shop →</span>
+        </div>
       </div>
     </Link>
   );

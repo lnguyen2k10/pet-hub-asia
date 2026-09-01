@@ -127,3 +127,37 @@ export const myShopQuery = queryOptions({
     return data as (Shop & { deals: Deal[]; products: Product[] }) | null;
   },
 });
+
+export type PartnerListing = {
+  id: string;
+  company_name: string;
+  logo_url: string | null;
+  cover_url: string | null;
+  listing_type: string;
+  title: string;
+  summary: string | null;
+  description: string | null;
+  category: string | null;
+  city: string | null;
+  investment_note: string | null;
+  contact_name: string | null;
+  contact_phone: string | null;
+  contact_email: string | null;
+  website: string | null;
+  is_featured: boolean;
+};
+
+export const partnerListingsQuery = queryOptions({
+  queryKey: ["partner_listings", "published"],
+  queryFn: async (): Promise<PartnerListing[]> => {
+    const { data, error } = await supabase
+      .from("partner_listings")
+      .select("*")
+      .eq("is_published", true)
+      .order("is_featured", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(12);
+    if (error) throw error;
+    return (data ?? []) as PartnerListing[];
+  },
+});

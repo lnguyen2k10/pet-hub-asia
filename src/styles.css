@@ -20,7 +20,7 @@
 
   --font-display: "Baloo 2", ui-rounded, system-ui, sans-serif;
   --font-body: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-hand: "Caveat", cursive;
+  --font-hand: "Dancing Script", "Baloo 2", cursive;
   --font-sans: var(--font-body);
 
   --color-background: var(--background);
