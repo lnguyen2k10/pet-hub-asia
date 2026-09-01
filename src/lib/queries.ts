@@ -140,24 +140,31 @@ export type PartnerListing = {
   category: string | null;
   city: string | null;
   investment_note: string | null;
-  contact_name: string | null;
-  contact_phone: string | null;
-  contact_email: string | null;
+  contact_name?: string | null;
+  contact_phone?: string | null;
+  contact_email?: string | null;
   website: string | null;
   is_featured: boolean;
 };
 
+const PARTNER_PUBLIC_COLUMNS =
+  "id,company_name,logo_url,cover_url,listing_type,title,summary,description,category,city,investment_note,website,is_featured";
+const PARTNER_CONTACT_COLUMNS = `${PARTNER_PUBLIC_COLUMNS},contact_name,contact_phone,contact_email`;
+
 export const partnerListingsQuery = queryOptions({
   queryKey: ["partner_listings", "published"],
   queryFn: async (): Promise<PartnerListing[]> => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const columns = sessionData.session ? PARTNER_CONTACT_COLUMNS : PARTNER_PUBLIC_COLUMNS;
     const { data, error } = await supabase
       .from("partner_listings")
-      .select("*")
+      .select(columns)
       .eq("is_published", true)
       .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(12);
     if (error) throw error;
-    return (data ?? []) as PartnerListing[];
+    return (data ?? []) as unknown as PartnerListing[];
   },
 });
+
