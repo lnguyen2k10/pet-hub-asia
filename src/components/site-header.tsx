@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 
 import { PawMark } from "@/components/paw-mark";
@@ -8,12 +9,14 @@ const NAV = [
   { to: "/", label: "Trang chủ" },
   { to: "/shops", label: "Khám phá" },
   { to: "/uu-dai", label: "Ưu đãi" },
+  { to: "/co-hoi-kinh-doanh", label: "Cơ hội KD" },
   { to: "/gioi-thieu", label: "Về 1Pet" },
 ] as const;
 
 export function SiteHeader() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   return (
     <header className="sticky top-0 z-50 bg-background/85 backdrop-blur">
@@ -50,8 +53,10 @@ export function SiteHeader() {
                 </Link>
                 <button
                   onClick={async () => {
+                    await queryClient.cancelQueries();
+                    queryClient.clear();
                     await supabase.auth.signOut();
-                    navigate({ to: "/" });
+                    navigate({ to: "/", replace: true });
                   }}
                   className="rounded-full bg-secondary px-4 py-2 text-sm font-semibold text-ink transition-transform hover:-translate-y-0.5"
                 >

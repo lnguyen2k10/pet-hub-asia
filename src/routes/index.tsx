@@ -124,6 +124,12 @@ function Home() {
                 và nhượng quyền trên khắp Việt Nam.
               </p>
             </div>
+            <Link
+              to="/co-hoi-kinh-doanh"
+              className="text-sm font-semibold text-terra-deep hover:text-terra"
+            >
+              Xem tất cả cơ hội →
+            </Link>
           </div>
 
           <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">

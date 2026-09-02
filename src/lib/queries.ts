@@ -187,3 +187,39 @@ export const myPartnerListingsQuery = queryOptions({
 });
 
 
+
+export const allDealsQuery = queryOptions({
+  queryKey: ["deals", "all"],
+  queryFn: async (): Promise<(Deal & { shops: { name: string; slug: string } | null })[]> => {
+    const { data, error } = await supabase
+      .from("deals")
+      .select("*, shops(name, slug)")
+      .order("is_featured", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(60);
+    if (error) throw error;
+    return (data ?? []) as (Deal & { shops: { name: string; slug: string } | null })[];
+  },
+});
+
+export type PartnerFilters = { q?: string; listing_type?: string; city?: string };
+
+export function partnerListingsSearchQuery(filters: PartnerFilters) {
+  return queryOptions({
+    queryKey: ["partner_listings", "search", filters],
+    queryFn: async (): Promise<PartnerListing[]> => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const columns = sessionData.session ? PARTNER_CONTACT_COLUMNS : PARTNER_PUBLIC_COLUMNS;
+      let query = supabase.from("partner_listings").select(columns).eq("is_published", true);
+      if (filters.q) query = query.ilike("title", `%${filters.q}%`);
+      if (filters.listing_type) query = query.eq("listing_type", filters.listing_type);
+      if (filters.city) query = query.eq("city", filters.city);
+      const { data, error } = await query
+        .order("is_featured", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(60);
+      if (error) throw error;
+      return (data ?? []) as unknown as PartnerListing[];
+    },
+  });
+}

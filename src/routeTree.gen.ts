@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CoHoiKinhDoanhRouteImport } from './routes/co-hoi-kinh-doanh'
 import { Route as DangNhapRouteImport } from './routes/dang-nhap'
 import { Route as GioiThieuRouteImport } from './routes/gioi-thieu'
 import { Route as QuanLyRouteImport } from './routes/quan-ly'
@@ -20,6 +21,11 @@ import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoHoiKinhDoanhRoute = CoHoiKinhDoanhRouteImport.update({
+  id: '/co-hoi-kinh-doanh',
+  path: '/co-hoi-kinh-doanh',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DangNhapRoute = DangNhapRouteImport.update({
@@ -55,6 +61,7 @@ const ShopSlugRoute = ShopSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/co-hoi-kinh-doanh': typeof CoHoiKinhDoanhRoute
   '/dang-nhap': typeof DangNhapRoute
   '/gioi-thieu': typeof GioiThieuRoute
   '/quan-ly': typeof QuanLyRoute
@@ -64,6 +71,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/co-hoi-kinh-doanh': typeof CoHoiKinhDoanhRoute
   '/dang-nhap': typeof DangNhapRoute
   '/gioi-thieu': typeof GioiThieuRoute
   '/quan-ly': typeof QuanLyRoute
@@ -74,6 +82,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/co-hoi-kinh-doanh': typeof CoHoiKinhDoanhRoute
   '/dang-nhap': typeof DangNhapRoute
   '/gioi-thieu': typeof GioiThieuRoute
   '/quan-ly': typeof QuanLyRoute
@@ -85,6 +94,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/co-hoi-kinh-doanh'
     | '/dang-nhap'
     | '/gioi-thieu'
     | '/quan-ly'
@@ -94,6 +104,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/co-hoi-kinh-doanh'
     | '/dang-nhap'
     | '/gioi-thieu'
     | '/quan-ly'
@@ -103,6 +114,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/co-hoi-kinh-doanh'
     | '/dang-nhap'
     | '/gioi-thieu'
     | '/quan-ly'
@@ -113,6 +125,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CoHoiKinhDoanhRoute: typeof CoHoiKinhDoanhRoute
   DangNhapRoute: typeof DangNhapRoute
   GioiThieuRoute: typeof GioiThieuRoute
   QuanLyRoute: typeof QuanLyRoute
@@ -128,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/co-hoi-kinh-doanh': {
+      id: '/co-hoi-kinh-doanh'
+      path: '/co-hoi-kinh-doanh'
+      fullPath: '/co-hoi-kinh-doanh'
+      preLoaderRoute: typeof CoHoiKinhDoanhRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dang-nhap': {
@@ -177,6 +197,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CoHoiKinhDoanhRoute: CoHoiKinhDoanhRoute,
   DangNhapRoute: DangNhapRoute,
   GioiThieuRoute: GioiThieuRoute,
   QuanLyRoute: QuanLyRoute,
