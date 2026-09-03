@@ -158,7 +158,7 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
         category: form.category,
         city: form.city,
         address: form.address || null,
-        phone: form.phone || null,
+        phone: phone || null,
         description: form.description || null,
         logo_url: form.logo_url || null,
         cover_url: form.cover_url || null,
