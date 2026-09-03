@@ -61,6 +61,110 @@ export type Database = {
           },
         ]
       }
+      membership_requests: {
+        Row: {
+          admin_note: string | null
+          amount: number
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          note: string | null
+          proof_url: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          shop_id: string | null
+          starts_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          amount?: number
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          note?: string | null
+          proof_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          shop_id?: string | null
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          amount?: number
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          note?: string | null
+          proof_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          shop_id?: string | null
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "membership_requests_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      membership_settings: {
+        Row: {
+          bank_info: string | null
+          created_at: string
+          currency: string
+          id: string
+          instructions: string | null
+          period_label: string
+          price_amount: number
+          qr_image_url: string | null
+          refund_note: string
+          updated_at: string
+        }
+        Insert: {
+          bank_info?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          instructions?: string | null
+          period_label?: string
+          price_amount?: number
+          qr_image_url?: string | null
+          refund_note?: string
+          updated_at?: string
+        }
+        Update: {
+          bank_info?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          instructions?: string | null
+          period_label?: string
+          price_amount?: number
+          qr_image_url?: string | null
+          refund_note?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       partner_listings: {
         Row: {
           category: string | null
@@ -273,15 +377,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -408,6 +539,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
