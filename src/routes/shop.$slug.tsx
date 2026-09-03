@@ -22,7 +22,12 @@ function groupProducts(products: Product[]) {
 export const Route = createFileRoute("/shop/$slug")({
   loader: async ({ params, context }) => {
     const shop = await context.queryClient.ensureQueryData(shopBySlugQuery(params.slug));
-    return { name: shop?.name ?? null, description: shop?.description ?? null, city: shop?.city ?? null };
+    return {
+      name: shop?.name ?? null,
+      description: shop?.description ?? null,
+      city: shop?.city ?? null,
+      cover: shop?.cover_url?.startsWith("https://") ? shop.cover_url : null,
+    };
   },
   head: ({ params, loaderData }) => {
     const name = loaderData?.name ?? params.slug;
@@ -31,6 +36,7 @@ export const Route = createFileRoute("/shop/$slug")({
       loaderData?.description ||
       `Thông tin, sản phẩm, dịch vụ và ưu đãi của ${name}${loaderData?.city ? ` tại ${loaderData.city}` : ""} trên 1Pet.Asia.`
     ).slice(0, 155);
+    const cover = loaderData?.cover;
     return {
       meta: [
         { title },
@@ -39,9 +45,16 @@ export const Route = createFileRoute("/shop/$slug")({
         { property: "og:description", content: desc },
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary_large_image" },
+        ...(cover
+          ? [
+              { property: "og:image", content: cover },
+              { name: "twitter:image", content: cover },
+            ]
+          : []),
       ],
     };
   },
+
   errorComponent: () => (
     <div className="mx-auto max-w-6xl px-5 py-24 text-center">
       <h1 className="text-3xl">Không tải được trang shop</h1>
