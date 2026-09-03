@@ -142,10 +142,19 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
 
   const save = useMutation({
     mutationFn: async () => {
+      const name = form.name.trim();
+      if (name.length < 2) throw new Error("Vui lòng nhập tên shop (tối thiểu 2 ký tự).");
+      const slug = (form.slug || slugify(name)).trim();
+      if (!/^[a-z0-9-]{3,}$/.test(slug))
+        throw new Error("Đường dẫn chỉ gồm chữ thường, số và dấu gạch ngang (tối thiểu 3 ký tự).");
+      const phone = form.phone.trim();
+      if (phone && !/^[0-9+\s.()-]{8,15}$/.test(phone))
+        throw new Error("Số điện thoại không hợp lệ.");
       const payload = {
         owner_id: userId,
-        name: form.name,
-        slug: form.slug || slugify(form.name),
+        name,
+        slug,
+
         category: form.category,
         city: form.city,
         address: form.address || null,
