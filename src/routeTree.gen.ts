@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as CoHoiKinhDoanhRouteImport } from './routes/co-hoi-kinh-doanh'
 import { Route as DangNhapRouteImport } from './routes/dang-nhap'
 import { Route as GioiThieuRouteImport } from './routes/gioi-thieu'
@@ -22,6 +23,11 @@ import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CoHoiKinhDoanhRoute = CoHoiKinhDoanhRouteImport.update({
@@ -67,6 +73,7 @@ const ShopSlugRoute = ShopSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/co-hoi-kinh-doanh': typeof CoHoiKinhDoanhRoute
   '/dang-nhap': typeof DangNhapRoute
   '/gioi-thieu': typeof GioiThieuRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/co-hoi-kinh-doanh': typeof CoHoiKinhDoanhRoute
   '/dang-nhap': typeof DangNhapRoute
   '/gioi-thieu': typeof GioiThieuRoute
@@ -90,6 +98,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/co-hoi-kinh-doanh': typeof CoHoiKinhDoanhRoute
   '/dang-nhap': typeof DangNhapRoute
   '/gioi-thieu': typeof GioiThieuRoute
@@ -103,6 +112,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/co-hoi-kinh-doanh'
     | '/dang-nhap'
     | '/gioi-thieu'
@@ -114,6 +124,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/co-hoi-kinh-doanh'
     | '/dang-nhap'
     | '/gioi-thieu'
@@ -125,6 +136,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/co-hoi-kinh-doanh'
     | '/dang-nhap'
     | '/gioi-thieu'
@@ -137,6 +149,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   CoHoiKinhDoanhRoute: typeof CoHoiKinhDoanhRoute
   DangNhapRoute: typeof DangNhapRoute
   GioiThieuRoute: typeof GioiThieuRoute
@@ -154,6 +167,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/co-hoi-kinh-doanh': {
@@ -217,6 +237,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   CoHoiKinhDoanhRoute: CoHoiKinhDoanhRoute,
   DangNhapRoute: DangNhapRoute,
   GioiThieuRoute: GioiThieuRoute,

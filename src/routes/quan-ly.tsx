@@ -10,6 +10,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES, CITIES, formatPrice, slugify } from "@/lib/pet";
 import {
+  isAdminQuery,
+  myMembershipRequestsQuery,
   myPartnerListingsQuery,
   myShopQuery,
   type Deal,
@@ -87,6 +89,8 @@ function DashboardPage() {
         <p className="font-hand text-2xl text-terra-deep">xin chào</p>
         <h1 className="mt-1 text-3xl sm:text-4xl">Quản lý shop của bạn</h1>
 
+        <MembershipStatus />
+
         {shopQ.isLoading ? (
           <div className="mt-8 h-64 animate-pulse rounded-3xl bg-sand-deep/60" />
         ) : (
@@ -100,6 +104,50 @@ function DashboardPage() {
       </main>
       <SiteFooter />
     </div>
+  );
+}
+
+function MembershipStatus() {
+  const reqQ = useQuery(myMembershipRequestsQuery);
+  const adminQ = useQuery(isAdminQuery);
+  const latest = (reqQ.data ?? [])[0];
+  const approved = (reqQ.data ?? []).find(
+    (r) => r.status === "approved" && (!r.expires_at || new Date(r.expires_at) >= new Date()),
+  );
+
+  return (
+    <section className="mt-6 rounded-3xl bg-background p-5 ring-1 ring-border">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold">Trạng thái thành viên</p>
+          <p className="mt-1 text-sm text-ink-soft">
+            {approved
+              ? `Đang hoạt động${approved.expires_at ? ` đến ${new Date(approved.expires_at).toLocaleDateString("vi-VN")}` : ""}`
+              : latest?.status === "pending"
+                ? "Đơn đăng ký của bạn đang chờ duyệt."
+                : latest?.status === "rejected"
+                  ? `Đơn gần nhất bị từ chối.${latest.admin_note ? ` ${latest.admin_note}` : ""}`
+                  : "Chưa kích hoạt gói thành viên."}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          {adminQ.data ? (
+            <Link
+              to="/admin"
+              className="rounded-full bg-secondary px-4 py-2 text-sm font-semibold text-ink"
+            >
+              Quản trị
+            </Link>
+          ) : null}
+          <Link
+            to="/kich-hoat"
+            className="rounded-full bg-terra px-4 py-2 text-sm font-semibold text-primary-foreground"
+          >
+            {approved ? "Xem gói" : "Kích hoạt ngay"}
+          </Link>
+        </div>
+      </div>
+    </section>
   );
 }
 
