@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CoHoiKinhDoanhRouteImport } from './routes/co-hoi-kinh-doanh'
 import { Route as DangNhapRouteImport } from './routes/dang-nhap'
 import { Route as GioiThieuRouteImport } from './routes/gioi-thieu'
+import { Route as KichHoatRouteImport } from './routes/kich-hoat'
 import { Route as QuanLyRouteImport } from './routes/quan-ly'
 import { Route as ShopsRouteImport } from './routes/shops'
 import { Route as UuDaiRouteImport } from './routes/uu-dai'
@@ -36,6 +37,11 @@ const DangNhapRoute = DangNhapRouteImport.update({
 const GioiThieuRoute = GioiThieuRouteImport.update({
   id: '/gioi-thieu',
   path: '/gioi-thieu',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KichHoatRoute = KichHoatRouteImport.update({
+  id: '/kich-hoat',
+  path: '/kich-hoat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QuanLyRoute = QuanLyRouteImport.update({
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/co-hoi-kinh-doanh': typeof CoHoiKinhDoanhRoute
   '/dang-nhap': typeof DangNhapRoute
   '/gioi-thieu': typeof GioiThieuRoute
+  '/kich-hoat': typeof KichHoatRoute
   '/quan-ly': typeof QuanLyRoute
   '/shops': typeof ShopsRoute
   '/uu-dai': typeof UuDaiRoute
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/co-hoi-kinh-doanh': typeof CoHoiKinhDoanhRoute
   '/dang-nhap': typeof DangNhapRoute
   '/gioi-thieu': typeof GioiThieuRoute
+  '/kich-hoat': typeof KichHoatRoute
   '/quan-ly': typeof QuanLyRoute
   '/shops': typeof ShopsRoute
   '/uu-dai': typeof UuDaiRoute
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/co-hoi-kinh-doanh': typeof CoHoiKinhDoanhRoute
   '/dang-nhap': typeof DangNhapRoute
   '/gioi-thieu': typeof GioiThieuRoute
+  '/kich-hoat': typeof KichHoatRoute
   '/quan-ly': typeof QuanLyRoute
   '/shops': typeof ShopsRoute
   '/uu-dai': typeof UuDaiRoute
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/co-hoi-kinh-doanh'
     | '/dang-nhap'
     | '/gioi-thieu'
+    | '/kich-hoat'
     | '/quan-ly'
     | '/shops'
     | '/uu-dai'
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/co-hoi-kinh-doanh'
     | '/dang-nhap'
     | '/gioi-thieu'
+    | '/kich-hoat'
     | '/quan-ly'
     | '/shops'
     | '/uu-dai'
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/co-hoi-kinh-doanh'
     | '/dang-nhap'
     | '/gioi-thieu'
+    | '/kich-hoat'
     | '/quan-ly'
     | '/shops'
     | '/uu-dai'
@@ -128,6 +140,7 @@ export interface RootRouteChildren {
   CoHoiKinhDoanhRoute: typeof CoHoiKinhDoanhRoute
   DangNhapRoute: typeof DangNhapRoute
   GioiThieuRoute: typeof GioiThieuRoute
+  KichHoatRoute: typeof KichHoatRoute
   QuanLyRoute: typeof QuanLyRoute
   ShopsRoute: typeof ShopsRoute
   UuDaiRoute: typeof UuDaiRoute
@@ -162,6 +175,13 @@ declare module '@tanstack/react-router' {
       path: '/gioi-thieu'
       fullPath: '/gioi-thieu'
       preLoaderRoute: typeof GioiThieuRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kich-hoat': {
+      id: '/kich-hoat'
+      path: '/kich-hoat'
+      fullPath: '/kich-hoat'
+      preLoaderRoute: typeof KichHoatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/quan-ly': {
@@ -200,6 +220,7 @@ const rootRouteChildren: RootRouteChildren = {
   CoHoiKinhDoanhRoute: CoHoiKinhDoanhRoute,
   DangNhapRoute: DangNhapRoute,
   GioiThieuRoute: GioiThieuRoute,
+  KichHoatRoute: KichHoatRoute,
   QuanLyRoute: QuanLyRoute,
   ShopsRoute: ShopsRoute,
   UuDaiRoute: UuDaiRoute,
