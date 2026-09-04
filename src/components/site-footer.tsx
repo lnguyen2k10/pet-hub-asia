@@ -23,6 +23,9 @@ export function SiteFooter() {
             <Link to="/quan-ly" className="hover:text-ink">
               Dành cho shop
             </Link>
+            <Link to="/kich-hoat" className="hover:text-ink">
+              Gói thành viên
+            </Link>
             <Link to="/co-hoi-kinh-doanh" className="hover:text-ink">
               Cơ hội kinh doanh
             </Link>

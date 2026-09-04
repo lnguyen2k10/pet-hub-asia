@@ -223,3 +223,86 @@ export function partnerListingsSearchQuery(filters: PartnerFilters) {
     },
   });
 }
+
+export type MembershipSettings = {
+  id: string;
+  price_amount: number;
+  currency: string;
+  period_label: string;
+  qr_image_url: string | null;
+  bank_info: string | null;
+  refund_note: string;
+  instructions: string | null;
+};
+
+export const membershipSettingsQuery = queryOptions({
+  queryKey: ["membership_settings"],
+  queryFn: async (): Promise<MembershipSettings | null> => {
+    const { data, error } = await supabase
+      .from("membership_settings")
+      .select("*")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    return (data ?? null) as MembershipSettings | null;
+  },
+});
+
+export type MembershipRequest = {
+  id: string;
+  user_id: string;
+  shop_id: string | null;
+  contact_name: string | null;
+  contact_phone: string | null;
+  amount: number;
+  proof_url: string | null;
+  note: string | null;
+  status: string;
+  admin_note: string | null;
+  starts_at: string | null;
+  expires_at: string | null;
+  created_at: string;
+};
+
+export const myMembershipRequestsQuery = queryOptions({
+  queryKey: ["membership_requests", "mine"],
+  queryFn: async (): Promise<MembershipRequest[]> => {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) return [];
+    const { data, error } = await supabase
+      .from("membership_requests")
+      .select("*")
+      .eq("user_id", userData.user.id)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as MembershipRequest[];
+  },
+});
+
+export const allMembershipRequestsQuery = queryOptions({
+  queryKey: ["membership_requests", "all"],
+  queryFn: async (): Promise<MembershipRequest[]> => {
+    const { data, error } = await supabase
+      .from("membership_requests")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) throw error;
+    return (data ?? []) as MembershipRequest[];
+  },
+});
+
+export const isAdminQuery = queryOptions({
+  queryKey: ["is_admin"],
+  queryFn: async (): Promise<boolean> => {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) return false;
+    const { data, error } = await supabase.rpc("has_role", {
+      _user_id: userData.user.id,
+      _role: "admin",
+    });
+    if (error) return false;
+    return !!data;
+  },
+});
