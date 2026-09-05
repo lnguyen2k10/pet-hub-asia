@@ -18,7 +18,7 @@ import {
 
 const TITLE = "Kích hoạt thành viên shop — 1Pet.Asia";
 const DESC =
-  "Đăng ký gói thành viên 1Pet.Asia để kích hoạt landing page shop: chuyển khoản qua mã QR và được duyệt thủ công, cam kết hoàn phí trong 1 năm.";
+  "Đăng ký gói thành viên 1Pet.Asia để kích hoạt landing page shop: chuyển khoản qua mã QR, gửi chứng từ là shop được duyệt tự động, cam kết hoàn phí trong 1 năm.";
 
 export const Route = createFileRoute("/kich-hoat")({
   head: () => ({
@@ -71,7 +71,7 @@ function MembershipPage() {
         <p className="font-hand text-2xl text-terra-deep">thành viên 1Pet</p>
         <h1 className="mt-1 text-3xl sm:text-4xl">Kích hoạt tài khoản shop</h1>
         <p className="mt-3 text-ink-soft">
-          Thanh toán một lần cho cả năm, đội ngũ 1Pet.Asia duyệt thủ công trong vòng 24 giờ làm việc.
+          Thanh toán một lần cho cả năm — gửi ảnh chứng từ là shop được kích hoạt và công khai ngay lập tức.
         </p>
 
         <section className="mt-8 rounded-3xl bg-sand-deep/50 p-6 ring-1 ring-border">
@@ -173,7 +173,7 @@ function RequestSection({
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Đã gửi đơn! Chúng tôi sẽ duyệt trong 24 giờ làm việc.");
+      toast.success("Đã duyệt thành công! Shop của bạn đã được kích hoạt và công khai.");
       setForm({ contact_name: "", contact_phone: "", note: "", proof_url: "" });
       void qc.invalidateQueries({ queryKey: ["membership_requests"] });
     },
@@ -186,7 +186,7 @@ function RequestSection({
         <div className="mt-8 rounded-3xl bg-background p-6 ring-1 ring-border">
           <h2 className="text-xl">Đơn của bạn đang chờ duyệt</h2>
           <p className="mt-2 text-sm text-ink-soft">
-            Chúng tôi đã nhận chứng từ và sẽ phản hồi sớm. Bạn có thể liên hệ hỗ trợ nếu cần gấp.
+            Đơn có kèm ảnh chứng từ sẽ được duyệt tự động ngay. Nếu đơn vẫn chờ duyệt, vui lòng kiểm tra lại ảnh chứng từ hoặc liên hệ hỗ trợ.
           </p>
         </div>
       ) : (
