@@ -1,0 +1,4 @@
+update public.partner_listings set cover_url='/assets/partner-covers/petfood-viet.jpg', logo_url='/assets/partner-logos/petfood-viet.png' where company_name='Công ty TNHH PetFood Việt';
+update public.partner_listings set cover_url='/assets/partner-covers/meow-care.jpg', logo_url='/assets/partner-logos/meow-care.png' where company_name='Meow Care Group';
+update public.partner_listings set cover_url='/assets/partner-covers/happypaw-spa.jpg', logo_url='/assets/partner-logos/happypaw.png' where company_name='Chuỗi Spa Thú Cưng HappyPaw';
+update public.partner_listings set cover_url='/assets/partner-covers/vetpro.jpg', logo_url='/assets/partner-logos/vetpro.png' where company_name='VetPro Medical';
