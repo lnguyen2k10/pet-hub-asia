@@ -18,7 +18,10 @@ import { Route as KichHoatRouteImport } from './routes/kich-hoat'
 import { Route as QuanLyRouteImport } from './routes/quan-ly'
 import { Route as ShopsRouteImport } from './routes/shops'
 import { Route as UuDaiRouteImport } from './routes/uu-dai'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
+import { Route as BlogDanhMucSlugRouteImport } from './routes/blog.danh-muc.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -65,9 +68,24 @@ const UuDaiRoute = UuDaiRouteImport.update({
   path: '/uu-dai',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShopSlugRoute = ShopSlugRouteImport.update({
   id: '/shop/$slug',
   path: '/shop/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogDanhMucSlugRoute = BlogDanhMucSlugRouteImport.update({
+  id: '/blog/danh-muc/$slug',
+  path: '/blog/danh-muc/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -81,7 +99,10 @@ export interface FileRoutesByFullPath {
   '/quan-ly': typeof QuanLyRoute
   '/shops': typeof ShopsRoute
   '/uu-dai': typeof UuDaiRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/shop/$slug': typeof ShopSlugRoute
+  '/blog/': typeof BlogIndexRoute
+  '/blog/danh-muc/$slug': typeof BlogDanhMucSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -93,7 +114,10 @@ export interface FileRoutesByTo {
   '/quan-ly': typeof QuanLyRoute
   '/shops': typeof ShopsRoute
   '/uu-dai': typeof UuDaiRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/shop/$slug': typeof ShopSlugRoute
+  '/blog': typeof BlogIndexRoute
+  '/blog/danh-muc/$slug': typeof BlogDanhMucSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -106,7 +130,10 @@ export interface FileRoutesById {
   '/quan-ly': typeof QuanLyRoute
   '/shops': typeof ShopsRoute
   '/uu-dai': typeof UuDaiRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/shop/$slug': typeof ShopSlugRoute
+  '/blog/': typeof BlogIndexRoute
+  '/blog/danh-muc/$slug': typeof BlogDanhMucSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -120,7 +147,10 @@ export interface FileRouteTypes {
     | '/quan-ly'
     | '/shops'
     | '/uu-dai'
+    | '/blog/$slug'
     | '/shop/$slug'
+    | '/blog/'
+    | '/blog/danh-muc/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -132,7 +162,10 @@ export interface FileRouteTypes {
     | '/quan-ly'
     | '/shops'
     | '/uu-dai'
+    | '/blog/$slug'
     | '/shop/$slug'
+    | '/blog'
+    | '/blog/danh-muc/$slug'
   id:
     | '__root__'
     | '/'
@@ -144,7 +177,10 @@ export interface FileRouteTypes {
     | '/quan-ly'
     | '/shops'
     | '/uu-dai'
+    | '/blog/$slug'
     | '/shop/$slug'
+    | '/blog/'
+    | '/blog/danh-muc/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -157,7 +193,10 @@ export interface RootRouteChildren {
   QuanLyRoute: typeof QuanLyRoute
   ShopsRoute: typeof ShopsRoute
   UuDaiRoute: typeof UuDaiRoute
+  BlogSlugRoute: typeof BlogSlugRoute
   ShopSlugRoute: typeof ShopSlugRoute
+  BlogIndexRoute: typeof BlogIndexRoute
+  BlogDanhMucSlugRoute: typeof BlogDanhMucSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -225,11 +264,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UuDaiRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shop/$slug': {
       id: '/shop/$slug'
       path: '/shop/$slug'
       fullPath: '/shop/$slug'
       preLoaderRoute: typeof ShopSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/danh-muc/$slug': {
+      id: '/blog/danh-muc/$slug'
+      path: '/blog/danh-muc/$slug'
+      fullPath: '/blog/danh-muc/$slug'
+      preLoaderRoute: typeof BlogDanhMucSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -245,7 +305,10 @@ const rootRouteChildren: RootRouteChildren = {
   QuanLyRoute: QuanLyRoute,
   ShopsRoute: ShopsRoute,
   UuDaiRoute: UuDaiRoute,
+  BlogSlugRoute: BlogSlugRoute,
   ShopSlugRoute: ShopSlugRoute,
+  BlogIndexRoute: BlogIndexRoute,
+  BlogDanhMucSlugRoute: BlogDanhMucSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

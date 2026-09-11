@@ -308,3 +308,90 @@ export const isAdminQuery = queryOptions({
     return !!data;
   },
 });
+
+export type BlogCategory = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  sort_order: number;
+};
+
+export type BlogPost = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  content: string;
+  cover_url: string | null;
+  category_id: string | null;
+  author_name: string | null;
+  read_minutes: number;
+  is_published: boolean;
+  published_at: string | null;
+  created_at: string;
+};
+
+export type BlogPostWithCategory = BlogPost & {
+  blog_categories: { name: string; slug: string } | null;
+};
+
+export const blogCategoriesQuery = queryOptions({
+  queryKey: ["blog_categories"],
+  queryFn: async (): Promise<BlogCategory[]> => {
+    const { data, error } = await supabase
+      .from("blog_categories")
+      .select("id,slug,name,description,sort_order")
+      .order("sort_order", { ascending: true });
+    if (error) throw error;
+    return (data ?? []) as BlogCategory[];
+  },
+});
+
+export function blogPostsQuery(categorySlug?: string) {
+  return queryOptions({
+    queryKey: ["blog_posts", "list", categorySlug ?? "all"],
+    queryFn: async (): Promise<BlogPostWithCategory[]> => {
+      let query = supabase
+        .from("blog_posts")
+        .select("*, blog_categories(name, slug)")
+        .eq("is_published", true);
+      if (categorySlug) query = query.eq("blog_categories.slug", categorySlug);
+      const { data, error } = await query
+        .order("published_at", { ascending: false })
+        .limit(60);
+      if (error) throw error;
+      const rows = (data ?? []) as unknown as BlogPostWithCategory[];
+      return categorySlug ? rows.filter((r) => r.blog_categories?.slug === categorySlug) : rows;
+    },
+  });
+}
+
+export function blogPostBySlugQuery(slug: string) {
+  return queryOptions({
+    queryKey: ["blog_post", slug],
+    queryFn: async (): Promise<BlogPostWithCategory | null> => {
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .select("*, blog_categories(name, slug)")
+        .eq("slug", slug)
+        .eq("is_published", true)
+        .maybeSingle();
+      if (error) throw error;
+      return (data ?? null) as unknown as BlogPostWithCategory | null;
+    },
+  });
+}
+
+export const allBlogPostsAdminQuery = queryOptions({
+  queryKey: ["blog_posts", "admin"],
+  queryFn: async (): Promise<BlogPostWithCategory[]> => {
+    const { data, error } = await supabase
+      .from("blog_posts")
+      .select("*, blog_categories(name, slug)")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) throw error;
+    return (data ?? []) as unknown as BlogPostWithCategory[];
+  },
+});
