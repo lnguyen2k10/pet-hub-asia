@@ -19,6 +19,7 @@ import { Route as QuanLyRouteImport } from './routes/quan-ly'
 import { Route as ShopsRouteImport } from './routes/shops'
 import { Route as UuDaiRouteImport } from './routes/uu-dai'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
 
 const IndexRoute = IndexRouteImport.update({
@@ -71,6 +72,11 @@ const BlogIndexRoute = BlogIndexRouteImport.update({
   path: '/blog/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShopSlugRoute = ShopSlugRouteImport.update({
   id: '/shop/$slug',
   path: '/shop/$slug',
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/quan-ly': typeof QuanLyRoute
   '/shops': typeof ShopsRoute
   '/uu-dai': typeof UuDaiRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/blog/': typeof BlogIndexRoute
 }
@@ -100,6 +107,7 @@ export interface FileRoutesByTo {
   '/quan-ly': typeof QuanLyRoute
   '/shops': typeof ShopsRoute
   '/uu-dai': typeof UuDaiRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/blog': typeof BlogIndexRoute
 }
@@ -114,6 +122,7 @@ export interface FileRoutesById {
   '/quan-ly': typeof QuanLyRoute
   '/shops': typeof ShopsRoute
   '/uu-dai': typeof UuDaiRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/blog/': typeof BlogIndexRoute
 }
@@ -129,6 +138,7 @@ export interface FileRouteTypes {
     | '/quan-ly'
     | '/shops'
     | '/uu-dai'
+    | '/blog/$slug'
     | '/shop/$slug'
     | '/blog/'
   fileRoutesByTo: FileRoutesByTo
@@ -142,6 +152,7 @@ export interface FileRouteTypes {
     | '/quan-ly'
     | '/shops'
     | '/uu-dai'
+    | '/blog/$slug'
     | '/shop/$slug'
     | '/blog'
   id:
@@ -155,6 +166,7 @@ export interface FileRouteTypes {
     | '/quan-ly'
     | '/shops'
     | '/uu-dai'
+    | '/blog/$slug'
     | '/shop/$slug'
     | '/blog/'
   fileRoutesById: FileRoutesById
@@ -169,6 +181,7 @@ export interface RootRouteChildren {
   QuanLyRoute: typeof QuanLyRoute
   ShopsRoute: typeof ShopsRoute
   UuDaiRoute: typeof UuDaiRoute
+  BlogSlugRoute: typeof BlogSlugRoute
   ShopSlugRoute: typeof ShopSlugRoute
   BlogIndexRoute: typeof BlogIndexRoute
 }
@@ -245,6 +258,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shop/$slug': {
       id: '/shop/$slug'
       path: '/shop/$slug'
@@ -265,6 +285,7 @@ const rootRouteChildren: RootRouteChildren = {
   QuanLyRoute: QuanLyRoute,
   ShopsRoute: ShopsRoute,
   UuDaiRoute: UuDaiRoute,
+  BlogSlugRoute: BlogSlugRoute,
   ShopSlugRoute: ShopSlugRoute,
   BlogIndexRoute: BlogIndexRoute,
 }
