@@ -44,9 +44,85 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
+import { createClient } from "@supabase/supabase-js";
+
+async function handleSepayWebhook(request: Request): Promise<Response> {
+  try {
+    const authHeader = request.headers.get("Authorization");
+    const expectedToken = process.env.SEPAY_WEBHOOK_TOKEN;
+    
+    if (expectedToken && authHeader !== `Bearer ${expectedToken}` && authHeader !== `Apikey ${expectedToken}`) {
+      return new Response(JSON.stringify({ success: false, message: "Unauthorized" }), { status: 401 });
+    }
+
+    const payload = await request.json();
+    console.log("Nhận webhook từ SePay:", payload);
+
+    if (payload.transferType === "in" && payload.code) {
+      const prefix = "PET";
+      if (payload.code.startsWith(prefix)) {
+        const phone = payload.code.replace(prefix, "").trim();
+
+        const supabaseAdmin = createClient(
+          process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || "",
+          process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+        );
+
+        const { data: requestRecord, error: searchError } = await supabaseAdmin
+          .from("membership_requests")
+          .select("*")
+          .eq("contact_phone", phone)
+          .eq("status", "pending")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
+
+        if (!searchError && requestRecord) {
+          const now = new Date();
+          const nextYear = new Date();
+          nextYear.setFullYear(now.getFullYear() + 1);
+
+          const { error: updateError } = await supabaseAdmin
+            .from("membership_requests")
+            .update({
+              status: "approved",
+              reviewed_at: now.toISOString(),
+              starts_at: now.toISOString(),
+              expires_at: nextYear.toISOString(),
+              admin_note: `Duyệt tự động qua SePay (Giao dịch: ${payload.id})`
+            })
+            .eq("id", requestRecord.id);
+
+          if (updateError) {
+            console.error("Lỗi khi duyệt tự động:", updateError);
+          } else {
+            console.log(`Đã duyệt tự động thành công cho đơn ${requestRecord.id}`);
+          }
+        }
+      }
+    }
+
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  } catch (error) {
+    console.error("Lỗi server xử lý webhook:", error);
+    return new Response(JSON.stringify({ success: false }), {
+      status: 400,
+      headers: { "content-type": "application/json" },
+    });
+  }
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      const url = new URL(request.url);
+      if (url.pathname === '/api/sepay' && request.method === 'POST') {
+        return await handleSepayWebhook(request);
+      }
+
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);
