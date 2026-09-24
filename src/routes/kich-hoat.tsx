@@ -159,7 +159,7 @@ function RequestSection({
       if (form.contact_name.trim().length < 2) throw new Error("Vui lòng nhập tên liên hệ.");
       if (!/^[0-9+\s.-]{8,15}$/.test(form.contact_phone.trim()))
         throw new Error("Số điện thoại chưa hợp lệ.");
-      if (!form.proof_url) throw new Error("Vui lòng tải ảnh chứng từ chuyển khoản.");
+      // if (!form.proof_url) throw new Error("Vui lòng tải ảnh chứng từ chuyển khoản.");
       const { error } = await supabase.from("membership_requests").insert({
         user_id: userId,
         shop_id: shopId,
@@ -186,7 +186,7 @@ function RequestSection({
         <div className="mt-8 rounded-3xl bg-background p-6 ring-1 ring-border">
           <h2 className="text-xl">Đơn của bạn đang chờ duyệt</h2>
           <p className="mt-2 text-sm text-ink-soft">
-            Đơn có kèm ảnh chứng từ sẽ được duyệt tự động ngay. Nếu đơn vẫn chờ duyệt, vui lòng kiểm tra lại ảnh chứng từ hoặc liên hệ hỗ trợ.
+            Đơn của bạn đang được xử lý. Nếu bạn thanh toán qua ngân hàng với đúng cú pháp (VD: PET0912345678), hệ thống sẽ duyệt tự động trong vài phút. Nếu có hình ảnh chứng từ, quá trình có thể nhanh hơn.
           </p>
         </div>
       ) : (
@@ -211,7 +211,7 @@ function RequestSection({
             </label>
             <div className="sm:col-span-2">
               <ImageUpload
-                label="Ảnh chứng từ chuyển khoản"
+                label="Ảnh chứng từ (Không bắt buộc)"
                 value={form.proof_url}
                 onChange={(url) => setForm({ ...form, proof_url: url })}
                 userId={userId}
