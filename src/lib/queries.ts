@@ -14,6 +14,8 @@ export type Shop = {
   description: string | null;
   logo_url: string | null;
   cover_url: string | null;
+  cover_url_2: string | null;
+  cover_url_3: string | null;
   hero_title: string | null;
   hero_subtitle: string | null;
   rating: number;
@@ -65,7 +67,7 @@ export const featuredShopsQuery = queryOptions({
       .order("rating", { ascending: false })
       .limit(6);
     if (error) throw error;
-    return (data ?? []) as Shop[];
+    return ((data ?? []) as unknown) as Shop[];
   },
 });
 
@@ -92,7 +94,7 @@ export function searchShopsQuery(filters: SearchFilters) {
       if (filters.city) query = query.eq("city", filters.city);
       const { data, error } = await query.order("rating", { ascending: false }).limit(60);
       if (error) throw error;
-      return (data ?? []) as Shop[];
+      return ((data ?? []) as unknown) as Shop[];
     },
   });
 }

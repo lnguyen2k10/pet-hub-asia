@@ -1,0 +1,3 @@
+ALTER TABLE public.shops
+ADD COLUMN IF NOT EXISTS cover_url_2 TEXT,
+ADD COLUMN IF NOT EXISTS cover_url_3 TEXT;

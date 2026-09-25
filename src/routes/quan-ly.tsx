@@ -51,6 +51,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function DashboardPage() {
   const { user, loading } = useAuth();
   const shopQ = useQuery({ ...myShopQuery, enabled: !!user });
+  const [activeTab, setActiveTab] = useState("info");
 
   if (loading) {
     return (
@@ -82,25 +83,62 @@ function DashboardPage() {
     );
   }
 
+  const TABS = [
+    { id: "info", label: "Thông tin chung" },
+    { id: "deals", label: "Ưu đãi" },
+    { id: "products", label: "Sản phẩm" },
+    { id: "partner", label: "Tìm đại lý" },
+  ];
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-sand-deep/20">
       <SiteHeader />
-      <main className="mx-auto max-w-4xl px-5 py-10">
-        <p className="font-hand text-2xl text-terra-deep">xin chào</p>
-        <h1 className="mt-1 text-3xl sm:text-4xl">Quản lý shop của bạn</h1>
+      <main className="mx-auto flex max-w-7xl flex-col gap-8 px-5 py-10 md:flex-row">
+        {/* Sidebar */}
+        <aside className="w-full shrink-0 space-y-1 md:w-64">
+          <div className="mb-4 px-3">
+            <p className="font-hand text-2xl text-terra-deep">xin chào</p>
+            <p className="text-xs text-ink-soft font-medium uppercase tracking-wider">Quản lý shop</p>
+          </div>
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`block w-full rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-colors ${
+                activeTab === tab.id
+                  ? "bg-terra text-primary-foreground"
+                  : "text-ink hover:bg-sand-deep/60"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+          <div className="mt-6 px-3">
+            <MembershipStatus />
+          </div>
+        </aside>
 
-        <MembershipStatus />
-
-        {shopQ.isLoading ? (
-          <div className="mt-8 h-64 animate-pulse rounded-3xl bg-sand-deep/60" />
-        ) : (
-          <>
-            <ShopForm shop={shopQ.data ?? null} userId={user.id} />
-            {shopQ.data ? <DealsManager shop={shopQ.data} userId={user.id} /> : null}
-            {shopQ.data ? <ProductsManager shop={shopQ.data} userId={user.id} /> : null}
-            <PartnerManager userId={user.id} />
-          </>
-        )}
+        {/* Content */}
+        <section className="min-w-0 flex-1">
+          <div className="rounded-3xl bg-background p-6 shadow-sm ring-1 ring-border sm:p-8">
+            {shopQ.isLoading ? (
+              <div className="h-64 animate-pulse rounded-3xl bg-sand-deep/60" />
+            ) : (
+              <div className="space-y-10">
+                {activeTab === "info" && <ShopForm shop={shopQ.data ?? null} userId={user.id} />}
+                {activeTab === "deals" && shopQ.data && <DealsManager shop={shopQ.data} userId={user.id} />}
+                {activeTab === "products" && shopQ.data && <ProductsManager shop={shopQ.data} userId={user.id} />}
+                {activeTab === "partner" && <PartnerManager userId={user.id} />}
+                
+                {!shopQ.data && activeTab !== "info" && (
+                  <div className="rounded-2xl bg-sand-deep/20 p-8 text-center text-ink-soft">
+                    Vui lòng tạo thông tin shop ở mục "Thông tin chung" trước.
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </section>
       </main>
       <SiteFooter />
     </div>
@@ -165,6 +203,8 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
     description: "",
     logo_url: "",
     cover_url: "",
+    cover_url_2: "",
+    cover_url_3: "",
     hero_title: "",
     hero_subtitle: "",
     is_published: true,
@@ -182,6 +222,8 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
       description: shop.description ?? "",
       logo_url: shop.logo_url ?? "",
       cover_url: shop.cover_url ?? "",
+      cover_url_2: shop.cover_url_2 ?? "",
+      cover_url_3: shop.cover_url_3 ?? "",
       hero_title: shop.hero_title ?? "",
       hero_subtitle: shop.hero_subtitle ?? "",
       is_published: shop.is_published,
@@ -210,15 +252,17 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
         description: form.description || null,
         logo_url: form.logo_url || null,
         cover_url: form.cover_url || null,
+        cover_url_2: form.cover_url_2 || null,
+        cover_url_3: form.cover_url_3 || null,
         hero_title: form.hero_title || null,
         hero_subtitle: form.hero_subtitle || null,
         is_published: form.is_published,
       };
       if (shop) {
-        const { error } = await supabase.from("shops").update(payload).eq("id", shop.id);
+        const { error } = await supabase.from("shops").update(payload as any).eq("id", shop.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("shops").insert(payload);
+        const { error } = await supabase.from("shops").insert(payload as any);
         if (error) throw error;
       }
     },
@@ -231,7 +275,7 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
   });
 
   return (
-    <section className="mt-8 rounded-3xl bg-card p-6 ring-1 ring-border sm:p-8">
+    <section>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-display text-xl font-semibold">
           {shop ? "Chỉnh sửa landing page" : "Tạo landing page cho shop"}
@@ -339,11 +383,25 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
           onChange={(url) => setForm((f) => ({ ...f, logo_url: url }))}
         />
         <ImageUpload
-          label="Ảnh bìa (hero)"
+          label="Ảnh bìa 1 (hero)"
           userId={userId}
           folder="cover"
           value={form.cover_url}
           onChange={(url) => setForm((f) => ({ ...f, cover_url: url }))}
+        />
+        <ImageUpload
+          label="Ảnh bìa 2 (hero)"
+          userId={userId}
+          folder="cover"
+          value={form.cover_url_2}
+          onChange={(url) => setForm((f) => ({ ...f, cover_url_2: url }))}
+        />
+        <ImageUpload
+          label="Ảnh bìa 3 (hero)"
+          userId={userId}
+          folder="cover"
+          value={form.cover_url_3}
+          onChange={(url) => setForm((f) => ({ ...f, cover_url_3: url }))}
         />
         <div className="sm:col-span-2">
           <Field label="Giới thiệu shop">

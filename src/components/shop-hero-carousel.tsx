@@ -11,24 +11,45 @@ type Slide = {
 };
 
 function buildSlides(shop: Shop & { deals: Deal[] }): Slide[] {
-  const base: Slide = {
-    image: shop.cover_url ?? HERO_SLIDES[0].image,
-    eyebrow: `${categoryLabel(shop.category)} · ${shop.city}`,
-    title: shop.hero_title ?? shop.name,
-    subtitle:
-      shop.hero_subtitle ??
-      shop.description?.split("\n")[0] ??
-      `Chào mừng bạn đến với ${shop.name} — chăm sóc thú cưng tận tâm tại ${shop.city}.`,
-  };
+  const baseSub = shop.hero_subtitle ?? shop.description?.split("\n")[0] ?? `Chào mừng bạn đến với ${shop.name} — chăm sóc thú cưng tận tâm tại ${shop.city}.`;
+  const baseTitle = shop.hero_title ?? shop.name;
+  const baseEyebrow = `${categoryLabel(shop.category)} · ${shop.city}`;
 
-  const dealSlides: Slide[] = shop.deals.slice(0, 2).map((deal, i) => ({
-    image: dealImage(i + 1, deal.image_url) ?? HERO_SLIDES[0].image,
+  const slides: Slide[] = [];
+
+  slides.push({
+    image: shop.cover_url ?? HERO_SLIDES[0].image,
+    eyebrow: baseEyebrow,
+    title: baseTitle,
+    subtitle: baseSub,
+  });
+
+  if (shop.cover_url_2) {
+    slides.push({
+      image: shop.cover_url_2,
+      eyebrow: baseEyebrow,
+      title: baseTitle,
+      subtitle: baseSub,
+    });
+  }
+
+  if (shop.cover_url_3) {
+    slides.push({
+      image: shop.cover_url_3,
+      eyebrow: baseEyebrow,
+      title: baseTitle,
+      subtitle: baseSub,
+    });
+  }
+
+  const dealSlides: Slide[] = (shop.deals || []).map((deal, i) => ({
+    image: dealImage(i + 1, deal.image_url) ?? HERO_SLIDES[1].image,
     eyebrow: deal.discount_label ?? "Ưu đãi tại shop",
     title: deal.title,
-    subtitle:
-      deal.description ??
-      `Ưu đãi hấp dẫn từ ${shop.name} dành cho bé cưng của bạn.`,
+    subtitle: deal.description ?? `Ưu đãi hấp dẫn từ ${shop.name} dành cho bé cưng của bạn.`,
   }));
+
+  slides.push(...dealSlides);
 
   const fallback: Slide[] = HERO_SLIDES.map((s) => ({
     image: s.image,
@@ -37,7 +58,6 @@ function buildSlides(shop: Shop & { deals: Deal[] }): Slide[] {
     subtitle: s.subtitle,
   }));
 
-  const slides = [base, ...dealSlides];
   let i = 1;
   while (slides.length < 3) {
     const f = fallback[i % fallback.length];
