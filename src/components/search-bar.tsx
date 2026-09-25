@@ -1,6 +1,13 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Search } from "lucide-react";
 import { useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import { CATEGORIES, CITIES } from "@/lib/pet";
 
@@ -37,38 +44,38 @@ export function SearchBar({ initial }: Props) {
         />
       </div>
 
-      <div className="flex items-center gap-2 rounded-2xl bg-sand-deep/60 px-4 py-3 sm:w-44">
+      <div className="flex items-center gap-2 rounded-2xl bg-sand-deep/60 px-4 py-2 sm:w-48">
         <span className="shrink-0 text-sm font-medium">Danh mục</span>
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          aria-label="Danh mục"
-          className="min-w-0 flex-1 bg-transparent text-right text-xs font-semibold text-terra-deep focus:outline-none"
-        >
-          <option value="">Tất cả</option>
-          {CATEGORIES.map((c) => (
-            <option key={c.value} value={c.value}>
-              {c.label}
-            </option>
-          ))}
-        </select>
+        <Select value={category || "all"} onValueChange={(v) => setCategory(v === "all" ? "" : v)}>
+          <SelectTrigger className="flex-1 border-0 bg-transparent p-0 h-auto focus:ring-0 focus:ring-offset-0 text-right text-sm font-semibold text-terra-deep shadow-none justify-end gap-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tất cả</SelectItem>
+            {CATEGORIES.map((c) => (
+              <SelectItem key={c.value} value={c.value}>
+                {c.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
-      <div className="flex items-center gap-2 rounded-2xl bg-sand-deep/60 px-4 py-3 sm:w-40">
+      <div className="flex items-center gap-2 rounded-2xl bg-sand-deep/60 px-4 py-2 sm:w-44">
         <span className="shrink-0 text-sm font-medium">Khu vực</span>
-        <select
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          aria-label="Khu vực"
-          className="min-w-0 flex-1 bg-transparent text-right text-xs font-semibold text-terra-deep focus:outline-none"
-        >
-          <option value="">Tất cả</option>
-          {CITIES.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+        <Select value={city || "all"} onValueChange={(v) => setCity(v === "all" ? "" : v)}>
+          <SelectTrigger className="flex-1 border-0 bg-transparent p-0 h-auto focus:ring-0 focus:ring-offset-0 text-right text-sm font-semibold text-terra-deep shadow-none justify-end gap-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tất cả</SelectItem>
+            {CITIES.map((c) => (
+              <SelectItem key={c} value={c}>
+                {c}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <button
