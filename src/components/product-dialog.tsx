@@ -21,7 +21,7 @@ export function ProductDialog({ product, shopName }: { product: Product; shopNam
         className="group block w-full cursor-pointer overflow-hidden rounded-2xl bg-card text-left ring-1 ring-border transition-transform duration-300 hover:-translate-y-1.5"
       >
         {product.image_url ? (
-          <img
+          <img decoding="async"
             src={product.image_url}
             alt={product.name}
             loading="lazy"
@@ -48,7 +48,7 @@ export function ProductDialog({ product, shopName }: { product: Product; shopNam
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg overflow-hidden p-0">
           {product.image_url ? (
-            <img
+            <img decoding="async"
               src={product.image_url}
               alt={product.name}
               className="aspect-[16/10] w-full object-cover"

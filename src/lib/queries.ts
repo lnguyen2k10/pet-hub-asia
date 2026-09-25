@@ -61,7 +61,8 @@ export type SearchFilters = {
 
 export const featuredShopsQuery = queryOptions({
   queryKey: ["shops", "featured"],
-  queryFn: async (): Promise<Shop[]> => {
+  staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<Shop[]> => {
     const { data, error } = await supabase
       .from("shops")
       .select("*")
@@ -76,7 +77,8 @@ export const featuredShopsQuery = queryOptions({
 
 export const featuredDealsQuery = queryOptions({
   queryKey: ["deals", "featured"],
-  queryFn: async (): Promise<(Deal & { shops: { name: string; slug: string } | null })[]> => {
+  staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<(Deal & { shops: { name: string; slug: string } | null })[]> => {
     const { data, error } = await supabase
       .from("deals")
       .select("*, shops(name, slug)")
@@ -90,6 +92,7 @@ export const featuredDealsQuery = queryOptions({
 export function searchShopsQuery(filters: SearchFilters) {
   return queryOptions({
     queryKey: ["shops", "search", filters],
+    staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<Shop[]> => {
       let query = supabase.from("shops").select("*").eq("is_published", true);
       if (filters.q) query = query.ilike("name", `%${filters.q}%`);
@@ -105,6 +108,7 @@ export function searchShopsQuery(filters: SearchFilters) {
 export function shopBySlugQuery(slug: string) {
   return queryOptions({
     queryKey: ["shop", slug],
+    staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("shops")
@@ -119,7 +123,8 @@ export function shopBySlugQuery(slug: string) {
 
 export const myShopQuery = queryOptions({
   queryKey: ["shop", "mine"],
-  queryFn: async () => {
+  staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
     const { data: userData } = await supabase.auth.getUser();
     const user = userData.user;
     if (!user) return null;
@@ -158,7 +163,8 @@ const PARTNER_CONTACT_COLUMNS = `${PARTNER_PUBLIC_COLUMNS},contact_name,contact_
 
 export const partnerListingsQuery = queryOptions({
   queryKey: ["partner_listings", "published"],
-  queryFn: async (): Promise<PartnerListing[]> => {
+  staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<PartnerListing[]> => {
     const { data: sessionData } = await supabase.auth.getSession();
     const columns = sessionData.session ? PARTNER_CONTACT_COLUMNS : PARTNER_PUBLIC_COLUMNS;
     const { data, error } = await supabase
@@ -177,7 +183,8 @@ export type MyPartnerListing = PartnerListing & { is_published: boolean };
 
 export const myPartnerListingsQuery = queryOptions({
   queryKey: ["partner_listings", "mine"],
-  queryFn: async (): Promise<MyPartnerListing[]> => {
+  staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<MyPartnerListing[]> => {
     const { data: userData } = await supabase.auth.getUser();
     const user = userData.user;
     if (!user) return [];
@@ -195,7 +202,8 @@ export const myPartnerListingsQuery = queryOptions({
 
 export const allDealsQuery = queryOptions({
   queryKey: ["deals", "all"],
-  queryFn: async (): Promise<(Deal & { shops: { name: string; slug: string } | null })[]> => {
+  staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<(Deal & { shops: { name: string; slug: string } | null })[]> => {
     const { data, error } = await supabase
       .from("deals")
       .select("*, shops(name, slug)")
@@ -212,6 +220,7 @@ export type PartnerFilters = { q?: string; listing_type?: string; city?: string 
 export function partnerListingsSearchQuery(filters: PartnerFilters) {
   return queryOptions({
     queryKey: ["partner_listings", "search", filters],
+    staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<PartnerListing[]> => {
       const { data: sessionData } = await supabase.auth.getSession();
       const columns = sessionData.session ? PARTNER_CONTACT_COLUMNS : PARTNER_PUBLIC_COLUMNS;
@@ -263,7 +272,8 @@ export type MembershipPlan = {
 
 export const membershipPlansQuery = queryOptions({
   queryKey: ["membership_plans" as any],
-  queryFn: async (): Promise<MembershipPlan[]> => {
+  staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<MembershipPlan[]> => {
     const { data, error } = await supabase
       .from("membership_plans" as any)
       .select("*")
@@ -276,7 +286,8 @@ export const membershipPlansQuery = queryOptions({
 
 export const allMembershipPlansQuery = queryOptions({
   queryKey: ["membership_plans" as any, "all"],
-  queryFn: async (): Promise<MembershipPlan[]> => {
+  staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<MembershipPlan[]> => {
     const { data, error } = await supabase
       .from("membership_plans" as any)
       .select("*")
@@ -288,7 +299,8 @@ export const allMembershipPlansQuery = queryOptions({
 
 export const membershipSettingsQuery = queryOptions({
   queryKey: ["membership_settings"],
-  queryFn: async (): Promise<MembershipSettings | null> => {
+  staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<MembershipSettings | null> => {
     const { data, error } = await supabase
       .from("membership_settings")
       .select("*")
@@ -319,7 +331,8 @@ export type MembershipRequest = {
 
 export const myMembershipRequestsQuery = queryOptions({
   queryKey: ["membership_requests", "mine"],
-  queryFn: async (): Promise<MembershipRequest[]> => {
+  staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<MembershipRequest[]> => {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) return [];
     const { data, error } = await supabase
@@ -334,7 +347,8 @@ export const myMembershipRequestsQuery = queryOptions({
 
 export const allMembershipRequestsQuery = queryOptions({
   queryKey: ["membership_requests", "all"],
-  queryFn: async (): Promise<MembershipRequest[]> => {
+  staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<MembershipRequest[]> => {
     const { data, error } = await supabase
       .from("membership_requests")
       .select("*")
@@ -347,7 +361,8 @@ export const allMembershipRequestsQuery = queryOptions({
 
 export const isAdminQuery = queryOptions({
   queryKey: ["is_admin"],
-  queryFn: async (): Promise<boolean> => {
+  staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<boolean> => {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) return false;
     const { data, error } = await supabase
@@ -390,7 +405,8 @@ export type BlogPostWithCategory = BlogPost & {
 
 export const blogCategoriesQuery = queryOptions({
   queryKey: ["blog_categories"],
-  queryFn: async (): Promise<BlogCategory[]> => {
+  staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<BlogCategory[]> => {
     const { data, error } = await supabase
       .from("blog_categories")
       .select("id,slug,name,description,sort_order")
@@ -403,6 +419,7 @@ export const blogCategoriesQuery = queryOptions({
 export function blogPostsQuery(categorySlug?: string) {
   return queryOptions({
     queryKey: ["blog_posts", "list", categorySlug ?? "all"],
+    staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<BlogPostWithCategory[]> => {
       let query = supabase
         .from("blog_posts")
@@ -422,6 +439,7 @@ export function blogPostsQuery(categorySlug?: string) {
 export function blogPostBySlugQuery(slug: string) {
   return queryOptions({
     queryKey: ["blog_post", slug],
+    staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<BlogPostWithCategory | null> => {
       const { data, error } = await supabase
         .from("blog_posts")
@@ -437,7 +455,8 @@ export function blogPostBySlugQuery(slug: string) {
 
 export const allBlogPostsAdminQuery = queryOptions({
   queryKey: ["blog_posts", "admin"],
-  queryFn: async (): Promise<BlogPostWithCategory[]> => {
+  staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<BlogPostWithCategory[]> => {
     const { data, error } = await supabase
       .from("blog_posts")
       .select("*, blog_categories(name, slug)")
@@ -450,7 +469,8 @@ export const allBlogPostsAdminQuery = queryOptions({
 
 export const allProfilesAdminQuery = queryOptions({
   queryKey: ["admin", "profiles"],
-  queryFn: async () => {
+  staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
     const { data, error } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
     if (error) throw error;
     return data ?? [];
@@ -459,7 +479,8 @@ export const allProfilesAdminQuery = queryOptions({
 
 export const allUserRolesAdminQuery = queryOptions({
   queryKey: ["admin", "user_roles"],
-  queryFn: async () => {
+  staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
     const { data, error } = await supabase.from("user_roles").select("*");
     if (error) throw error;
     return data ?? [];
@@ -468,7 +489,8 @@ export const allUserRolesAdminQuery = queryOptions({
 
 export const userRoleQuery = queryOptions({
   queryKey: ["user_role"],
-  queryFn: async (): Promise<"admin" | "moderator" | null> => {
+  staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<"admin" | "moderator" | null> => {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) return null;
     const { data, error } = await supabase
@@ -487,7 +509,8 @@ export const userRoleQuery = queryOptions({
 
 export const myProfileQuery = queryOptions({
   queryKey: ["profile", "mine"],
-  queryFn: async () => {
+  staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) return null;
     const { data, error } = await supabase

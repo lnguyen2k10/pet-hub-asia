@@ -18,7 +18,7 @@ export function HeroCarousel() {
           className={`absolute inset-0 transition-opacity duration-700 ${i === active ? "opacity-100" : "opacity-0"}`}
           aria-hidden={i !== active}
         >
-          <img
+          <img decoding="async"
             src={slide.image}
             alt={slide.title}
             width={1920}

@@ -28,7 +28,7 @@ export function DealDialog({ deal, index, shopName, shopSlug }: Props) {
         onClick={() => setOpen(true)}
         className="block w-full cursor-pointer rounded-2xl bg-card p-5 text-left ring-1 ring-border transition-transform duration-300 hover:-translate-y-1.5"
       >
-        <img
+        <img decoding="async"
           src={dealImage(index, deal.image_url)}
           alt={deal.title}
           loading="lazy"
@@ -50,7 +50,7 @@ export function DealDialog({ deal, index, shopName, shopSlug }: Props) {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg overflow-hidden p-0">
-          <img
+          <img decoding="async"
             src={dealImage(index, deal.image_url)}
             alt={deal.title}
             className="aspect-[16/9] w-full object-cover"

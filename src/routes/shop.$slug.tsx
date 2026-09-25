@@ -106,7 +106,7 @@ function ShopLanding() {
                 <div>
                   <div className="flex items-center gap-4">
                     {shop.logo_url ? (
-                      <img
+                      <img decoding="async"
                         src={shop.logo_url}
                         alt={shop.name}
                         className="size-16 rounded-full object-cover ring-1 ring-border"

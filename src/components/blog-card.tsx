@@ -17,7 +17,7 @@ export function BlogCard({ post }: { post: BlogPostWithCategory }) {
       <Link to="/blog/$slug" params={{ slug: post.slug }} className="block">
         <div className="aspect-[16/9] overflow-hidden bg-sand-deep/60">
           {post.cover_url ? (
-            <img
+            <img decoding="async"
               src={post.cover_url}
               alt={post.title}
               loading="lazy"

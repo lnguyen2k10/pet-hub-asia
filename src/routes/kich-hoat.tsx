@@ -295,7 +295,7 @@ function RequestSection({
         <div className="mt-6 rounded-2xl bg-white p-4 ring-1 ring-border">
           <h3 className="font-semibold text-sm mb-3">Chưa thanh toán? Quét mã QR ngay:</h3>
           <div className="flex items-start gap-4">
-            <img
+            <img decoding="async"
               src={`https://qr.sepay.vn/img?acc=00003554020&bank=TPBank&amount=${plan.price_amount}&des=PET${pendingRequest.contact_phone ?? ""}`}
               alt="QR Code"
               className="w-32 h-32 rounded-xl ring-1 ring-border"
@@ -335,7 +335,7 @@ function RequestSection({
                 Mã QR cập nhật theo số điện thoại bạn nhập bên phải.
               </p>
               <div className="rounded-2xl overflow-hidden bg-white ring-2 ring-terra/20 p-2 shadow-sm">
-                <img
+                <img decoding="async"
                   src={`https://qr.sepay.vn/img?acc=00003554020&bank=TPBank&amount=${plan.price_amount}&des=PET${phone || "SDTCUABAN"}`}
                   alt="QR Code Thanh Toán"
                   className="w-full max-w-[220px] aspect-square object-contain"

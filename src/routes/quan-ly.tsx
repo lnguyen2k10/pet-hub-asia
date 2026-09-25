@@ -555,7 +555,7 @@ function DealsManager({ shop, userId }: { shop: ShopWithDeals; userId: string })
             >
               <div className="flex min-w-0 gap-3">
                 {deal.image_url ? (
-                  <img
+                  <img decoding="async"
                     src={deal.image_url}
                     alt={deal.title}
                     className="size-14 shrink-0 rounded-xl object-cover ring-1 ring-border"
@@ -871,7 +871,7 @@ function ProductsManager({ shop, userId }: { shop: ShopWithDeals; userId: string
             >
               <div className="flex min-w-0 items-center gap-3">
                 {p.image_url ? (
-                  <img
+                  <img decoding="async"
                     src={p.image_url}
                     alt={p.name}
                     className="size-12 shrink-0 rounded-xl object-cover ring-1 ring-border"

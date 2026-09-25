@@ -12,7 +12,7 @@ export function ShopCard({ shop }: { shop: Shop }) {
     >
       <div className="relative">
         {shop.cover_url ? (
-          <img
+          <img decoding="async"
             src={shop.cover_url}
             alt={`Ảnh bìa ${shop.name}`}
             loading="lazy"
@@ -29,7 +29,7 @@ export function ShopCard({ shop }: { shop: Shop }) {
 
         <div className="absolute -bottom-7 left-5">
           {shop.logo_url ? (
-            <img
+            <img decoding="async"
               src={shop.logo_url}
               alt={shop.name}
               loading="lazy"

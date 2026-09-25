@@ -58,7 +58,7 @@ export function ImageUpload({ label, value, onChange, userId, folder, aspect = "
           }`}
         >
           {value ? (
-            <img src={value} alt={label} className="size-full object-cover" />
+            <img decoding="async" src={value} alt={label} className="size-full object-cover" />
           ) : (
             <span className="text-xs text-ink-soft">{busy ? "..." : "Chọn ảnh"}</span>
           )}

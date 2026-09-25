@@ -86,7 +86,7 @@ export function ShopHeroCarousel({ shop }: { shop: Shop & { deals: Deal[] } }) {
           className={`absolute inset-0 transition-opacity duration-700 ${i === active ? "opacity-100" : "opacity-0"}`}
           aria-hidden={i !== active}
         >
-          <img
+          <img decoding="async"
             src={s.image}
             alt={s.title}
             width={1920}
