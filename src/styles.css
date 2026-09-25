@@ -106,6 +106,36 @@
     font-weight: 600;
     letter-spacing: -0.01em;
   }
+
+  /* Tối ưu tương tác cho mobile và desktop */
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* Hiệu ứng nhún (scale) cho các nút và link có dạng nút */
+  button, 
+  a[class*="bg-"], 
+  a[class*="border"] {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  button:active:not(:disabled),
+  a[class*="bg-"]:active,
+  a[class*="border"]:active {
+    transform: scale(0.96);
+    opacity: 0.85;
+  }
+
+  button:hover:not(:disabled) {
+    filter: brightness(0.95);
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
 }
 
 @utility font-hand {
