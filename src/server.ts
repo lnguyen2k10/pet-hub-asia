@@ -48,11 +48,13 @@ import { createClient } from "@supabase/supabase-js";
 
 async function handleSepayWebhook(request: Request): Promise<Response> {
   try {
-    const authHeader = request.headers.get("Authorization");
-    const expectedToken = process.env.SEPAY_WEBHOOK_TOKEN;
+    const authHeader = request.headers.get("Authorization") || "";
+    const expectedToken = (process.env.SEPAY_WEBHOOK_TOKEN || "").trim();
     
-    if (expectedToken && authHeader !== `Bearer ${expectedToken}` && authHeader !== `Apikey ${expectedToken}`) {
-      return new Response(JSON.stringify({ success: false, message: "Unauthorized" }), { status: 401 });
+    // Kiểm tra token một cách linh hoạt (bỏ qua tiền tố Bearer hay Apikey và lỗi thừa khoảng trắng)
+    if (expectedToken && !authHeader.includes(expectedToken)) {
+      console.error("Auth failed. Expected:", expectedToken, "Got:", authHeader);
+      return new Response(JSON.stringify({ success: false, message: "Unauthorized", debug_header: authHeader }), { status: 401 });
     }
 
     const payload = await request.json();
