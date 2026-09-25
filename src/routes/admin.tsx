@@ -15,6 +15,8 @@ import {
   allMembershipRequestsQuery,
   isAdminQuery,
   membershipSettingsQuery,
+  allProfilesAdminQuery,
+  allUserRolesAdminQuery,
   type MembershipPlan,
   type MembershipRequest,
   type MembershipSettings,
@@ -42,6 +44,7 @@ const inputCls =
 function AdminPage() {
   const { user, loading } = useAuth();
   const adminQ = useQuery({ ...isAdminQuery, enabled: !!user });
+  const [activeTab, setActiveTab] = useState("plans");
 
   if (loading || (user && adminQ.isLoading)) {
     return (
@@ -76,15 +79,66 @@ function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-sand-deep/20">
       <SiteHeader />
-      <main className="mx-auto max-w-5xl px-5 py-10">
-        <p className="font-hand text-2xl text-terra-deep">quản trị</p>
-        <h1 className="mt-1 text-3xl sm:text-4xl">Gói thành viên & Thanh toán</h1>
-        <PlansManager userId={user.id} />
-        <BankSettingsForm userId={user.id} />
-        <RequestsTable />
-        <BlogManager authorName={user.email ?? "Admin"} />
+      <main className="mx-auto flex max-w-7xl flex-col gap-8 px-5 py-10 md:flex-row">
+        {/* Sidebar */}
+        <aside className="w-full shrink-0 space-y-1 md:w-64">
+          <p className="mb-4 px-3 font-hand text-2xl text-terra-deep">quản trị</p>
+          {[
+            { id: "plans", label: "Gói thành viên" },
+            { id: "settings", label: "Cài đặt thanh toán" },
+            { id: "requests", label: "Đơn đăng ký" },
+            { id: "blog", label: "Quản lý Blog" },
+            { id: "users", label: "Quản lý thành viên" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`w-full rounded-xl px-4 py-2.5 text-left text-sm font-semibold transition ${
+                activeTab === tab.id
+                  ? "bg-terra text-primary-foreground shadow-sm"
+                  : "text-ink-soft hover:bg-sand-deep/60 hover:text-ink"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </aside>
+
+        {/* Content Area */}
+        <div className="min-w-0 flex-1">
+          {activeTab === "plans" && (
+            <div>
+              <h1 className="mb-6 text-3xl sm:text-4xl">Gói thành viên</h1>
+              <PlansManager userId={user.id} />
+            </div>
+          )}
+          {activeTab === "settings" && (
+            <div>
+              <h1 className="mb-6 text-3xl sm:text-4xl">Cài đặt thanh toán</h1>
+              <BankSettingsForm userId={user.id} />
+            </div>
+          )}
+          {activeTab === "requests" && (
+            <div>
+              <h1 className="mb-6 text-3xl sm:text-4xl">Đơn đăng ký thành viên</h1>
+              <RequestsTable />
+            </div>
+          )}
+          {activeTab === "blog" && (
+            <div>
+              <h1 className="mb-6 text-3xl sm:text-4xl">Quản lý Blog</h1>
+              <BlogManager authorName={user.email ?? "Admin"} />
+            </div>
+          )}
+          {activeTab === "users" && (
+            <div>
+              <h1 className="mb-6 text-3xl sm:text-4xl">Quản lý thành viên</h1>
+              <UserManager />
+            </div>
+          )}
+        </div>
       </main>
       <SiteFooter />
     </div>
@@ -530,6 +584,89 @@ function RequestsTable() {
             );
           })}
         </ul>
+      )}
+    </section>
+  );
+}
+// ─── User Manager ─────────────────────────────────────────────────────────────
+function UserManager() {
+  const qc = useQueryClient();
+  const profilesQ = useQuery(allProfilesAdminQuery);
+  const rolesQ = useQuery(allUserRolesAdminQuery);
+
+  const toggleAdmin = useMutation({
+    mutationFn: async ({ userId, isAdmin }: { userId: string; isAdmin: boolean }) => {
+      if (isAdmin) {
+        const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", "admin");
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: "admin" });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      toast.success("Đã cập nhật quyền.");
+      void qc.invalidateQueries({ queryKey: ["admin", "user_roles"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Thất bại."),
+  });
+
+  const profiles = profilesQ.data ?? [];
+  const adminIds = new Set((rolesQ.data ?? []).filter(r => r.role === "admin").map(r => r.user_id));
+
+  return (
+    <section className="mt-8 rounded-3xl bg-background p-6 ring-1 ring-border">
+      <h2 className="mb-4 text-xl font-semibold">Tài khoản thành viên ({profiles.length})</h2>
+      {profilesQ.isLoading ? (
+        <div className="h-32 animate-pulse rounded-2xl bg-sand-deep/60" />
+      ) : profiles.length === 0 ? (
+        <p className="text-sm text-ink-soft">Chưa có thành viên nào.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm whitespace-nowrap">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="py-3 font-semibold">Thành viên</th>
+                <th className="py-3 font-semibold">Ngày đăng ký</th>
+                <th className="py-3 font-semibold">Vai trò</th>
+                <th className="py-3 text-right font-semibold">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {profiles.map(p => {
+                const isAdmin = adminIds.has(p.id);
+                return (
+                  <tr key={p.id} className="border-b border-border/50">
+                    <td className="py-3 pr-4">
+                      <p className="font-medium">{p.full_name || "Chưa có tên"}</p>
+                      <p className="text-xs text-ink-soft opacity-60">{p.id.slice(0, 8)}...</p>
+                    </td>
+                    <td className="py-3 pr-4 text-ink-soft">
+                      {new Date(p.created_at).toLocaleDateString("vi-VN")}
+                    </td>
+                    <td className="py-3 pr-4">
+                      {isAdmin ? (
+                        <span className="rounded-full bg-terra/10 px-2.5 py-1 text-xs font-semibold text-terra">
+                          Admin
+                        </span>
+                      ) : (
+                        <span className="text-xs text-ink-soft">Thành viên</span>
+                      )}
+                    </td>
+                    <td className="py-3 text-right">
+                      <button
+                        onClick={() => toggleAdmin.mutate({ userId: p.id, isAdmin })}
+                        className="rounded-xl border border-border px-3 py-1.5 text-xs font-medium hover:bg-sand-deep/40 transition"
+                      >
+                        {isAdmin ? "Gỡ Admin" : "Cấp Admin"}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </section>
   );

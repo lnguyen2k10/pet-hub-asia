@@ -437,3 +437,22 @@ export const allBlogPostsAdminQuery = queryOptions({
     return (data ?? []) as unknown as BlogPostWithCategory[];
   },
 });
+
+ e x p o r t   c o n s t   a l l P r o f i l e s A d m i n Q u e r y   =   q u e r y O p t i o n s ( { 
+     q u e r y K e y :   [ " a d m i n " ,   " p r o f i l e s " ] , 
+     q u e r y F n :   a s y n c   ( )   = >   { 
+         c o n s t   {   d a t a ,   e r r o r   }   =   a w a i t   s u p a b a s e . f r o m ( " p r o f i l e s " ) . s e l e c t ( " * " ) . o r d e r ( " c r e a t e d _ a t " ,   {   a s c e n d i n g :   f a l s e   } ) ; 
+         i f   ( e r r o r )   t h r o w   e r r o r ; 
+         r e t u r n   d a t a   ? ?   [ ] ; 
+     } , 
+ } ) ; 
+ 
+ e x p o r t   c o n s t   a l l U s e r R o l e s A d m i n Q u e r y   =   q u e r y O p t i o n s ( { 
+     q u e r y K e y :   [ " a d m i n " ,   " u s e r _ r o l e s " ] , 
+     q u e r y F n :   a s y n c   ( )   = >   { 
+         c o n s t   {   d a t a ,   e r r o r   }   =   a w a i t   s u p a b a s e . f r o m ( " u s e r _ r o l e s " ) . s e l e c t ( " * " ) ; 
+         i f   ( e r r o r )   t h r o w   e r r o r ; 
+         r e t u r n   d a t a   ? ?   [ ] ; 
+     } , 
+ } ) ;  
+ 
