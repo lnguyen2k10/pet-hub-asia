@@ -77,11 +77,21 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
     }
     console.log("Nhận webhook từ SePay:", payload);
 
-    if (payload.transferType === "in" && payload.code) {
+    if (payload.transferType === "in") {
+      let phone = "";
       const prefix = "PET";
-      if (payload.code.startsWith(prefix)) {
-        const phone = payload.code.replace(prefix, "").trim();
+      
+      // SePay tự trích xuất nếu có cấu hình Cú pháp
+      if (payload.code && payload.code.toUpperCase().startsWith(prefix)) {
+        phone = payload.code.substring(prefix.length).trim();
+      } 
+      // Fallback tự tìm trong nội dung chuyển khoản
+      else if (payload.content) {
+        const match = payload.content.toUpperCase().match(/PET\s*(\d{8,15})/);
+        if (match) phone = match[1];
+      }
 
+      if (phone) {
         const supabaseAdmin = createClient(
           process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || "",
           process.env.SUPABASE_SERVICE_ROLE_KEY || ""

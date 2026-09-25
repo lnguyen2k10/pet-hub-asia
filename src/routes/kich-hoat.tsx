@@ -85,29 +85,6 @@ function MembershipPage() {
             {settings?.refund_note ??
               "Cam kết hoàn phí 100% trong vòng 1 năm nếu bạn không hài lòng."}
           </p>
-          <div className="mt-5 grid gap-5 sm:grid-cols-[auto_minmax(0,1fr)]">
-            {settings?.qr_image_url ? (
-              <img
-                src={settings.qr_image_url}
-                alt="Mã QR chuyển khoản 1Pet.Asia"
-                className="size-44 rounded-2xl bg-background object-contain ring-1 ring-border"
-              />
-            ) : (
-              <div className="grid size-44 place-items-center rounded-2xl bg-background text-center text-xs text-ink-soft ring-1 ring-border">
-                Quản trị viên chưa tải mã QR
-              </div>
-            )}
-            <div className="text-sm">
-              {settings?.bank_info ? (
-                <p className="whitespace-pre-line">{settings.bank_info}</p>
-              ) : (
-                <p className="text-ink-soft">Thông tin chuyển khoản sẽ được cập nhật sớm.</p>
-              )}
-              {settings?.instructions ? (
-                <p className="mt-3 whitespace-pre-line text-ink-soft">{settings.instructions}</p>
-              ) : null}
-            </div>
-          </div>
         </section>
 
         {loading ? (
@@ -190,52 +167,80 @@ function RequestSection({
           </p>
         </div>
       ) : (
-        <section className="mt-8 rounded-3xl bg-background p-6 ring-1 ring-border">
-          <h2 className="text-xl">Gửi đơn đăng ký</h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <label className="block">
-              <span className="text-sm font-medium">Tên liên hệ</span>
-              <input
-                className={inputCls}
-                value={form.contact_name}
-                onChange={(e) => setForm({ ...form, contact_name: e.target.value })}
-              />
-            </label>
-            <label className="block">
-              <span className="text-sm font-medium">Số điện thoại</span>
-              <input
-                className={inputCls}
-                value={form.contact_phone}
-                onChange={(e) => setForm({ ...form, contact_phone: e.target.value })}
-              />
-            </label>
-            <div className="sm:col-span-2">
-              <ImageUpload
-                label="Ảnh chứng từ (Không bắt buộc)"
-                value={form.proof_url}
-                onChange={(url) => setForm({ ...form, proof_url: url })}
-                userId={userId}
-                folder="membership-proof"
-              />
+        <section className="mt-8 rounded-3xl bg-background p-6 md:p-8 ring-1 ring-border">
+          <h2 className="text-2xl font-semibold text-terra-deep mb-2">Thanh toán & Gửi đơn</h2>
+          <p className="text-ink-soft text-sm mb-6">Hệ thống sẽ tự động duyệt đơn của bạn trong 1-3 phút sau khi chuyển khoản thành công.</p>
+          
+          <div className="grid gap-10 md:grid-cols-2">
+            {/* Cột mã QR */}
+            <div className="order-2 md:order-1 flex flex-col items-center justify-center rounded-3xl bg-sand-deep/30 p-6 ring-1 ring-border/50">
+              <h3 className="font-semibold mb-2">Quét mã để thanh toán tự động</h3>
+              <p className="text-xs text-ink-soft text-center mb-4">
+                Sử dụng app ngân hàng quét mã để nội dung được điền tự động chính xác nhất.
+              </p>
+              <div className="rounded-2xl overflow-hidden bg-white ring-2 ring-terra/20 p-2 shadow-sm">
+                <img 
+                  src={`https://qr.sepay.vn/img?acc=00003554020&bank=TPBank&amount=${amount}&des=PET${form.contact_phone.replace(/\D/g, "") || "SDT"}`} 
+                  alt="QR Code Thanh Toán" 
+                  className="w-full max-w-[220px] aspect-square object-contain"
+                />
+              </div>
+              <div className="mt-4 space-y-1 text-sm text-center">
+                <p>Ngân hàng: <strong>TPBank</strong></p>
+                <p>Số tài khoản: <strong>00003554020</strong></p>
+                <p>Nội dung: <strong className="text-terra">PET{form.contact_phone.replace(/\D/g, "") || "SDT"}</strong></p>
+              </div>
             </div>
-            <label className="block sm:col-span-2">
-              <span className="text-sm font-medium">Ghi chú (tuỳ chọn)</span>
-              <textarea
-                rows={3}
-                className={inputCls}
-                value={form.note}
-                onChange={(e) => setForm({ ...form, note: e.target.value })}
-              />
-            </label>
+
+            {/* Cột điền thông tin */}
+            <div className="order-1 md:order-2">
+              <div className="space-y-4">
+                <label className="block">
+                  <span className="text-sm font-medium">1. Số điện thoại đăng ký</span>
+                  <input
+                    className={inputCls}
+                    placeholder="VD: 0912345678"
+                    value={form.contact_phone}
+                    onChange={(e) => setForm({ ...form, contact_phone: e.target.value })}
+                  />
+                  <p className="mt-1.5 text-xs text-terra font-medium">
+                    * Nhập SĐT trước để tạo mã QR chuẩn xác!
+                  </p>
+                </label>
+                <label className="block">
+                  <span className="text-sm font-medium">2. Tên liên hệ</span>
+                  <input
+                    className={inputCls}
+                    value={form.contact_name}
+                    onChange={(e) => setForm({ ...form, contact_name: e.target.value })}
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-medium">3. Ghi chú thêm (tuỳ chọn)</span>
+                  <textarea
+                    rows={2}
+                    className={inputCls}
+                    value={form.note}
+                    onChange={(e) => setForm({ ...form, note: e.target.value })}
+                  />
+                </label>
+                
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    disabled={submit.isPending}
+                    onClick={() => submit.mutate()}
+                    className="w-full rounded-full bg-terra px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-60 shadow-md shadow-terra/20"
+                  >
+                    {submit.isPending ? "Đang gửi đơn..." : "Tôi đã thanh toán & Gửi đơn"}
+                  </button>
+                  <p className="mt-3 text-center text-xs text-ink-soft">
+                    Hãy đảm bảo bạn đã quét mã thanh toán trước khi gửi đơn.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-          <button
-            type="button"
-            disabled={submit.isPending}
-            onClick={() => submit.mutate()}
-            className="mt-5 rounded-full bg-terra px-5 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-60"
-          >
-            {submit.isPending ? "Đang gửi..." : `Gửi đơn ${formatPrice(amount)}`}
-          </button>
         </section>
       )}
 
