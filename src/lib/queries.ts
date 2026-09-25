@@ -235,6 +235,47 @@ export type MembershipSettings = {
   instructions: string | null;
 };
 
+export type MembershipPlan = {
+  id: string;
+  name: string;
+  description: string | null;
+  price_amount: number;
+  currency: string;
+  duration_days: number;
+  period_label: string;
+  features: string[];
+  is_active: boolean;
+  is_featured: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export const membershipPlansQuery = queryOptions({
+  queryKey: ["membership_plans"],
+  queryFn: async (): Promise<MembershipPlan[]> => {
+    const { data, error } = await supabase
+      .from("membership_plans")
+      .select("*")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true });
+    if (error) throw error;
+    return (data ?? []) as MembershipPlan[];
+  },
+});
+
+export const allMembershipPlansQuery = queryOptions({
+  queryKey: ["membership_plans", "all"],
+  queryFn: async (): Promise<MembershipPlan[]> => {
+    const { data, error } = await supabase
+      .from("membership_plans")
+      .select("*")
+      .order("sort_order", { ascending: true });
+    if (error) throw error;
+    return (data ?? []) as MembershipPlan[];
+  },
+});
+
 export const membershipSettingsQuery = queryOptions({
   queryKey: ["membership_settings"],
   queryFn: async (): Promise<MembershipSettings | null> => {
@@ -253,6 +294,7 @@ export type MembershipRequest = {
   id: string;
   user_id: string;
   shop_id: string | null;
+  plan_id: string | null;
   contact_name: string | null;
   contact_phone: string | null;
   amount: number;

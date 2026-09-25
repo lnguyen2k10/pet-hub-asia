@@ -97,19 +97,36 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
           process.env["SUPABASE_SERVICE_ROLE_KEY"] || ""
         );
 
-        const { data: requestRecord, error: searchError } = await supabaseAdmin
+        // 1. Tìm đơn chờ duyệt theo SĐT (ưu tiên đúng gói theo số tiền)
+        const { data: pendingRequests } = await supabaseAdmin
           .from("membership_requests")
-          .select("*")
+          .select("*, membership_plans(*)")
           .eq("contact_phone", phone)
           .eq("status", "pending")
           .order("created_at", { ascending: false })
-          .limit(1)
-          .single();
+          .limit(5);
 
-        if (!searchError && requestRecord) {
+        const transferAmount = payload.transferAmount ?? 0;
+        
+        // Chọn đơn khớp số tiền gần nhất, hoặc lấy đơn mới nhất
+        let requestRecord = null;
+        if (pendingRequests && pendingRequests.length > 0) {
+          // Ưu tiên đơn có amount khớp trong ngưỡng ±10%
+          const exactMatch = pendingRequests.find((r: { amount: number }) =>
+            Math.abs(r.amount - transferAmount) / Math.max(r.amount, 1) < 0.1
+          );
+          requestRecord = exactMatch ?? pendingRequests[0];
+        }
+
+        if (requestRecord) {
           const now = new Date();
-          const nextYear = new Date();
-          nextYear.setFullYear(now.getFullYear() + 1);
+          
+          // Lấy thời hạn từ gói (nếu có), mặc định 365 ngày
+          const plan = (requestRecord as { membership_plans?: { duration_days?: number } }).membership_plans;
+          const durationDays: number = plan?.duration_days ?? 365;
+          
+          const expiresAt = new Date(now);
+          expiresAt.setDate(expiresAt.getDate() + durationDays);
 
           const { error: updateError } = await supabaseAdmin
             .from("membership_requests")
@@ -117,16 +134,26 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
               status: "approved",
               reviewed_at: now.toISOString(),
               starts_at: now.toISOString(),
-              expires_at: nextYear.toISOString(),
-              admin_note: `Duyệt tự động qua SePay (Giao dịch: ${payload.id})`
+              expires_at: expiresAt.toISOString(),
+              admin_note: `Duyệt tự động qua SePay (Giao dịch: ${payload.id}, Số tiền: ${transferAmount}đ, Thời hạn: ${durationDays} ngày)`
             })
             .eq("id", requestRecord.id);
+
+          // Nếu shop chưa publish → publish luôn
+          if (!updateError && requestRecord.shop_id) {
+            await supabaseAdmin
+              .from("shops")
+              .update({ is_published: true })
+              .eq("id", requestRecord.shop_id);
+          }
 
           if (updateError) {
             console.error("Lỗi khi duyệt tự động:", updateError);
           } else {
-            console.log(`Đã duyệt tự động thành công cho đơn ${requestRecord.id}`);
+            console.log(`✅ Đã kích hoạt gói ${durationDays} ngày cho đơn ${requestRecord.id} (phone: ${phone})`);
           }
+        } else {
+          console.log(`⚠️ Không tìm thấy đơn chờ duyệt cho SĐT: ${phone}`);
         }
       }
     }

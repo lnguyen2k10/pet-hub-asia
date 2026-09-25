@@ -3,22 +3,22 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { ImageUpload } from "@/components/image-upload";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPrice } from "@/lib/pet";
 import {
-  membershipSettingsQuery,
+  membershipPlansQuery,
   myMembershipRequestsQuery,
   myShopQuery,
+  type MembershipPlan,
   type MembershipRequest,
 } from "@/lib/queries";
 
 const TITLE = "Kích hoạt thành viên shop — 1Pet.Asia";
 const DESC =
-  "Đăng ký gói thành viên 1Pet.Asia để kích hoạt landing page shop: chuyển khoản qua mã QR, gửi chứng từ là shop được duyệt tự động, cam kết hoàn phí trong 1 năm.";
+  "Chọn gói thành viên 1Pet.Asia phù hợp để kích hoạt landing page shop của bạn. Thanh toán tự động qua mã QR — hệ thống duyệt trong vài phút.";
 
 export const Route = createFileRoute("/kich-hoat")({
   head: () => ({
@@ -57,56 +57,137 @@ function StatusPill({ status }: { status: string }) {
   );
 }
 
+// ─── Plan card component ────────────────────────────────────────────────────
+function PlanCard({
+  plan,
+  selected,
+  onSelect,
+}: {
+  plan: MembershipPlan;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={[
+        "relative w-full rounded-3xl p-6 text-left transition-all ring-2",
+        plan.is_featured ? "bg-terra/5" : "bg-background",
+        selected
+          ? "ring-terra shadow-lg shadow-terra/10 scale-[1.02]"
+          : "ring-border hover:ring-terra/40 hover:shadow-md",
+      ].join(" ")}
+    >
+      {plan.is_featured && (
+        <span className="absolute -top-3 left-6 rounded-full bg-terra px-3 py-1 text-xs font-bold text-white shadow">
+          ⭐ Phổ biến nhất
+        </span>
+      )}
+      {selected && (
+        <span className="absolute right-4 top-4 flex size-6 items-center justify-center rounded-full bg-terra text-white text-sm">
+          ✓
+        </span>
+      )}
+      <h3 className="text-lg font-bold text-terra-deep">{plan.name}</h3>
+      {plan.description && (
+        <p className="mt-1 text-sm text-ink-soft">{plan.description}</p>
+      )}
+      <div className="mt-3 flex items-baseline gap-1.5">
+        <span className="text-3xl font-bold">{formatPrice(plan.price_amount)}</span>
+        <span className="text-sm text-ink-soft">/ {plan.period_label}</span>
+      </div>
+      {plan.features.length > 0 && (
+        <ul className="mt-4 space-y-1.5">
+          {plan.features.map((f, i) => (
+            <li key={i} className="flex items-start gap-2 text-sm">
+              <span className="mt-0.5 shrink-0 text-terra">✓</span>
+              <span>{f}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </button>
+  );
+}
+
+// ─── Main page ──────────────────────────────────────────────────────────────
 function MembershipPage() {
   const { user, loading } = useAuth();
-  const settingsQ = useQuery(membershipSettingsQuery);
+  const plansQ = useQuery(membershipPlansQuery);
   const requestsQ = useQuery({ ...myMembershipRequestsQuery, enabled: !!user });
   const shopQ = useQuery({ ...myShopQuery, enabled: !!user });
-  const settings = settingsQ.data;
+
+  const plans = plansQ.data ?? [];
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? (plans.length === 1 ? plans[0] : null);
 
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      <main className="mx-auto max-w-3xl px-5 py-12">
+      <main className="mx-auto max-w-4xl px-5 py-12">
         <p className="font-hand text-2xl text-terra-deep">thành viên 1Pet</p>
         <h1 className="mt-1 text-3xl sm:text-4xl">Kích hoạt tài khoản shop</h1>
         <p className="mt-3 text-ink-soft">
-          Thanh toán một lần cho cả năm — gửi ảnh chứng từ là shop được kích hoạt và công khai ngay lập tức.
+          Chọn gói phù hợp — quét mã QR thanh toán — hệ thống kích hoạt tự động trong vài phút.
         </p>
 
-        <section className="mt-8 rounded-3xl bg-sand-deep/50 p-6 ring-1 ring-border">
-          <div className="flex flex-wrap items-end gap-3">
-            <span className="text-4xl font-semibold text-terra-deep">
-              {formatPrice(settings?.price_amount ?? 299000, settings?.currency ?? "VND")}
-            </span>
-            <span className="text-ink-soft">/ {settings?.period_label ?? "năm"}</span>
+        {/* Bảng chọn gói */}
+        {plansQ.isLoading ? (
+          <div className="mt-10 grid gap-4 sm:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-64 animate-pulse rounded-3xl bg-sand-deep/60" />
+            ))}
           </div>
-          <p className="mt-3 rounded-2xl bg-background p-4 text-sm">
-            {settings?.refund_note ??
-              "Cam kết hoàn phí 100% trong vòng 1 năm nếu bạn không hài lòng."}
-          </p>
-        </section>
-
-        {loading ? (
-          <div className="mt-8 h-40 animate-pulse rounded-3xl bg-sand-deep/60" />
-        ) : !user ? (
-          <div className="mt-8 rounded-3xl bg-background p-6 text-center ring-1 ring-border">
-            <p>Đăng nhập để gửi đơn đăng ký thành viên.</p>
-            <Link
-              to="/dang-nhap"
-              className="mt-4 inline-block rounded-full bg-terra px-5 py-2.5 text-sm font-semibold text-primary-foreground"
-            >
-              Đăng nhập / Đăng ký
-            </Link>
+        ) : plans.length === 0 ? (
+          <div className="mt-10 rounded-3xl bg-sand-deep/40 p-8 text-center text-ink-soft">
+            Chưa có gói thành viên nào được thiết lập. Vui lòng liên hệ quản trị viên.
           </div>
         ) : (
-          <RequestSection
-            userId={user.id}
-            shopId={shopQ.data?.id ?? null}
-            amount={settings?.price_amount ?? 299000}
-            requests={requestsQ.data ?? []}
-            loading={requestsQ.isLoading}
-          />
+          <>
+            <div className={`mt-10 grid gap-4 ${plans.length === 1 ? "max-w-sm" : plans.length === 2 ? "sm:grid-cols-2" : "sm:grid-cols-3"}`}>
+              {plans.map((plan) => (
+                <PlanCard
+                  key={plan.id}
+                  plan={plan}
+                  selected={selectedPlan?.id === plan.id}
+                  onSelect={() => setSelectedPlanId(plan.id)}
+                />
+              ))}
+            </div>
+            {plans.length > 1 && !selectedPlan && (
+              <p className="mt-4 text-sm font-medium text-terra animate-pulse">
+                ↑ Chọn một gói để tiếp tục thanh toán
+              </p>
+            )}
+          </>
+        )}
+
+        {/* Khu vực thanh toán — chỉ hiện khi đã chọn gói */}
+        {selectedPlan && (
+          <>
+            {loading ? (
+              <div className="mt-8 h-40 animate-pulse rounded-3xl bg-sand-deep/60" />
+            ) : !user ? (
+              <div className="mt-8 rounded-3xl bg-background p-6 text-center ring-1 ring-border">
+                <p>Đăng nhập để tiếp tục đăng ký gói <strong>{selectedPlan.name}</strong>.</p>
+                <Link
+                  to="/dang-nhap"
+                  className="mt-4 inline-block rounded-full bg-terra px-5 py-2.5 text-sm font-semibold text-primary-foreground"
+                >
+                  Đăng nhập / Đăng ký
+                </Link>
+              </div>
+            ) : (
+              <RequestSection
+                userId={user.id}
+                shopId={shopQ.data?.id ?? null}
+                plan={selectedPlan}
+                requests={requestsQ.data ?? []}
+                loading={requestsQ.isLoading}
+              />
+            )}
+          </>
         )}
       </main>
       <SiteFooter />
@@ -114,162 +195,235 @@ function MembershipPage() {
   );
 }
 
+// ─── Request section ─────────────────────────────────────────────────────────
 function RequestSection({
   userId,
   shopId,
-  amount,
+  plan,
   requests,
   loading,
 }: {
   userId: string;
   shopId: string | null;
-  amount: number;
+  plan: MembershipPlan;
   requests: MembershipRequest[];
   loading: boolean;
 }) {
   const qc = useQueryClient();
-  const [form, setForm] = useState({ contact_name: "", contact_phone: "", note: "", proof_url: "" });
-  const pending = requests.find((r) => r.status === "pending");
+  const [form, setForm] = useState({ contact_name: "", contact_phone: "", note: "" });
+
+  // Kiểm tra đơn active cho đúng gói này
+  const activePlanRequest = requests.find(
+    (r) => r.status === "approved" && r.plan_id === plan.id && r.expires_at && new Date(r.expires_at) > new Date()
+  );
+  // Đơn đang chờ (bất kỳ gói)
+  const pendingRequest = requests.find((r) => r.status === "pending");
 
   const submit = useMutation({
     mutationFn: async () => {
       if (form.contact_name.trim().length < 2) throw new Error("Vui lòng nhập tên liên hệ.");
       if (!/^[0-9+\s.-]{8,15}$/.test(form.contact_phone.trim()))
         throw new Error("Số điện thoại chưa hợp lệ.");
-      // if (!form.proof_url) throw new Error("Vui lòng tải ảnh chứng từ chuyển khoản.");
       const { error } = await supabase.from("membership_requests").insert({
         user_id: userId,
         shop_id: shopId,
+        plan_id: plan.id,
         contact_name: form.contact_name.trim(),
         contact_phone: form.contact_phone.trim(),
         note: form.note.trim() || null,
-        proof_url: form.proof_url,
-        amount,
+        amount: plan.price_amount,
         status: "pending",
       });
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Đã duyệt thành công! Shop của bạn đã được kích hoạt và công khai.");
-      setForm({ contact_name: "", contact_phone: "", note: "", proof_url: "" });
+      toast.success("Đã gửi đơn! Vui lòng hoàn tất thanh toán theo mã QR bên dưới.");
+      setForm({ contact_name: "", contact_phone: "", note: "" });
       void qc.invalidateQueries({ queryKey: ["membership_requests"] });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Gửi đơn thất bại."),
   });
 
+  const phone = form.contact_phone.replace(/\D/g, "");
+
+  if (activePlanRequest) {
+    return (
+      <div className="mt-8 rounded-3xl border-2 border-emerald-200 bg-emerald-50 p-6">
+        <div className="flex items-center gap-3">
+          <span className="text-3xl">🎉</span>
+          <div>
+            <h2 className="text-xl font-bold text-emerald-800">Gói {plan.name} đang hoạt động!</h2>
+            <p className="text-sm text-emerald-700">
+              Hiệu lực đến {new Date(activePlanRequest.expires_at!).toLocaleDateString("vi-VN")}
+            </p>
+          </div>
+        </div>
+        <Link
+          to="/quan-ly"
+          className="mt-4 inline-block rounded-full bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white"
+        >
+          Quản lý shop của bạn →
+        </Link>
+      </div>
+    );
+  }
+
+  if (pendingRequest && pendingRequest.plan_id === plan.id) {
+    return (
+      <div className="mt-8 rounded-3xl bg-amber-50 p-6 ring-1 ring-amber-200">
+        <h2 className="text-xl font-semibold text-amber-900">Đơn đang chờ xử lý</h2>
+        <p className="mt-2 text-sm text-amber-800">
+          Bạn đã gửi đơn cho gói <strong>{plan.name}</strong>. Nếu bạn đã chuyển khoản với nội dung{" "}
+          <strong className="font-mono">PET{pendingRequest.contact_phone}</strong>, hệ thống sẽ tự động duyệt trong vài phút.
+        </p>
+
+        {/* Vẫn hiện QR để khách hàng có thể thanh toán nếu chưa */}
+        <div className="mt-6 rounded-2xl bg-white p-4 ring-1 ring-border">
+          <h3 className="font-semibold text-sm mb-3">Chưa thanh toán? Quét mã QR ngay:</h3>
+          <div className="flex items-start gap-4">
+            <img
+              src={`https://qr.sepay.vn/img?acc=00003554020&bank=TPBank&amount=${plan.price_amount}&des=PET${pendingRequest.contact_phone ?? ""}`}
+              alt="QR Code"
+              className="w-32 h-32 rounded-xl ring-1 ring-border"
+            />
+            <div className="text-sm space-y-1">
+              <p>Ngân hàng: <strong>TPBank</strong></p>
+              <p>Số TK: <strong>00003554020</strong></p>
+              <p>Số tiền: <strong className="text-terra">{formatPrice(plan.price_amount)}</strong></p>
+              <p>Nội dung: <strong className="font-mono text-terra">PET{pendingRequest.contact_phone}</strong></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
-      {pending ? (
-        <div className="mt-8 rounded-3xl bg-background p-6 ring-1 ring-border">
-          <h2 className="text-xl">Đơn của bạn đang chờ duyệt</h2>
-          <p className="mt-2 text-sm text-ink-soft">
-            Đơn của bạn đang được xử lý. Nếu bạn thanh toán qua ngân hàng với đúng cú pháp (VD: PET0912345678), hệ thống sẽ duyệt tự động trong vài phút. Nếu có hình ảnh chứng từ, quá trình có thể nhanh hơn.
-          </p>
+      <section className="mt-8 rounded-3xl bg-background p-6 md:p-8 ring-1 ring-border">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="rounded-full bg-terra/10 px-3 py-1 text-xs font-semibold text-terra">
+            Gói đã chọn: {plan.name}
+          </span>
+          <span className="text-sm font-bold text-terra">{formatPrice(plan.price_amount)}</span>
         </div>
-      ) : (
-        <section className="mt-8 rounded-3xl bg-background p-6 md:p-8 ring-1 ring-border">
-          <h2 className="text-2xl font-semibold text-terra-deep mb-2">Thanh toán & Gửi đơn</h2>
-          <p className="text-ink-soft text-sm mb-6">Hệ thống sẽ tự động duyệt đơn của bạn trong 1-3 phút sau khi chuyển khoản thành công.</p>
-          
-          <div className="grid gap-10 md:grid-cols-2">
-            {/* Cột mã QR */}
-            <div className="order-2 md:order-1 flex flex-col items-center justify-center rounded-3xl bg-sand-deep/30 p-6 ring-1 ring-border/50">
-              <h3 className="font-semibold mb-2">Quét mã để thanh toán tự động</h3>
-              <p className="text-xs text-ink-soft text-center mb-4">
-                Sử dụng app ngân hàng quét mã để nội dung được điền tự động chính xác nhất.
-              </p>
-              <div className="rounded-2xl overflow-hidden bg-white ring-2 ring-terra/20 p-2 shadow-sm">
-                <img 
-                  src={`https://qr.sepay.vn/img?acc=00003554020&bank=TPBank&amount=${amount}&des=PET${form.contact_phone.replace(/\D/g, "") || "SDT"}`} 
-                  alt="QR Code Thanh Toán" 
-                  className="w-full max-w-[220px] aspect-square object-contain"
-                />
-              </div>
-              <div className="mt-4 space-y-1 text-sm text-center">
-                <p>Ngân hàng: <strong>TPBank</strong></p>
-                <p>Số tài khoản: <strong>00003554020</strong></p>
-                <p>Nội dung: <strong className="text-terra">PET{form.contact_phone.replace(/\D/g, "") || "SDT"}</strong></p>
-              </div>
-            </div>
+        <h2 className="text-2xl font-semibold text-terra-deep mb-2">Thanh toán & Gửi đơn</h2>
+        <p className="text-ink-soft text-sm mb-6">
+          Hệ thống sẽ tự động kích hoạt gói <strong>{plan.name}</strong> cho bạn trong 1–3 phút sau khi chuyển khoản thành công.
+        </p>
 
-            {/* Cột điền thông tin */}
-            <div className="order-1 md:order-2">
-              <div className="space-y-4">
-                <label className="block">
-                  <span className="text-sm font-medium">1. Số điện thoại đăng ký</span>
-                  <input
-                    className={inputCls}
-                    placeholder="VD: 0912345678"
-                    value={form.contact_phone}
-                    onChange={(e) => setForm({ ...form, contact_phone: e.target.value })}
-                  />
-                  <p className="mt-1.5 text-xs text-terra font-medium">
-                    * Nhập SĐT trước để tạo mã QR chuẩn xác!
-                  </p>
-                </label>
-                <label className="block">
-                  <span className="text-sm font-medium">2. Tên liên hệ</span>
-                  <input
-                    className={inputCls}
-                    value={form.contact_name}
-                    onChange={(e) => setForm({ ...form, contact_name: e.target.value })}
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-sm font-medium">3. Ghi chú thêm (tuỳ chọn)</span>
-                  <textarea
-                    rows={2}
-                    className={inputCls}
-                    value={form.note}
-                    onChange={(e) => setForm({ ...form, note: e.target.value })}
-                  />
-                </label>
-                
-                <div className="pt-2">
-                  <button
-                    type="button"
-                    disabled={submit.isPending}
-                    onClick={() => submit.mutate()}
-                    className="w-full rounded-full bg-terra px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-60 shadow-md shadow-terra/20"
-                  >
-                    {submit.isPending ? "Đang gửi đơn..." : "Tôi đã thanh toán & Gửi đơn"}
-                  </button>
-                  <p className="mt-3 text-center text-xs text-ink-soft">
-                    Hãy đảm bảo bạn đã quét mã thanh toán trước khi gửi đơn.
-                  </p>
-                </div>
+        <div className="grid gap-10 md:grid-cols-2">
+          {/* Cột mã QR */}
+          <div className="order-2 md:order-1 flex flex-col items-center rounded-3xl bg-sand-deep/30 p-6 ring-1 ring-border/50">
+            <h3 className="font-semibold mb-1">Quét mã QR để thanh toán</h3>
+            <p className="text-xs text-ink-soft text-center mb-4">
+              Mã QR cập nhật theo số điện thoại bạn nhập bên phải.
+            </p>
+            <div className="rounded-2xl overflow-hidden bg-white ring-2 ring-terra/20 p-2 shadow-sm">
+              <img
+                src={`https://qr.sepay.vn/img?acc=00003554020&bank=TPBank&amount=${plan.price_amount}&des=PET${phone || "SDTCUABAN"}`}
+                alt="QR Code Thanh Toán"
+                className="w-full max-w-[220px] aspect-square object-contain"
+              />
+            </div>
+            <div className="mt-4 space-y-1 text-sm text-center">
+              <p>Ngân hàng: <strong>TPBank</strong></p>
+              <p>Số tài khoản: <strong>00003554020</strong></p>
+              <p>Số tiền: <strong className="text-terra">{formatPrice(plan.price_amount)}</strong></p>
+              <p>Nội dung: <strong className="font-mono text-terra">PET{phone || "SDTCUABAN"}</strong></p>
+            </div>
+          </div>
+
+          {/* Cột điền thông tin */}
+          <div className="order-1 md:order-2">
+            <div className="space-y-4">
+              <label className="block">
+                <span className="text-sm font-medium">1. Số điện thoại đăng ký</span>
+                <input
+                  className={inputCls}
+                  placeholder="VD: 0912345678"
+                  value={form.contact_phone}
+                  onChange={(e) => setForm({ ...form, contact_phone: e.target.value })}
+                />
+                <p className="mt-1.5 text-xs text-terra font-medium">
+                  * Nhập SĐT trước để mã QR cập nhật đúng nội dung chuyển khoản!
+                </p>
+              </label>
+              <label className="block">
+                <span className="text-sm font-medium">2. Tên liên hệ</span>
+                <input
+                  className={inputCls}
+                  value={form.contact_name}
+                  onChange={(e) => setForm({ ...form, contact_name: e.target.value })}
+                />
+              </label>
+              <label className="block">
+                <span className="text-sm font-medium">3. Ghi chú (tuỳ chọn)</span>
+                <textarea
+                  rows={2}
+                  className={inputCls}
+                  value={form.note}
+                  onChange={(e) => setForm({ ...form, note: e.target.value })}
+                />
+              </label>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  disabled={submit.isPending}
+                  onClick={() => submit.mutate()}
+                  className="w-full rounded-full bg-terra px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-60 shadow-md shadow-terra/20"
+                >
+                  {submit.isPending ? "Đang gửi đơn..." : `Tôi đã thanh toán & Gửi đơn`}
+                </button>
+                <p className="mt-3 text-center text-xs text-ink-soft">
+                  Hãy đảm bảo bạn đã quét mã và chuyển khoản thành công trước khi gửi đơn.
+                </p>
               </div>
             </div>
           </div>
-        </section>
-      )}
-
-      <section className="mt-8">
-        <h2 className="text-xl">Lịch sử đăng ký</h2>
-        {loading ? (
-          <div className="mt-4 h-24 animate-pulse rounded-3xl bg-sand-deep/60" />
-        ) : requests.length === 0 ? (
-          <p className="mt-2 text-sm text-ink-soft">Bạn chưa có đơn đăng ký nào.</p>
-        ) : (
-          <ul className="mt-4 space-y-3">
-            {requests.map((r) => (
-              <li key={r.id} className="rounded-2xl bg-background p-4 ring-1 ring-border">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-semibold">{formatPrice(r.amount)}</span>
-                  <StatusPill status={r.status} />
-                </div>
-                <p className="mt-1 text-xs text-ink-soft">
-                  Gửi ngày {new Date(r.created_at).toLocaleDateString("vi-VN")}
-                  {r.status === "approved" && r.expires_at
-                    ? ` • Hiệu lực đến ${new Date(r.expires_at).toLocaleDateString("vi-VN")}`
-                    : ""}
-                </p>
-                {r.admin_note ? <p className="mt-2 text-sm">Ghi chú: {r.admin_note}</p> : null}
-              </li>
-            ))}
-          </ul>
-        )}
+        </div>
       </section>
+
+      {/* Lịch sử đăng ký */}
+      <HistorySection requests={requests} loading={loading} plans={[]} />
     </>
+  );
+}
+
+function HistorySection({
+  requests,
+  loading,
+}: {
+  requests: MembershipRequest[];
+  loading: boolean;
+  plans: MembershipPlan[];
+}) {
+  if (requests.length === 0 && !loading) return null;
+  return (
+    <section className="mt-8">
+      <h2 className="text-xl">Lịch sử đăng ký</h2>
+      {loading ? (
+        <div className="mt-4 h-24 animate-pulse rounded-3xl bg-sand-deep/60" />
+      ) : (
+        <ul className="mt-4 space-y-3">
+          {requests.map((r) => (
+            <li key={r.id} className="rounded-2xl bg-background p-4 ring-1 ring-border">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-semibold">{formatPrice(r.amount)}</span>
+                <StatusPill status={r.status} />
+              </div>
+              <p className="mt-1 text-xs text-ink-soft">
+                Gửi ngày {new Date(r.created_at).toLocaleDateString("vi-VN")}
+                {r.status === "approved" && r.expires_at
+                  ? ` • Hiệu lực đến ${new Date(r.expires_at).toLocaleDateString("vi-VN")}`
+                  : ""}
+              </p>
+              {r.admin_note ? <p className="mt-2 text-sm">Ghi chú: {r.admin_note}</p> : null}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
