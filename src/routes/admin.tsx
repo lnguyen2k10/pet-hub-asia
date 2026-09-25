@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { BlogManager } from "@/components/blog-manager";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPrice } from "@/lib/pet";
@@ -83,6 +84,7 @@ function AdminPage() {
         <PlansManager userId={user.id} />
         <BankSettingsForm userId={user.id} />
         <RequestsTable />
+        <BlogManager authorName={user.email ?? "Admin"} />
       </main>
       <SiteFooter />
     </div>

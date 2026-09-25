@@ -9,7 +9,8 @@ import { ShopCard } from "@/components/shop-card";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { CATEGORIES } from "@/lib/pet";
-import { featuredDealsQuery, featuredShopsQuery, partnerListingsQuery } from "@/lib/queries";
+import { blogPostsQuery, featuredDealsQuery, featuredShopsQuery, partnerListingsQuery } from "@/lib/queries";
+import { BlogCard } from "@/components/blog-card";
 
 
 const TITLE = "1Pet.Asia — Danh bạ shop chó mèo & dịch vụ thú cưng";
@@ -32,6 +33,7 @@ function Home() {
   const shops = useQuery(featuredShopsQuery);
   const deals = useQuery(featuredDealsQuery);
   const partners = useQuery(partnerListingsQuery);
+  const latestPosts = useQuery(blogPostsQuery());
 
   return (
     <div className="min-h-screen">
@@ -141,6 +143,41 @@ function Home() {
                   ?.slice(0, 6)
                   .map((listing) => <PartnerCard key={listing.id} listing={listing} />)}
           </div>
+        </div>
+      </section>
+
+      {/* Blog section */}
+      <section className="pb-20">
+        <div className="mx-auto max-w-6xl px-5">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="font-hand text-2xl text-terra-deep">góc chia sẻ</p>
+              <h2 className="mt-1 text-3xl leading-tight sm:text-4xl">Blog thú cưng</h2>
+              <p className="mt-2 max-w-xl text-sm text-ink-soft">
+                Kinh nghiệm nuôi chó mèo, chăm sóc sức khỏe và mẹo hay từ cộng đồng 1Pet.
+              </p>
+            </div>
+            <Link to="/blog" className="text-sm font-semibold text-terra-deep hover:text-terra">
+              Xem tất cả bài viết →
+            </Link>
+          </div>
+
+          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {latestPosts.isLoading
+              ? Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-80 animate-pulse rounded-3xl bg-sand-deep/60" />
+                ))
+              : latestPosts.data?.slice(0, 3).map((post) => (
+                  <BlogCard key={post.id} post={post} />
+                ))}
+          </div>
+
+          {!latestPosts.isLoading && (latestPosts.data?.length ?? 0) === 0 && (
+            <div className="mt-8 rounded-3xl bg-sand-deep/40 p-10 text-center">
+              <p className="font-hand text-2xl text-terra-deep">sắp ra mắt</p>
+              <p className="mt-2 text-sm text-ink-soft">Nội dung blog sẽ sớm được cập nhật.</p>
+            </div>
+          )}
         </div>
       </section>
 
