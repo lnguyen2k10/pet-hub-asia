@@ -485,8 +485,11 @@ export type Database = {
           is_published: boolean
           logo_url: string | null
           name: string
-          owner_id: string | null
-          phone: string | null
+          email: string | null
+            website: string | null
+            fanpage: string | null
+            owner_id: string | null
+            phone: string | null
           rating: number
           review_count: number
           slug: string
@@ -506,8 +509,11 @@ export type Database = {
           is_published?: boolean
           logo_url?: string | null
           name: string
-          owner_id?: string | null
-          phone?: string | null
+          email?: string | null
+            website?: string | null
+            fanpage?: string | null
+            owner_id?: string | null
+            phone?: string | null
           rating?: number
           review_count?: number
           slug: string
@@ -527,8 +533,11 @@ export type Database = {
           is_published?: boolean
           logo_url?: string | null
           name?: string
-          owner_id?: string | null
-          phone?: string | null
+          email?: string | null
+            website?: string | null
+            fanpage?: string | null
+            owner_id?: string | null
+            phone?: string | null
           rating?: number
           review_count?: number
           slug?: string

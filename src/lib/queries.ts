@@ -11,6 +11,9 @@ export type Shop = {
   city: string;
   address: string | null;
   phone: string | null;
+  email: string | null;
+  website: string | null;
+  fanpage: string | null;
   description: string | null;
   logo_url: string | null;
   cover_url: string | null;

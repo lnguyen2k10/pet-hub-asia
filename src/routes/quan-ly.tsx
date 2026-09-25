@@ -206,6 +206,9 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
     city: CITIES[0] as string,
     address: "",
     phone: "",
+    email: "",
+    website: "",
+    fanpage: "",
     description: "",
     logo_url: "",
     cover_url: "",
@@ -228,6 +231,9 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
       city: shop.city,
       address: shop.address ?? "",
       phone: shop.phone ?? "",
+      email: shop.email ?? "",
+      website: shop.website ?? "",
+      fanpage: shop.fanpage ?? "",
       description: shop.description ?? "",
       logo_url: shop.logo_url ?? "",
       cover_url: shop.cover_url ?? "",
@@ -258,6 +264,9 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
         city: form.city,
         address: form.address || null,
         phone: phone || null,
+        email: form.email || null,
+        website: form.website || null,
+        fanpage: form.fanpage || null,
         description: form.description || null,
         logo_url: form.logo_url || null,
         cover_url: form.cover_url || null,
@@ -367,6 +376,30 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
             className={inputCls}
             value={form.phone}
             onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+          />
+        </Field>
+        <Field label="Email">
+          <input
+            className={inputCls}
+            type="email"
+            value={form.email}
+            onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+          />
+        </Field>
+        <Field label="Website">
+          <input
+            className={inputCls}
+            placeholder="https://..."
+            value={form.website}
+            onChange={(e) => setForm((f) => ({ ...f, website: e.target.value }))}
+          />
+        </Field>
+        <Field label="Fanpage">
+          <input
+            className={inputCls}
+            placeholder="https://facebook.com/..."
+            value={form.fanpage}
+            onChange={(e) => setForm((f) => ({ ...f, fanpage: e.target.value }))}
           />
         </Field>
         <Field label="Tiêu đề hero">

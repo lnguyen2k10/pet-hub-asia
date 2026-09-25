@@ -175,6 +175,34 @@ function ShopLanding() {
                       <dt className="text-ink-soft">Điện thoại</dt>
                       <dd className="font-medium">{shop.phone ?? "Đang cập nhật"}</dd>
                     </div>
+                    {shop.email && (
+                      <div>
+                        <dt className="text-ink-soft">Email</dt>
+                        <dd className="font-medium">
+                          <a href={`mailto:${shop.email}`} className="text-terra-deep hover:underline">{shop.email}</a>
+                        </dd>
+                      </div>
+                    )}
+                    {shop.website && (
+                      <div>
+                        <dt className="text-ink-soft">Website</dt>
+                        <dd className="font-medium">
+                          <a href={shop.website.startsWith('http') ? shop.website : `https://${shop.website}`} target="_blank" rel="noopener noreferrer" className="text-terra-deep hover:underline">
+                            {shop.website.replace(/^https?:\/\//, '')}
+                          </a>
+                        </dd>
+                      </div>
+                    )}
+                    {shop.fanpage && (
+                      <div>
+                        <dt className="text-ink-soft">Fanpage</dt>
+                        <dd className="font-medium">
+                          <a href={shop.fanpage.startsWith('http') ? shop.fanpage : `https://${shop.fanpage}`} target="_blank" rel="noopener noreferrer" className="text-terra-deep hover:underline">
+                            Xem Fanpage
+                          </a>
+                        </dd>
+                      </div>
+                    )}
                   </dl>
                   {shop.phone ? (
                     <a
