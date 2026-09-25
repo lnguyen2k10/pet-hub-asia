@@ -233,7 +233,7 @@ function RequestSection({
         note: form.note.trim() || null,
         amount: plan.price_amount,
         status: "pending",
-      });
+      } as any);
       if (error) throw error;
     },
     onSuccess: () => {

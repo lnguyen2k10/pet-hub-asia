@@ -169,7 +169,7 @@ function CategoryManager() {
 }
 
 // ─── Blog manager ─────────────────────────────────────────────────────────────
-export function BlogManager({ authorName }: { authorName: string }) {
+export function BlogManager({ authorName, userId }: { authorName: string; userId: string }) {
   const qc = useQueryClient();
   const cats = useQuery(blogCategoriesQuery);
   const posts = useQuery(allBlogPostsAdminQuery);
@@ -328,8 +328,9 @@ export function BlogManager({ authorName }: { authorName: string }) {
                 />
               </label>
               <div className="sm:col-span-2">
-                <span className="text-sm font-medium">Ảnh bìa</span>
                 <ImageUpload
+                  label="Ảnh bìa"
+                  userId={userId}
                   value={form.cover_url}
                   folder="blog-covers"
                   onChange={(url) => setForm({ ...form, cover_url: url ?? "" })}

@@ -1,4 +1,4 @@
-﻿import { queryOptions } from "@tanstack/react-query";
+import { queryOptions } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 
@@ -252,27 +252,27 @@ export type MembershipPlan = {
 };
 
 export const membershipPlansQuery = queryOptions({
-  queryKey: ["membership_plans"],
+  queryKey: ["membership_plans" as any],
   queryFn: async (): Promise<MembershipPlan[]> => {
     const { data, error } = await supabase
-      .from("membership_plans")
+      .from("membership_plans" as any)
       .select("*")
       .eq("is_active", true)
       .order("sort_order", { ascending: true });
     if (error) throw error;
-    return (data ?? []) as MembershipPlan[];
+    return (data ?? []) as unknown as MembershipPlan[];
   },
 });
 
 export const allMembershipPlansQuery = queryOptions({
-  queryKey: ["membership_plans", "all"],
+  queryKey: ["membership_plans" as any, "all"],
   queryFn: async (): Promise<MembershipPlan[]> => {
     const { data, error } = await supabase
-      .from("membership_plans")
+      .from("membership_plans" as any)
       .select("*")
       .order("sort_order", { ascending: true });
     if (error) throw error;
-    return (data ?? []) as MembershipPlan[];
+    return (data ?? []) as unknown as MembershipPlan[];
   },
 });
 
@@ -318,7 +318,7 @@ export const myMembershipRequestsQuery = queryOptions({
       .eq("user_id", userData.user.id)
       .order("created_at", { ascending: false });
     if (error) throw error;
-    return (data ?? []) as MembershipRequest[];
+    return (data ?? []) as unknown as MembershipRequest[];
   },
 });
 
@@ -331,7 +331,7 @@ export const allMembershipRequestsQuery = queryOptions({
       .order("created_at", { ascending: false })
       .limit(200);
     if (error) throw error;
-    return (data ?? []) as MembershipRequest[];
+    return (data ?? []) as unknown as MembershipRequest[];
   },
 });
 
@@ -472,5 +472,6 @@ export const userRoleQuery = queryOptions({
     return data?.role as "admin" | "moderator" | null;
   },
 });
+
 
 
