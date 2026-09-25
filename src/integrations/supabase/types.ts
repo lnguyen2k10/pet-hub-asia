@@ -383,6 +383,12 @@ export type Database = {
         Row: {
           created_at: string
           full_name: string | null
+            quota_deals?: number
+            quota_products?: number
+            quota_featured_slots?: number
+            quota_partner_posts?: number
+            quota_blog_posts?: number
+            has_claimed_free_blog?: boolean
           id: string
           updated_at: string
         }

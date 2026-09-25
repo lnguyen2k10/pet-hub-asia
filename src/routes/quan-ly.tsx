@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -1001,8 +1001,8 @@ function PartnerManager({ userId }: { userId: string }) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState({ ...emptyListing });
   const profileQ = useQuery(myProfileQuery);
-  const quota_partner_listings = profileQ.data?.quota_partner_listings ?? 0;
-  const isOverQuota = !editingId && quota_partner_listings !== -1 && (listingsQ.data?.length ?? 0) >= quota_partner_listings;
+  const quota_partner_posts = profileQ.data?.quota_partner_posts ?? 0;
+  const isOverQuota = !editingId && quota_partner_posts !== -1 && (listingsQ.data?.length ?? 0) >= quota_partner_posts;
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["partner_listings"] });
   const reset = () => {
@@ -1094,7 +1094,7 @@ function PartnerManager({ userId }: { userId: string }) {
           disabled={!open && isOverQuota}
           className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-background disabled:opacity-60"
         >
-          {open ? "Đóng" : isOverQuota ? `Hết quota (${quota_partner_listings})` : "Đăng tin mới"}
+          {open ? "Đóng" : isOverQuota ? `Hết quota (${quota_partner_posts})` : "Đăng tin mới"}
         </button>
       </div>
 
@@ -1281,7 +1281,7 @@ function PartnerManager({ userId }: { userId: string }) {
               disabled={saveListing.isPending || isOverQuota}
               className="rounded-full bg-terra px-6 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-60"
             >
-              {editingId ? "Lưu tin đăng" : isOverQuota ? `Hết quota (${quota_partner_listings})` : "Đăng tin"}
+              {editingId ? "Lưu tin đăng" : isOverQuota ? `Hết quota (${quota_partner_posts})` : "Đăng tin"}
             </button>
             <button
               type="button"
