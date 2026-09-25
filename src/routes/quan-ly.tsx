@@ -91,6 +91,7 @@ function DashboardPage() {
     { id: "products", label: "Sản phẩm" },
     { id: "partner", label: "Tìm đại lý" },
     { id: "membership", label: "Gói thành viên" },
+    { id: "account", label: "Tài khoản" },
   ];
 
   return (
@@ -133,6 +134,7 @@ function DashboardPage() {
                 {activeTab === "products" && shopQ.data && <ProductsManager shop={shopQ.data} userId={user.id} />}
                 {activeTab === "partner" && <PartnerManager userId={user.id} />}
                 {activeTab === "membership" && <MembershipManager userId={user.id} />}
+                {activeTab === "account" && <AccountManager userId={user.id} />}
                 
                 {!shopQ.data && activeTab !== "info" && activeTab !== "membership" && activeTab !== "partner" && (
                   <div className="rounded-2xl bg-sand-deep/20 p-8 text-center text-ink-soft">
@@ -1403,3 +1405,6 @@ function MembershipManager({ userId }: { userId: string }) {
     </section>
   );
 }
+
+
+function AccountManager({ userId }: { userId: string }) { const qc = useQueryClient(); const profileQ = useQuery(myProfileQuery); const [name, setName] = useState(""); const [password, setPassword] = useState(""); useEffect(() => { if (profileQ.data) { setName(profileQ.data.full_name ?? ""); } }, [profileQ.data]); const saveProfile = useMutation({ mutationFn: async () => { const { error } = await supabase.from("profiles").update({ full_name: name }).eq("id", userId); if (error) throw error; }, onSuccess: () => { toast.success("Đã cập nhật tên!"); qc.invalidateQueries({ queryKey: ["profile", "mine"] }); }, onError: (e: Error) => toast.error(e.message) }); const savePassword = useMutation({ mutationFn: async () => { if (password.length < 6) throw new Error("Mật khẩu quá ngắn"); const { error } = await supabase.auth.updateUser({ password }); if (error) throw error; }, onSuccess: () => { toast.success("Đã cập nhật mật khẩu!"); setPassword(""); }, onError: (e: Error) => toast.error(e.message) }); return ( <section className="space-y-8"> <div> <h2 className="font-hand text-3xl text-terra-deep">Tài khoản</h2> <p className="mt-2 text-ink-soft">Quản lý thông tin đăng nhập và hồ sơ cá nhân.</p> </div> <div className="grid gap-8 sm:grid-cols-2"> <form onSubmit={e => { e.preventDefault(); saveProfile.mutate(); }} className="space-y-4 rounded-3xl bg-sand-deep/30 p-6 ring-1 ring-border"> <h3 className="font-semibold">Hồ sơ cá nhân</h3> <label className="block"> <span className="text-sm font-medium">Họ và tên</span> <input className={inputCls} value={name} onChange={e => setName(e.target.value)} /> </label> <button disabled={saveProfile.isPending} className="rounded-full bg-terra px-5 py-2 text-sm font-semibold text-white disabled:opacity-60"> Lưu thay đổi </button> </form> <form onSubmit={e => { e.preventDefault(); savePassword.mutate(); }} className="space-y-4 rounded-3xl bg-sand-deep/30 p-6 ring-1 ring-border"> <h3 className="font-semibold">Đổi mật khẩu</h3> <label className="block"> <span className="text-sm font-medium">Mật khẩu mới</span> <input type="password" className={inputCls} value={password} onChange={e => setPassword(e.target.value)} placeholder="Tối thiểu 6 ký tự" /> </label> <button disabled={savePassword.isPending} className="rounded-full bg-ink px-5 py-2 text-sm font-semibold text-white disabled:opacity-60"> Cập nhật mật khẩu </button> </form> </div> </section> ); }
