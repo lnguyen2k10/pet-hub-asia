@@ -46,18 +46,35 @@ function isH3SwallowedErrorBody(body: string): boolean {
 
 import { createClient } from "@supabase/supabase-js";
 
+import * as crypto from 'node:crypto';
+
 async function handleSepayWebhook(request: Request): Promise<Response> {
   try {
     const authHeader = request.headers.get("Authorization") || "";
+    const signature = request.headers.get("X-SePay-Signature");
+    const timestamp = request.headers.get("X-SePay-Timestamp");
     const expectedToken = (process.env.SEPAY_WEBHOOK_TOKEN || "").trim();
     
-    // Kiểm tra token một cách linh hoạt (bỏ qua tiền tố Bearer hay Apikey và lỗi thừa khoảng trắng)
-    if (expectedToken && !authHeader.includes(expectedToken)) {
-      console.error("Auth failed. Expected:", expectedToken, "Got:", authHeader);
-      return new Response(JSON.stringify({ success: false, message: "Unauthorized", debug_header: authHeader }), { status: 401 });
-    }
+    let payload;
 
-    const payload = await request.json();
+    if (signature && timestamp) {
+      // Xác thực bằng HMAC-SHA256 (Bảo mật cao nhất)
+      const rawBody = await request.text();
+      const expectedSignature = 'sha256=' + crypto.createHmac('sha256', expectedToken).update(timestamp + '.' + rawBody).digest('hex');
+      
+      if (signature !== expectedSignature) {
+        console.error("HMAC Auth failed. Expected:", expectedSignature, "Got:", signature);
+        return new Response(JSON.stringify({ success: false, message: "Invalid HMAC signature" }), { status: 401 });
+      }
+      payload = JSON.parse(rawBody);
+    } else {
+      // Xác thực bằng API Key thông thường
+      if (expectedToken && !authHeader.includes(expectedToken)) {
+        console.error("Auth failed. Expected:", expectedToken, "Got:", authHeader);
+        return new Response(JSON.stringify({ success: false, message: "Unauthorized", debug_header: authHeader }), { status: 401 });
+      }
+      payload = await request.json();
+    }
     console.log("Nhận webhook từ SePay:", payload);
 
     if (payload.transferType === "in" && payload.code) {
