@@ -1,0 +1,15 @@
+              <div className="pt-2">
+                <button
+                  type="button"
+                  disabled={submit.isPending}
+                  onClick={() => submit.mutate()}
+                  className="w-full rounded-full bg-terra px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-60 shadow-md shadow-terra/20"
+                >
+                  {submit.isPending ? "Đang xử lý..." : plan.price_amount === 0 ? "Nhận Ưu Đãi" : "Tôi đã thanh toán & Gửi đơn"}
+                </button>
+                {plan.price_amount > 0 && (
+                  <p className="mt-3 text-center text-xs text-ink-soft">
+                    Hãy đảm bảo bạn đã quét mã và chuyển khoản thành công trước khi gửi đơn.
+                  </p>
+                )}
+              </div>

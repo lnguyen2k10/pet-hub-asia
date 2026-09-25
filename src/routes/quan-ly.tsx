@@ -12,6 +12,8 @@ import { CATEGORIES, CITIES, formatPrice, slugify } from "@/lib/pet";
 import {
   isAdminQuery,
   myMembershipRequestsQuery,
+  membershipPlansQuery,
+  myProfileQuery,
   myPartnerListingsQuery,
   myShopQuery,
   type Deal,
@@ -88,6 +90,7 @@ function DashboardPage() {
     { id: "deals", label: "Ưu đãi" },
     { id: "products", label: "Sản phẩm" },
     { id: "partner", label: "Tìm đại lý" },
+    { id: "membership", label: "Gói thành viên" },
   ];
 
   return (
@@ -129,8 +132,9 @@ function DashboardPage() {
                 {activeTab === "deals" && shopQ.data && <DealsManager shop={shopQ.data} userId={user.id} />}
                 {activeTab === "products" && shopQ.data && <ProductsManager shop={shopQ.data} userId={user.id} />}
                 {activeTab === "partner" && <PartnerManager userId={user.id} />}
+                {activeTab === "membership" && <MembershipManager userId={user.id} />}
                 
-                {!shopQ.data && activeTab !== "info" && (
+                {!shopQ.data && activeTab !== "info" && activeTab !== "membership" && activeTab !== "partner" && (
                   <div className="rounded-2xl bg-sand-deep/20 p-8 text-center text-ink-soft">
                     Vui lòng tạo thông tin shop ở mục "Thông tin chung" trước.
                   </div>
@@ -209,6 +213,9 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
     hero_subtitle: "",
     is_published: true,
   });
+
+  const profileQ = useQuery(myProfileQuery);
+  const hasActivePlan = (profileQ.data?.quota_deals ?? 0) > 0 || (profileQ.data?.quota_products ?? 0) > 0 || (profileQ.data?.quota_blog_posts ?? 0) > 0;
 
   useEffect(() => {
     if (!shop) return;
@@ -417,9 +424,10 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
           <input
             type="checkbox"
             checked={form.is_published}
+            disabled={!hasActivePlan}
             onChange={(e) => setForm((f) => ({ ...f, is_published: e.target.checked }))}
           />
-          Hiển thị công khai trong danh bạ
+          Hiển thị công khai trong danh bạ {(!hasActivePlan) && <span className="text-rose-500 font-medium">(Bạn cần kích hoạt Gói thành viên để được hiển thị)</span>}
         </label>
         <div className="sm:col-span-2">
           <button
@@ -448,6 +456,9 @@ function DealsManager({ shop, userId }: { shop: ShopWithDeals; userId: string })
   const qc = useQueryClient();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState({ ...emptyDeal });
+  const profileQ = useQuery(myProfileQuery);
+  const quota_deals = profileQ.data?.quota_deals ?? 0;
+  const isOverQuota = !editingId && shop.deals.length >= quota_deals;
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ["shop"] });
@@ -627,10 +638,10 @@ function DealsManager({ shop, userId }: { shop: ShopWithDeals; userId: string })
         <div className="flex flex-wrap gap-3 sm:col-span-3">
           <button
             type="submit"
-            disabled={saveDeal.isPending}
+            disabled={saveDeal.isPending || isOverQuota}
             className="rounded-full bg-ink px-6 py-2.5 text-sm font-semibold text-background disabled:opacity-60"
           >
-            {editingId ? "Lưu ưu đãi" : "Thêm ưu đãi"}
+            {editingId ? "Lưu ưu đãi" : isOverQuota ? `Hết quota (${quota_deals})` : "Thêm ưu đãi"}
           </button>
           {editingId ? (
             <button
@@ -666,6 +677,9 @@ function ProductsManager({ shop, userId }: { shop: ShopWithDeals; userId: string
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState({ ...emptyProduct });
   const [importing, setImporting] = useState(false);
+  const profileQ = useQuery(myProfileQuery);
+  const quota_products = profileQ.data?.quota_products ?? 0;
+  const isOverQuota = !editingId && quota_products !== -1 && shop.products.length >= quota_products;
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["shop"] });
   const reset = () => {
@@ -935,10 +949,10 @@ function ProductsManager({ shop, userId }: { shop: ShopWithDeals; userId: string
         <div className="flex flex-wrap gap-3 sm:col-span-2">
           <button
             type="submit"
-            disabled={saveProduct.isPending}
+            disabled={saveProduct.isPending || isOverQuota}
             className="rounded-full bg-terra px-6 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-60"
           >
-            {editingId ? "Lưu sản phẩm" : "Thêm sản phẩm"}
+            {editingId ? "Lưu sản phẩm" : isOverQuota ? `Hết quota (${quota_products})` : "Thêm sản phẩm"}
           </button>
           {editingId ? (
             <button
@@ -986,6 +1000,9 @@ function PartnerManager({ userId }: { userId: string }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState({ ...emptyListing });
+  const profileQ = useQuery(myProfileQuery);
+  const quota_partner_listings = profileQ.data?.quota_partner_listings ?? 0;
+  const isOverQuota = !editingId && quota_partner_listings !== -1 && (listingsQ.data?.length ?? 0) >= quota_partner_listings;
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["partner_listings"] });
   const reset = () => {
@@ -1074,9 +1091,10 @@ function PartnerManager({ userId }: { userId: string }) {
         <button
           type="button"
           onClick={() => (open ? reset() : setOpen(true))}
-          className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-background"
+          disabled={!open && isOverQuota}
+          className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-background disabled:opacity-60"
         >
-          {open ? "Đóng" : "Đăng tin mới"}
+          {open ? "Đóng" : isOverQuota ? `Hết quota (${quota_partner_listings})` : "Đăng tin mới"}
         </button>
       </div>
 
@@ -1260,10 +1278,10 @@ function PartnerManager({ userId }: { userId: string }) {
           <div className="flex flex-wrap gap-3 sm:col-span-2">
             <button
               type="submit"
-              disabled={saveListing.isPending}
+              disabled={saveListing.isPending || isOverQuota}
               className="rounded-full bg-terra px-6 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-60"
             >
-              {editingId ? "Lưu tin đăng" : "Đăng tin"}
+              {editingId ? "Lưu tin đăng" : isOverQuota ? `Hết quota (${quota_partner_listings})` : "Đăng tin"}
             </button>
             <button
               type="button"
@@ -1275,6 +1293,113 @@ function PartnerManager({ userId }: { userId: string }) {
           </div>
         </form>
       ) : null}
+    </section>
+  );
+}
+function MembershipManager({ userId }: { userId: string }) {
+  const profileQ = useQuery(myProfileQuery);
+  const plansQ = useQuery(membershipPlansQuery);
+  const reqQ = useQuery(myMembershipRequestsQuery);
+  const router = useRouter();
+
+  if (profileQ.isLoading || plansQ.isLoading || reqQ.isLoading) {
+    return <div className="h-64 animate-pulse rounded-3xl bg-sand-deep/60" />;
+  }
+
+  const profile = profileQ.data;
+  const plans = plansQ.data ?? [];
+  const requests = reqQ.data ?? [];
+
+  return (
+    <section className="space-y-8">
+      <div>
+        <h2 className="font-hand text-3xl text-terra-deep">Gói thành viên của tôi</h2>
+        <p className="mt-2 text-ink-soft">
+          Theo dõi và quản lý các quyền lợi từ gói thành viên.
+        </p>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="rounded-2xl bg-sand-deep/20 p-5 ring-1 ring-border">
+          <p className="text-sm font-medium text-ink-soft">Quota Trang Landingpage (Shop)</p>
+          <p className="mt-2 text-3xl font-bold text-terra-deep">
+            {profile?.quota_deals !== undefined && profile.quota_deals > 0 ? "1" : "0"}
+          </p>
+        </div>
+        <div className="rounded-2xl bg-sand-deep/20 p-5 ring-1 ring-border">
+          <p className="text-sm font-medium text-ink-soft">Quota Ưu đãi</p>
+          <p className="mt-2 text-3xl font-bold text-terra-deep">
+            {profile?.quota_deals ?? 0}
+          </p>
+        </div>
+        <div className="rounded-2xl bg-sand-deep/20 p-5 ring-1 ring-border">
+          <p className="text-sm font-medium text-ink-soft">Quota Sản phẩm</p>
+          <p className="mt-2 text-3xl font-bold text-terra-deep">
+            {profile?.quota_products === -1 ? "Không giới hạn" : (profile?.quota_products ?? 0)}
+          </p>
+        </div>
+        <div className="rounded-2xl bg-sand-deep/20 p-5 ring-1 ring-border">
+          <p className="text-sm font-medium text-ink-soft">Quota Đẩy nổi bật (số lần 7 ngày)</p>
+          <p className="mt-2 text-3xl font-bold text-terra-deep">
+            {profile?.quota_featured_slots ?? 0}
+          </p>
+        </div>
+        <div className="rounded-2xl bg-sand-deep/20 p-5 ring-1 ring-border">
+          <p className="text-sm font-medium text-ink-soft">Quota Tin hợp tác</p>
+          <p className="mt-2 text-3xl font-bold text-terra-deep">
+            {profile?.quota_partner_posts ?? 0}
+          </p>
+        </div>
+        <div className="rounded-2xl bg-sand-deep/20 p-5 ring-1 ring-border">
+          <p className="text-sm font-medium text-ink-soft">Quota Bài Blog</p>
+          <p className="mt-2 text-3xl font-bold text-terra-deep">
+            {profile?.quota_blog_posts ?? 0}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-8 border-t border-border pt-8">
+        <h3 className="font-hand text-2xl text-ink">Mua thêm gói</h3>
+        <p className="mt-2 text-ink-soft">Mua thêm gói để tăng quota và quyền lợi.</p>
+        <div className="mt-6 flex flex-wrap gap-4">
+          <Link
+            to="/kich-hoat"
+            className="rounded-full bg-terra px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-terra-deep"
+          >
+            Đăng ký gói mới
+          </Link>
+        </div>
+      </div>
+
+      <div className="mt-8 border-t border-border pt-8">
+        <h3 className="font-hand text-2xl text-ink">Lịch sử đăng ký / Nâng cấp</h3>
+        <div className="mt-6 space-y-4">
+          {requests.length === 0 ? (
+            <p className="text-sm text-ink-soft">Chưa có lịch sử giao dịch.</p>
+          ) : (
+            requests.map((r) => {
+              const plan = plans.find(p => p.id === r.plan_id);
+              return (
+                <div key={r.id} className="flex items-center justify-between rounded-xl bg-background p-4 ring-1 ring-border shadow-sm">
+                  <div>
+                    <p className="font-medium text-ink">{plan ? plan.name : "Gói thành viên"}</p>
+                    <p className="text-sm text-ink-soft">{new Date(r.created_at).toLocaleDateString("vi-VN")}</p>
+                  </div>
+                  <div>
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                      r.status === "approved" ? "bg-green-100 text-green-800" :
+                      r.status === "pending" ? "bg-yellow-100 text-yellow-800" :
+                      "bg-red-100 text-red-800"
+                    }`}>
+                      {r.status === "approved" ? "Thành công" : r.status === "pending" ? "Đang chờ" : "Từ chối"}
+                    </span>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
     </section>
   );
 }

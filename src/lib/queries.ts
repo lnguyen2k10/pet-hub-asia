@@ -249,6 +249,11 @@ export type MembershipPlan = {
   is_active: boolean;
   is_featured: boolean;
   sort_order: number;
+  max_deals: number;
+  max_products: number;
+  featured_slots: number;
+  max_partner_posts: number;
+  max_blog_posts: number;
   created_at: string;
   updated_at: string;
 };
@@ -477,3 +482,17 @@ export const userRoleQuery = queryOptions({
 
 
 
+export const myProfileQuery = queryOptions({
+  queryKey: ["profile", "mine"],
+  queryFn: async () => {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) return null;
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userData.user.id)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
+  },
+});

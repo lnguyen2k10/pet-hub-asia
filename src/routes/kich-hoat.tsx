@@ -94,8 +94,17 @@ function PlanCard({
         <p className="mt-1 text-sm text-ink-soft">{plan.description}</p>
       )}
       <div className="mt-3 flex items-baseline gap-1.5">
-        <span className="text-3xl font-bold">{formatPrice(plan.price_amount)}</span>
-        <span className="text-sm text-ink-soft">/ {plan.period_label}</span>
+        {plan.price_amount === 0 ? (
+          <>
+            <span className="text-3xl font-bold text-terra">Miễn phí</span>
+            <span className="text-sm text-ink-soft line-through ml-1">100.000đ</span>
+          </>
+        ) : (
+          <>
+            <span className="text-3xl font-bold">{formatPrice(plan.price_amount)}</span>
+            <span className="text-sm text-ink-soft">/ {plan.period_label}</span>
+          </>
+        )}
       </div>
       {plan.features.length > 0 && (
         <ul className="mt-4 space-y-1.5">
@@ -237,7 +246,7 @@ function RequestSection({
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Đã gửi đơn! Vui lòng hoàn tất thanh toán theo mã QR bên dưới.");
+      toast.success(plan.price_amount === 0 ? "Nhận quà tặng thành công!" : "Đã gửi đơn! Vui lòng hoàn tất thanh toán theo mã QR bên dưới.");
       setForm({ contact_name: "", contact_phone: "", note: "" });
       void qc.invalidateQueries({ queryKey: ["membership_requests"] });
     },
@@ -307,32 +316,34 @@ function RequestSection({
           </span>
           <span className="text-sm font-bold text-terra">{formatPrice(plan.price_amount)}</span>
         </div>
-        <h2 className="text-2xl font-semibold text-terra-deep mb-2">Thanh toán & Gửi đơn</h2>
+        <h2 className="text-2xl font-semibold text-terra-deep mb-2">{plan.price_amount === 0 ? "Nhận Quà Tặng" : "Thanh toán & Gửi đơn"}</h2>
         <p className="text-ink-soft text-sm mb-6">
-          Hệ thống sẽ tự động kích hoạt gói <strong>{plan.name}</strong> cho bạn trong 1–3 phút sau khi chuyển khoản thành công.
+          {plan.price_amount === 0 ? "Nhập thông tin để nhận ngay gói quà tặng miễn phí." : `Hệ thống sẽ tự động kích hoạt gói ${plan.name} cho bạn trong 1–3 phút sau khi chuyển khoản thành công.`}
         </p>
 
         <div className="grid gap-10 md:grid-cols-2">
           {/* Cột mã QR */}
-          <div className="order-2 md:order-1 flex flex-col items-center rounded-3xl bg-sand-deep/30 p-6 ring-1 ring-border/50">
-            <h3 className="font-semibold mb-1">Quét mã QR để thanh toán</h3>
-            <p className="text-xs text-ink-soft text-center mb-4">
-              Mã QR cập nhật theo số điện thoại bạn nhập bên phải.
-            </p>
-            <div className="rounded-2xl overflow-hidden bg-white ring-2 ring-terra/20 p-2 shadow-sm">
-              <img
-                src={`https://qr.sepay.vn/img?acc=00003554020&bank=TPBank&amount=${plan.price_amount}&des=PET${phone || "SDTCUABAN"}`}
-                alt="QR Code Thanh Toán"
-                className="w-full max-w-[220px] aspect-square object-contain"
-              />
+          {plan.price_amount > 0 && (
+            <div className="order-2 md:order-1 flex flex-col items-center rounded-3xl bg-sand-deep/30 p-6 ring-1 ring-border/50">
+              <h3 className="font-semibold mb-1">Quét mã QR để thanh toán</h3>
+              <p className="text-xs text-ink-soft text-center mb-4">
+                Mã QR cập nhật theo số điện thoại bạn nhập bên phải.
+              </p>
+              <div className="rounded-2xl overflow-hidden bg-white ring-2 ring-terra/20 p-2 shadow-sm">
+                <img
+                  src={`https://qr.sepay.vn/img?acc=00003554020&bank=TPBank&amount=${plan.price_amount}&des=PET${phone || "SDTCUABAN"}`}
+                  alt="QR Code Thanh Toán"
+                  className="w-full max-w-[220px] aspect-square object-contain"
+                />
+              </div>
+              <div className="mt-4 space-y-1 text-sm text-center">
+                <p>Ngân hàng: <strong>TPBank</strong></p>
+                <p>Số tài khoản: <strong>00003554020</strong></p>
+                <p>Số tiền: <strong className="text-terra">{formatPrice(plan.price_amount)}</strong></p>
+                <p>Nội dung: <strong className="font-mono text-terra">PET{phone || "SDTCUABAN"}</strong></p>
+              </div>
             </div>
-            <div className="mt-4 space-y-1 text-sm text-center">
-              <p>Ngân hàng: <strong>TPBank</strong></p>
-              <p>Số tài khoản: <strong>00003554020</strong></p>
-              <p>Số tiền: <strong className="text-terra">{formatPrice(plan.price_amount)}</strong></p>
-              <p>Nội dung: <strong className="font-mono text-terra">PET{phone || "SDTCUABAN"}</strong></p>
-            </div>
-          </div>
+          )}
 
           {/* Cột điền thông tin */}
           <div className="order-1 md:order-2">
@@ -374,11 +385,13 @@ function RequestSection({
                   onClick={() => submit.mutate()}
                   className="w-full rounded-full bg-terra px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-60 shadow-md shadow-terra/20"
                 >
-                  {submit.isPending ? "Đang gửi đơn..." : `Tôi đã thanh toán & Gửi đơn`}
+                  {submit.isPending ? "Đang xử lý..." : plan.price_amount === 0 ? "Nhận Ưu Đãi" : "Tôi đã thanh toán & Gửi đơn"}
                 </button>
-                <p className="mt-3 text-center text-xs text-ink-soft">
-                  Hãy đảm bảo bạn đã quét mã và chuyển khoản thành công trước khi gửi đơn.
-                </p>
+                {plan.price_amount > 0 && (
+                  <p className="mt-3 text-center text-xs text-ink-soft">
+                    Hãy đảm bảo bạn đã quét mã và chuyển khoản thành công trước khi gửi đơn.
+                  </p>
+                )}
               </div>
             </div>
           </div>
