@@ -123,6 +123,11 @@ function PlanCard({
 // ─── Main page ──────────────────────────────────────────────────────────────
 function MembershipPage() {
   const { user, loading } = useAuth();
+  const qc = useQueryClient();
+  // Force refetch plans in case of stale cache
+  useState(() => {
+    qc.invalidateQueries({ queryKey: ["membership_plans"] });
+  });
   const plansQ = useQuery(membershipPlansQuery);
   const requestsQ = useQuery({ ...myMembershipRequestsQuery, enabled: !!user });
   const shopQ = useQuery({ ...myShopQuery, enabled: !!user });
