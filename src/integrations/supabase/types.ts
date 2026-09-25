@@ -150,6 +150,70 @@ export type Database = {
           },
         ]
       }
+
+      membership_plans: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          price_amount: number
+          currency: string
+          duration_days: number
+          period_label: string
+          features: string[]
+          is_active: boolean
+          is_featured: boolean
+          sort_order: number
+          quota_deals: number
+          quota_products: number
+          quota_featured_slots: number
+          quota_partner_posts: number
+          quota_blog_posts: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          price_amount?: number
+          currency?: string
+          duration_days?: number
+          period_label?: string
+          features?: string[]
+          is_active?: boolean
+          is_featured?: boolean
+          sort_order?: number
+          quota_deals?: number
+          quota_products?: number
+          quota_featured_slots?: number
+          quota_partner_posts?: number
+          quota_blog_posts?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          price_amount?: number
+          currency?: string
+          duration_days?: number
+          period_label?: string
+          features?: string[]
+          is_active?: boolean
+          is_featured?: boolean
+          sort_order?: number
+          quota_deals?: number
+          quota_products?: number
+          quota_featured_slots?: number
+          quota_partner_posts?: number
+          quota_blog_posts?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       membership_requests: {
         Row: {
           admin_note: string | null

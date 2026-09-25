@@ -92,7 +92,7 @@ function AdminPage() {
 
   // If activeTab is hidden from this role, fallback
   if (!TABS.find(t => t.id === activeTab)) {
-    setActiveTab(TABS[0].id);
+    setActiveTab(TABS[0]?.id || "requests");
   }
 
   return (
@@ -131,7 +131,7 @@ function AdminPage() {
           {activeTab === "blog" && (
             <div>
               <h1 className="mb-6 text-3xl sm:text-4xl">Quản lý Blog</h1>
-              <BlogManager authorName={user.email ?? "Admin"} />
+              <BlogManager authorName={user.email ?? "Admin"} userId={user.id} />
             </div>
           )}
           {activeTab === "plans" && isAdmin && (

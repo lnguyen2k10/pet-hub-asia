@@ -8,8 +8,8 @@ import { nitro } from "nitro/vite";
 export default defineConfig({
   plugins: [
     nitro({
-      preset: process.env.VERCEL ? "vercel" : "cloudflare-module",
-      ...(process.env.VERCEL ? {} : {
+      preset: process.env['VERCEL'] ? "vercel" : "cloudflare-module",
+      ...(process.env['VERCEL'] ? {} : {
         output: {
           dir: ".output",
           serverDir: ".output/server",
