@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query";
+﻿import { queryOptions } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 
@@ -438,21 +438,39 @@ export const allBlogPostsAdminQuery = queryOptions({
   },
 });
 
- e x p o r t   c o n s t   a l l P r o f i l e s A d m i n Q u e r y   =   q u e r y O p t i o n s ( { 
-     q u e r y K e y :   [ " a d m i n " ,   " p r o f i l e s " ] , 
-     q u e r y F n :   a s y n c   ( )   = >   { 
-         c o n s t   {   d a t a ,   e r r o r   }   =   a w a i t   s u p a b a s e . f r o m ( " p r o f i l e s " ) . s e l e c t ( " * " ) . o r d e r ( " c r e a t e d _ a t " ,   {   a s c e n d i n g :   f a l s e   } ) ; 
-         i f   ( e r r o r )   t h r o w   e r r o r ; 
-         r e t u r n   d a t a   ? ?   [ ] ; 
-     } , 
- } ) ; 
- 
- e x p o r t   c o n s t   a l l U s e r R o l e s A d m i n Q u e r y   =   q u e r y O p t i o n s ( { 
-     q u e r y K e y :   [ " a d m i n " ,   " u s e r _ r o l e s " ] , 
-     q u e r y F n :   a s y n c   ( )   = >   { 
-         c o n s t   {   d a t a ,   e r r o r   }   =   a w a i t   s u p a b a s e . f r o m ( " u s e r _ r o l e s " ) . s e l e c t ( " * " ) ; 
-         i f   ( e r r o r )   t h r o w   e r r o r ; 
-         r e t u r n   d a t a   ? ?   [ ] ; 
-     } , 
- } ) ;  
- 
+export const allProfilesAdminQuery = queryOptions({
+  queryKey: ["admin", "profiles"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  },
+});
+
+export const allUserRolesAdminQuery = queryOptions({
+  queryKey: ["admin", "user_roles"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("user_roles").select("*");
+    if (error) throw error;
+    return data ?? [];
+  },
+});
+
+export const userRoleQuery = queryOptions({
+  queryKey: ["user_role"],
+  queryFn: async (): Promise<"admin" | "moderator" | null> => {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) return null;
+    const { data, error } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userData.user.id)
+      .in("role", ["admin", "moderator"])
+      .limit(1)
+      .maybeSingle();
+    if (error) return null;
+    return data?.role as "admin" | "moderator" | null;
+  },
+});
+
+

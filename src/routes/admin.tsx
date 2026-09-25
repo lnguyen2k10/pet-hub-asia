@@ -17,6 +17,7 @@ import {
   membershipSettingsQuery,
   allProfilesAdminQuery,
   allUserRolesAdminQuery,
+  userRoleQuery,
   type MembershipPlan,
   type MembershipRequest,
   type MembershipSettings,
@@ -43,10 +44,13 @@ const inputCls =
 
 function AdminPage() {
   const { user, loading } = useAuth();
-  const adminQ = useQuery({ ...isAdminQuery, enabled: !!user });
-  const [activeTab, setActiveTab] = useState("plans");
+  const roleQ = useQuery({ ...userRoleQuery, enabled: !!user });
+  const [activeTab, setActiveTab] = useState("requests");
+  
+  const role = roleQ.data;
+  const isAdmin = role === "admin";
 
-  if (loading || (user && adminQ.isLoading)) {
+  if (loading || (user && roleQ.isLoading)) {
     return (
       <div className="min-h-screen">
         <SiteHeader />
@@ -57,14 +61,14 @@ function AdminPage() {
     );
   }
 
-  if (!user || !adminQ.data) {
+  if (!user || !role) {
     return (
       <div className="min-h-screen">
         <SiteHeader />
         <main className="mx-auto max-w-md px-5 py-24 text-center">
           <h1 className="text-3xl">Khu vực quản trị</h1>
           <p className="mt-2 text-ink-soft">
-            {user ? "Tài khoản của bạn không có quyền quản trị." : "Vui lòng đăng nhập bằng tài khoản quản trị."}
+            {user ? "Tài khoản của bạn không có quyền truy cập khu vực này." : "Vui lòng đăng nhập bằng tài khoản quản trị/nhân sự."}
           </p>
           <Link
             to={user ? "/quan-ly" : "/dang-nhap"}
@@ -78,20 +82,30 @@ function AdminPage() {
     );
   }
 
+  const TABS = [
+    { id: "requests", label: "Đơn đăng ký", show: true },
+    { id: "blog", label: "Quản lý Blog", show: true },
+    { id: "plans", label: "Gói thành viên", show: isAdmin },
+    { id: "settings", label: "Cài đặt thanh toán", show: isAdmin },
+    { id: "users", label: "Phân quyền & User", show: isAdmin },
+  ].filter(t => t.show);
+
+  // If activeTab is hidden from this role, fallback
+  if (!TABS.find(t => t.id === activeTab)) {
+    setActiveTab(TABS[0].id);
+  }
+
   return (
     <div className="min-h-screen bg-sand-deep/20">
       <SiteHeader />
       <main className="mx-auto flex max-w-7xl flex-col gap-8 px-5 py-10 md:flex-row">
         {/* Sidebar */}
         <aside className="w-full shrink-0 space-y-1 md:w-64">
-          <p className="mb-4 px-3 font-hand text-2xl text-terra-deep">quản trị</p>
-          {[
-            { id: "plans", label: "Gói thành viên" },
-            { id: "settings", label: "Cài đặt thanh toán" },
-            { id: "requests", label: "Đơn đăng ký" },
-            { id: "blog", label: "Quản lý Blog" },
-            { id: "users", label: "Quản lý thành viên" },
-          ].map((tab) => (
+          <div className="mb-4 px-3">
+            <p className="font-hand text-2xl text-terra-deep">quản trị</p>
+            <p className="text-xs text-ink-soft font-medium uppercase tracking-wider">{isAdmin ? "Super Admin" : "Moderator"}</p>
+          </div>
+          {TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
@@ -108,18 +122,6 @@ function AdminPage() {
 
         {/* Content Area */}
         <div className="min-w-0 flex-1">
-          {activeTab === "plans" && (
-            <div>
-              <h1 className="mb-6 text-3xl sm:text-4xl">Gói thành viên</h1>
-              <PlansManager userId={user.id} />
-            </div>
-          )}
-          {activeTab === "settings" && (
-            <div>
-              <h1 className="mb-6 text-3xl sm:text-4xl">Cài đặt thanh toán</h1>
-              <BankSettingsForm userId={user.id} />
-            </div>
-          )}
           {activeTab === "requests" && (
             <div>
               <h1 className="mb-6 text-3xl sm:text-4xl">Đơn đăng ký thành viên</h1>
@@ -132,9 +134,21 @@ function AdminPage() {
               <BlogManager authorName={user.email ?? "Admin"} />
             </div>
           )}
-          {activeTab === "users" && (
+          {activeTab === "plans" && isAdmin && (
             <div>
-              <h1 className="mb-6 text-3xl sm:text-4xl">Quản lý thành viên</h1>
+              <h1 className="mb-6 text-3xl sm:text-4xl">Gói thành viên</h1>
+              <PlansManager userId={user.id} />
+            </div>
+          )}
+          {activeTab === "settings" && isAdmin && (
+            <div>
+              <h1 className="mb-6 text-3xl sm:text-4xl">Cài đặt thanh toán</h1>
+              <BankSettingsForm userId={user.id} />
+            </div>
+          )}
+          {activeTab === "users" && isAdmin && (
+            <div>
+              <h1 className="mb-6 text-3xl sm:text-4xl">Phân quyền & User</h1>
               <UserManager />
             </div>
           )}
@@ -594,13 +608,14 @@ function UserManager() {
   const profilesQ = useQuery(allProfilesAdminQuery);
   const rolesQ = useQuery(allUserRolesAdminQuery);
 
-  const toggleAdmin = useMutation({
-    mutationFn: async ({ userId, isAdmin }: { userId: string; isAdmin: boolean }) => {
-      if (isAdmin) {
-        const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", "admin");
+  const setRole = useMutation({
+    mutationFn: async ({ userId, newRole, oldRole }: { userId: string; newRole: string | null; oldRole: string | null }) => {
+      if (oldRole) {
+        const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", oldRole);
         if (error) throw error;
-      } else {
-        const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: "admin" });
+      }
+      if (newRole) {
+        const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: newRole as any });
         if (error) throw error;
       }
     },
@@ -612,7 +627,7 @@ function UserManager() {
   });
 
   const profiles = profilesQ.data ?? [];
-  const adminIds = new Set((rolesQ.data ?? []).filter(r => r.role === "admin").map(r => r.user_id));
+  const rolesMap = new Map((rolesQ.data ?? []).map((r) => [r.user_id, r.role]));
 
   return (
     <section className="mt-8 rounded-3xl bg-background p-6 ring-1 ring-border">
@@ -628,13 +643,16 @@ function UserManager() {
               <tr className="border-b border-border">
                 <th className="py-3 font-semibold">Thành viên</th>
                 <th className="py-3 font-semibold">Ngày đăng ký</th>
-                <th className="py-3 font-semibold">Vai trò</th>
+                <th className="py-3 font-semibold">Vai trò hiện tại</th>
                 <th className="py-3 text-right font-semibold">Hành động</th>
               </tr>
             </thead>
             <tbody>
-              {profiles.map(p => {
-                const isAdmin = adminIds.has(p.id);
+              {profiles.map((p) => {
+                const currentRole = rolesMap.get(p.id) || null;
+                const isAdmin = currentRole === "admin";
+                const isMod = currentRole === "moderator";
+                
                 return (
                   <tr key={p.id} className="border-b border-border/50">
                     <td className="py-3 pr-4">
@@ -646,20 +664,26 @@ function UserManager() {
                     </td>
                     <td className="py-3 pr-4">
                       {isAdmin ? (
-                        <span className="rounded-full bg-terra/10 px-2.5 py-1 text-xs font-semibold text-terra">
-                          Admin
-                        </span>
+                        <span className="rounded-full bg-terra/10 px-2.5 py-1 text-xs font-semibold text-terra">Admin</span>
+                      ) : isMod ? (
+                        <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">Moderator</span>
                       ) : (
                         <span className="text-xs text-ink-soft">Thành viên</span>
                       )}
                     </td>
-                    <td className="py-3 text-right">
-                      <button
-                        onClick={() => toggleAdmin.mutate({ userId: p.id, isAdmin })}
-                        className="rounded-xl border border-border px-3 py-1.5 text-xs font-medium hover:bg-sand-deep/40 transition"
+                    <td className="py-3 text-right flex items-center justify-end gap-2">
+                      <select
+                        className="rounded-xl border border-border bg-transparent px-2 py-1 text-xs outline-none"
+                        value={currentRole || ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setRole.mutate({ userId: p.id, newRole: val || null, oldRole: currentRole });
+                        }}
                       >
-                        {isAdmin ? "Gỡ Admin" : "Cấp Admin"}
-                      </button>
+                        <option value="">Thành viên thường</option>
+                        <option value="moderator">Moderator (Duyệt bài/đơn)</option>
+                        <option value="admin">Super Admin</option>
+                      </select>
                     </td>
                   </tr>
                 );
