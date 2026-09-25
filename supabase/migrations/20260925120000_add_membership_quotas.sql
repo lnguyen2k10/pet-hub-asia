@@ -54,7 +54,7 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
-$;
+$$;
 
 DROP TRIGGER IF EXISTS on_membership_request_approved_insert ON public.membership_requests;
 CREATE TRIGGER on_membership_request_approved_insert
@@ -67,13 +67,13 @@ AFTER UPDATE ON public.membership_requests
 FOR EACH ROW EXECUTE FUNCTION public.process_approved_membership();
 
 
--- C?p nh?t trigger auto approve d? t? d?ng duy?t c�c don mi?n ph� (amount = 0)
+-- Cập nhật trigger auto approve để tự động duyệt các đơn miễn phí (amount = 0)
 CREATE OR REPLACE FUNCTION public.auto_approve_membership()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
-AS $func$
+AS $$
 BEGIN
   IF (NEW.proof_url IS NOT NULL OR NEW.amount = 0) AND NEW.status = 'pending' THEN
     UPDATE public.membership_requests
@@ -89,5 +89,4 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
-$func$;
-
+$$;
