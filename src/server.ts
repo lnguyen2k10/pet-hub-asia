@@ -53,7 +53,7 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
     const authHeader = request.headers.get("Authorization") || "";
     const signature = request.headers.get("X-SePay-Signature");
     const timestamp = request.headers.get("X-SePay-Timestamp");
-    const expectedToken = (process.env.SEPAY_WEBHOOK_TOKEN || "").trim();
+    const expectedToken = (process.env["SEPAY_WEBHOOK_TOKEN"] || "").trim();
     
     let payload;
 
@@ -93,8 +93,8 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
 
       if (phone) {
         const supabaseAdmin = createClient(
-          process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || "",
-          process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+          process.env["VITE_SUPABASE_URL"] || process.env["SUPABASE_URL"] || "",
+          process.env["SUPABASE_SERVICE_ROLE_KEY"] || ""
         );
 
         const { data: requestRecord, error: searchError } = await supabaseAdmin
