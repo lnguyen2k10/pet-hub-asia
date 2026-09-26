@@ -461,12 +461,24 @@ export type Database = {
           full_name?: string | null
           id: string
           updated_at?: string
+          quota_deals?: number
+          quota_products?: number
+          quota_featured_slots?: number
+          quota_partner_posts?: number
+          quota_blog_posts?: number
+          has_claimed_free_blog?: boolean
         }
         Update: {
           created_at?: string
           full_name?: string | null
           id?: string
           updated_at?: string
+          quota_deals?: number
+          quota_products?: number
+          quota_featured_slots?: number
+          quota_partner_posts?: number
+          quota_blog_posts?: number
+          has_claimed_free_blog?: boolean
         }
         Relationships: []
       }
@@ -494,6 +506,8 @@ export type Database = {
           review_count: number
           slug: string
           updated_at: string
+          cover_url_2: string | null
+          cover_url_3: string | null
         }
         Insert: {
           address?: string | null
@@ -518,6 +532,8 @@ export type Database = {
           review_count?: number
           slug: string
           updated_at?: string
+          cover_url_2?: string | null
+          cover_url_3?: string | null
         }
         Update: {
           address?: string | null
@@ -542,6 +558,8 @@ export type Database = {
           review_count?: number
           slug?: string
           updated_at?: string
+          cover_url_2?: string | null
+          cover_url_3?: string | null
         }
         Relationships: []
       }

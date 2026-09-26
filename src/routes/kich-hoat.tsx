@@ -235,15 +235,24 @@ function RequestSection({
 
   const submit = useMutation({
     mutationFn: async () => {
-      if (form.contact_name.trim().length < 2) throw new Error("Vui lòng nhập tên liên hệ.");
-      if (!/^[0-9+\s.-]{8,15}$/.test(form.contact_phone.trim()))
-        throw new Error("Số điện thoại chưa hợp lệ.");
+      let cName = form.contact_name.trim();
+      let cPhone = form.contact_phone.trim();
+      
+      if (plan.price_amount > 0) {
+        if (cName.length < 2) throw new Error("Vui lòng nhập tên liên hệ.");
+        if (!/^[0-9+\s.-]{8,15}$/.test(cPhone))
+          throw new Error("Số điện thoại chưa hợp lệ.");
+      } else {
+        cName = cName || "Quà Tặng";
+        cPhone = cPhone || "0000000000";
+      }
+
       const { error } = await supabase.from("membership_requests").insert({
         user_id: userId,
         shop_id: shopId,
         plan_id: plan.id,
-        contact_name: form.contact_name.trim(),
-        contact_phone: form.contact_phone.trim(),
+        contact_name: cName,
+        contact_phone: cPhone,
         note: form.note.trim() || null,
         amount: plan.price_amount,
         status: "pending",
@@ -353,35 +362,46 @@ function RequestSection({
           {/* Cột điền thông tin */}
           <div className="order-1 md:order-2">
             <div className="space-y-4">
-              <label className="block">
-                <span className="text-sm font-medium">1. Số điện thoại đăng ký</span>
-                <input
-                  className={inputCls}
-                  placeholder="VD: 0912345678"
-                  value={form.contact_phone}
-                  onChange={(e) => setForm({ ...form, contact_phone: e.target.value })}
-                />
-                <p className="mt-1.5 text-xs text-terra font-medium">
-                  * Nhập SĐT trước để mã QR cập nhật đúng nội dung chuyển khoản!
-                </p>
-              </label>
-              <label className="block">
-                <span className="text-sm font-medium">2. Tên liên hệ</span>
-                <input
-                  className={inputCls}
-                  value={form.contact_name}
-                  onChange={(e) => setForm({ ...form, contact_name: e.target.value })}
-                />
-              </label>
-              <label className="block">
-                <span className="text-sm font-medium">3. Ghi chú (tuỳ chọn)</span>
-                <textarea
-                  rows={2}
-                  className={inputCls}
-                  value={form.note}
-                  onChange={(e) => setForm({ ...form, note: e.target.value })}
-                />
-              </label>
+              {plan.price_amount > 0 ? (
+                <>
+                  <label className="block">
+                    <span className="text-sm font-medium">1. Số điện thoại đăng ký</span>
+                    <input
+                      className={inputCls}
+                      placeholder="VD: 0912345678"
+                      value={form.contact_phone}
+                      onChange={(e) => setForm({ ...form, contact_phone: e.target.value })}
+                    />
+                    <p className="mt-1.5 text-xs text-terra font-medium">
+                      * Nhập SĐT trước để mã QR cập nhật đúng nội dung chuyển khoản!
+                    </p>
+                  </label>
+                  <label className="block">
+                    <span className="text-sm font-medium">2. Tên liên hệ</span>
+                    <input
+                      className={inputCls}
+                      value={form.contact_name}
+                      onChange={(e) => setForm({ ...form, contact_name: e.target.value })}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-sm font-medium">3. Ghi chú (tuỳ chọn)</span>
+                    <textarea
+                      rows={2}
+                      className={inputCls}
+                      value={form.note}
+                      onChange={(e) => setForm({ ...form, note: e.target.value })}
+                    />
+                  </label>
+                </>
+              ) : (
+                <div className="rounded-3xl bg-emerald-50 p-6 ring-1 ring-emerald-200">
+                  <h3 className="text-lg font-semibold text-emerald-900 mb-2">🎁 Quà tặng dành riêng cho bạn!</h3>
+                  <p className="text-sm text-emerald-800 mb-4">
+                    Nhấn nút bên dưới để nhận ngay đặc quyền 1 bài đăng trên blog hệ thống của 1Pet.Asia hoàn toàn miễn phí.
+                  </p>
+                </div>
+              )}
 
               <div className="pt-2">
                 <button
@@ -390,7 +410,7 @@ function RequestSection({
                   onClick={() => submit.mutate()}
                   className="w-full rounded-full bg-terra px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-60 shadow-md shadow-terra/20"
                 >
-                  {submit.isPending ? "Đang xử lý..." : plan.price_amount === 0 ? "Nhận Ưu Đãi" : "Tôi đã thanh toán & Gửi đơn"}
+                  {submit.isPending ? "Đang xử lý..." : plan.price_amount === 0 ? "Nhận Ưu Đãi Ngay" : "Tôi đã thanh toán & Gửi đơn"}
                 </button>
                 {plan.price_amount > 0 && (
                   <p className="mt-3 text-center text-xs text-ink-soft">

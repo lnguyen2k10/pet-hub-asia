@@ -44,7 +44,7 @@ export function SearchBar({ initial }: Props) {
         />
       </div>
 
-      <div className="flex items-center justify-between gap-2 rounded-2xl bg-sand-deep/60 px-4 py-3 sm:w-48">
+      <div className="flex min-w-0 items-center justify-between gap-2 rounded-2xl bg-sand-deep/60 px-4 py-3 sm:w-48">
         <span className="shrink-0 text-sm font-medium">Danh mục</span>
         <Select value={category || "all"} onValueChange={(v) => setCategory(v === "all" ? "" : v)}>
           <SelectTrigger className="flex-1 border-0 bg-transparent p-0 h-auto focus:ring-0 focus:ring-offset-0 text-right text-sm font-semibold text-terra-deep shadow-none justify-end gap-1">
@@ -61,7 +61,7 @@ export function SearchBar({ initial }: Props) {
         </Select>
       </div>
 
-      <div className="flex items-center justify-between gap-2 rounded-2xl bg-sand-deep/60 px-4 py-3 sm:w-44">
+      <div className="flex min-w-0 items-center justify-between gap-2 rounded-2xl bg-sand-deep/60 px-4 py-3 sm:w-44">
         <span className="shrink-0 text-sm font-medium">Khu vực</span>
         <Select value={city || "all"} onValueChange={(v) => setCity(v === "all" ? "" : v)}>
           <SelectTrigger className="flex-1 border-0 bg-transparent p-0 h-auto focus:ring-0 focus:ring-offset-0 text-right text-sm font-semibold text-terra-deep shadow-none justify-end gap-1">

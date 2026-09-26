@@ -626,6 +626,23 @@ function UserManager() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Thất bại."),
   });
 
+  const consumeBlogQuota = useMutation({
+    mutationFn: async (userId: string) => {
+      const { data, error: fetchErr } = await supabase.from("profiles").select("quota_blog_posts").eq("id", userId).single();
+      if (fetchErr) throw fetchErr;
+      const current = data.quota_blog_posts || 0;
+      if (current <= 0) throw new Error("Thành viên không còn quota blog.");
+      
+      const { error } = await supabase.from("profiles").update({ quota_blog_posts: current - 1 }).eq("id", userId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Đã xác nhận đăng Blog (trừ 1 quota).");
+      void qc.invalidateQueries({ queryKey: ["admin", "profiles"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Thất bại."),
+  });
+
   const profiles = profilesQ.data ?? [];
   const rolesMap = new Map((rolesQ.data ?? []).map((r) => [r.user_id, r.role]));
 
@@ -643,6 +660,7 @@ function UserManager() {
               <tr className="border-b border-border">
                 <th className="py-3 font-semibold">Thành viên</th>
                 <th className="py-3 font-semibold">Ngày đăng ký</th>
+                <th className="py-3 font-semibold">Quota Blog</th>
                 <th className="py-3 font-semibold">Vai trò hiện tại</th>
                 <th className="py-3 text-right font-semibold">Hành động</th>
               </tr>
@@ -661,6 +679,27 @@ function UserManager() {
                     </td>
                     <td className="py-3 pr-4 text-ink-soft">
                       {new Date(p.created_at).toLocaleDateString("vi-VN")}
+                    </td>
+                    <td className="py-3 pr-4">
+                      {p.quota_blog_posts > 0 ? (
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-terra">{p.quota_blog_posts} bài</span>
+                          <button
+                            type="button"
+                            disabled={consumeBlogQuota.isPending}
+                            onClick={() => {
+                              if (confirm(`Xác nhận đã đăng bài cho ${p.full_name || "thành viên này"} và trừ 1 quota?`)) {
+                                consumeBlogQuota.mutate(p.id);
+                              }
+                            }}
+                            className="rounded bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-200"
+                          >
+                            ✓ Đã đăng
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-ink-soft">0 bài</span>
+                      )}
                     </td>
                     <td className="py-3 pr-4">
                       {isAdmin ? (

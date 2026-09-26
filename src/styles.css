@@ -91,6 +91,12 @@
     border-color: var(--color-border);
   }
 
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
