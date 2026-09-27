@@ -8,6 +8,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { categoryLabel, shopInitials } from "@/lib/pet";
 import { shopBySlugQuery, type Product } from "@/lib/queries";
+import { ClaimShopForm } from "@/components/claim-shop-form";
 
 function groupProducts(products: Product[]) {
   const map = new Map<string, Product[]>();
@@ -212,6 +213,7 @@ function ShopLanding() {
                       Gọi shop ngay
                     </a>
                   ) : null}
+                  {!shop.owner_id && <ClaimShopForm shopId={shop.id} />}
                 </aside>
               </div>
             </section>
