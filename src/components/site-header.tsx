@@ -48,7 +48,7 @@ export function SiteHeader() {
               <>
                 <Link
                   to="/quan-ly"
-                  className="hidden text-sm font-medium text-ink-soft hover:text-ink sm:inline"
+                  className="text-sm font-medium text-ink-soft hover:text-ink"
                 >
                   Trang của tôi
                 </Link>

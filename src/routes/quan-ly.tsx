@@ -183,12 +183,14 @@ function MembershipStatus() {
               Quản trị
             </Link>
           ) : null}
-          <Link
-            to="/kich-hoat"
-            className="rounded-full bg-terra px-4 py-2 text-sm font-semibold text-primary-foreground"
-          >
-            {approved ? "Xem gói" : "Kích hoạt ngay"}
-          </Link>
+          {!approved && (
+            <Link
+              to="/kich-hoat"
+              className="rounded-full bg-terra px-4 py-2 text-sm font-semibold text-primary-foreground"
+            >
+              Kích hoạt ngay
+            </Link>
+          )}
         </div>
       </div>
     </section>
@@ -1356,12 +1358,6 @@ function MembershipManager({ userId }: { userId: string }) {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-2xl bg-sand-deep/20 p-5 ring-1 ring-border">
-          <p className="text-sm font-medium text-ink-soft">Quota Uu d�i</p>
-          <p className="mt-2 text-3xl font-bold text-terra-deep">
-            {profile?.quota_deals ?? 0}
-          </p>
-        </div>
-        <div className="rounded-2xl bg-sand-deep/20 p-5 ring-1 ring-border">
           <p className="text-sm font-medium text-ink-soft">Quota Ưu đãi</p>
           <p className="mt-2 text-3xl font-bold text-terra-deep">
             {profile?.quota_deals ?? 0}
@@ -1394,14 +1390,17 @@ function MembershipManager({ userId }: { userId: string }) {
       </div>
 
       <div className="mt-8 border-t border-border pt-8">
-        <h3 className="font-hand text-2xl text-ink">Mua thêm gói</h3>
-        <p className="mt-2 text-ink-soft">Mua thêm gói để tăng quota và quyền lợi.</p>
+        <h3 className="font-hand text-2xl text-ink">Nâng cấp / Mua thêm gói</h3>
+        <p className="mt-2 text-ink-soft">
+          Bạn có thể nâng cấp lên gói cao hơn hoặc mua thêm để tăng quota. <br/>
+          <i>Lưu ý: Các gói trên hệ thống không tự động gia hạn (tự động trừ tiền). Gói sẽ tự động huỷ khi hết hạn, bạn có quyền chủ động gia hạn bất cứ lúc nào.</i>
+        </p>
         <div className="mt-6 flex flex-wrap gap-4">
           <Link
             to="/kich-hoat"
             className="rounded-full bg-terra px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-terra-deep"
           >
-            Đăng ký gói mới
+            Đăng ký / Nâng cấp gói
           </Link>
         </div>
       </div>
