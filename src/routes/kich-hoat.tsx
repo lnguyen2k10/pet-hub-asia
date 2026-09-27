@@ -267,7 +267,7 @@ function RequestSection({
     onError: (e) => toast.error(e instanceof Error ? e.message : "Gửi đơn thất bại."),
   });
 
-  const phone = form.contact_phone.replace(/\D/g, "");
+  const paymentCode = userId.split("-")[0].substring(0, 6).toUpperCase();
 
   if (activePlanRequest) {
     return (
@@ -297,7 +297,7 @@ function RequestSection({
         <h2 className="text-xl font-semibold text-amber-900">Đơn đang chờ xử lý</h2>
         <p className="mt-2 text-sm text-amber-800">
           Bạn đã gửi đơn cho gói <strong>{plan.name}</strong>. Nếu bạn đã chuyển khoản với nội dung{" "}
-          <strong className="font-mono">PET{pendingRequest.contact_phone}</strong>, hệ thống sẽ tự động duyệt trong vài phút.
+          <strong className="font-mono">PET{paymentCode}</strong>, hệ thống sẽ tự động duyệt trong vài phút.
         </p>
 
         {/* Vẫn hiện QR để khách hàng có thể thanh toán nếu chưa */}
@@ -305,7 +305,7 @@ function RequestSection({
           <h3 className="font-semibold text-sm mb-3">Chưa thanh toán? Quét mã QR ngay:</h3>
           <div className="flex items-start gap-4">
             <img decoding="async"
-              src={`https://qr.sepay.vn/img?acc=00003554020&bank=TPBank&amount=${plan.price_amount}&des=PET${pendingRequest.contact_phone ?? ""}`}
+              src={`https://qr.sepay.vn/img?acc=00003554020&bank=TPBank&amount=${plan.price_amount}&des=PET${paymentCode}`}
               alt="QR Code"
               className="w-32 h-32 rounded-xl ring-1 ring-border"
             />
@@ -313,7 +313,7 @@ function RequestSection({
               <p>Ngân hàng: <strong>TPBank</strong></p>
               <p>Số TK: <strong>00003554020</strong></p>
               <p>Số tiền: <strong className="text-terra">{formatPrice(plan.price_amount)}</strong></p>
-              <p>Nội dung: <strong className="font-mono text-terra">PET{pendingRequest.contact_phone}</strong></p>
+              <p>Nội dung: <strong className="font-mono text-terra">PET{paymentCode}</strong></p>
             </div>
           </div>
         </div>
@@ -341,11 +341,11 @@ function RequestSection({
             <div className="order-2 md:order-1 flex flex-col items-center rounded-3xl bg-sand-deep/30 p-6 ring-1 ring-border/50">
               <h3 className="font-semibold mb-1">Quét mã QR để thanh toán</h3>
               <p className="text-xs text-ink-soft text-center mb-4">
-                Mã QR cập nhật theo số điện thoại bạn nhập bên phải.
+                Quét mã để điền tự động nội dung chuyển khoản.
               </p>
               <div className="rounded-2xl overflow-hidden bg-white ring-2 ring-terra/20 p-2 shadow-sm">
                 <img decoding="async"
-                  src={`https://qr.sepay.vn/img?acc=00003554020&bank=TPBank&amount=${plan.price_amount}&des=PET${phone || "SDTCUABAN"}`}
+                  src={`https://qr.sepay.vn/img?acc=00003554020&bank=TPBank&amount=${plan.price_amount}&des=PET${paymentCode}`}
                   alt="QR Code Thanh Toán"
                   className="w-full max-w-[220px] aspect-square object-contain"
                 />
@@ -354,7 +354,7 @@ function RequestSection({
                 <p>Ngân hàng: <strong>TPBank</strong></p>
                 <p>Số tài khoản: <strong>00003554020</strong></p>
                 <p>Số tiền: <strong className="text-terra">{formatPrice(plan.price_amount)}</strong></p>
-                <p>Nội dung: <strong className="font-mono text-terra">PET{phone || "SDTCUABAN"}</strong></p>
+                <p>Nội dung: <strong className="font-mono text-terra">PET{paymentCode}</strong></p>
               </div>
             </div>
           )}

@@ -78,44 +78,47 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
     console.log("Nhận webhook từ SePay:", payload);
 
     if (payload.transferType === "in") {
-      let phone = "";
+      let paymentCode = "";
       const prefix = "PET";
       
       // SePay tự trích xuất nếu có cấu hình Cú pháp
       if (payload.code && payload.code.toUpperCase().startsWith(prefix)) {
-        phone = payload.code.substring(prefix.length).trim();
+        paymentCode = payload.code.substring(prefix.length).trim().toUpperCase();
       } 
       // Fallback tự tìm trong nội dung chuyển khoản
       else if (payload.content) {
-        const match = payload.content.toUpperCase().match(/PET\s*(\d{8,15})/);
-        if (match) phone = match[1];
+        const match = payload.content.toUpperCase().match(/PET\s*([A-Z0-9]{6})/);
+        if (match) paymentCode = match[1];
       }
 
-      if (phone) {
+      if (paymentCode) {
         const supabaseAdmin = createClient(
           process.env["VITE_SUPABASE_URL"] || process.env["SUPABASE_URL"] || "",
           process.env["SUPABASE_SERVICE_ROLE_KEY"] || ""
         );
 
-        // 1. Tìm đơn chờ duyệt theo SĐT (ưu tiên đúng gói theo số tiền)
+        // Lấy tất cả đơn pending
         const { data: pendingRequests } = await supabaseAdmin
           .from("membership_requests")
           .select("*, membership_plans(*)")
-          .eq("contact_phone", phone)
           .eq("status", "pending")
-          .order("created_at", { ascending: false })
-          .limit(5);
+          .order("created_at", { ascending: false });
+
+        // Tìm đơn của user có user_id bắt đầu bằng paymentCode
+        const userRequests = pendingRequests?.filter((r: { user_id: string }) => 
+          r.user_id.split("-")[0].substring(0, 6).toUpperCase() === paymentCode
+        ) || [];
 
         const transferAmount = payload.transferAmount ?? 0;
         
         // Chọn đơn khớp số tiền gần nhất, hoặc lấy đơn mới nhất
         let requestRecord = null;
-        if (pendingRequests && pendingRequests.length > 0) {
+        if (userRequests.length > 0) {
           // Ưu tiên đơn có amount khớp trong ngưỡng ±10%
-          const exactMatch = pendingRequests.find((r: { amount: number }) =>
+          const exactMatch = userRequests.find((r: { amount: number }) =>
             Math.abs(r.amount - transferAmount) / Math.max(r.amount, 1) < 0.1
           );
-          requestRecord = exactMatch ?? pendingRequests[0];
+          requestRecord = exactMatch ?? userRequests[0];
         }
 
         if (requestRecord) {
@@ -150,10 +153,10 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
           if (updateError) {
             console.error("Lỗi khi duyệt tự động:", updateError);
           } else {
-            console.log(`✅ Đã kích hoạt gói ${durationDays} ngày cho đơn ${requestRecord.id} (phone: ${phone})`);
+            console.log(`✅ Đã kích hoạt gói ${durationDays} ngày cho đơn ${requestRecord.id} (code: ${paymentCode})`);
           }
         } else {
-          console.log(`⚠️ Không tìm thấy đơn chờ duyệt cho SĐT: ${phone}`);
+          console.log(`⚠️ Không tìm thấy đơn chờ duyệt cho Code: ${paymentCode}`);
         }
       }
     }
