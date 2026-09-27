@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { SiteFooter } from "@/components/site-footer";
@@ -35,9 +35,6 @@ export const Route = createFileRoute("/kich-hoat")({
   }),
   component: MembershipPage,
 });
-
-const inputCls =
-  "mt-1 w-full rounded-xl bg-background px-4 py-2.5 text-sm ring-1 ring-border outline-none focus:ring-2 focus:ring-terra";
 
 export function statusLabel(status: string) {
   if (status === "approved") return "Đã duyệt";
@@ -124,7 +121,6 @@ function PlanCard({
 function MembershipPage() {
   const { user, loading } = useAuth();
   const qc = useQueryClient();
-  // Force refetch plans in case of stale cache
   useState(() => {
     qc.invalidateQueries({ queryKey: ["membership_plans"] });
   });
@@ -199,6 +195,7 @@ function MembershipPage() {
                 plan={selectedPlan}
                 requests={requestsQ.data ?? []}
                 loading={requestsQ.isLoading}
+                onRefreshRequests={() => qc.invalidateQueries({ queryKey: ["membership_requests"] })}
               />
             )}
           </>
@@ -216,59 +213,108 @@ function RequestSection({
   plan,
   requests,
   loading,
+  onRefreshRequests,
 }: {
   userId: string;
   shopId: string | null;
   plan: MembershipPlan;
   requests: MembershipRequest[];
   loading: boolean;
+  onRefreshRequests: () => void;
 }) {
   const qc = useQueryClient();
-  const [form, setForm] = useState({ contact_name: "", contact_phone: "", note: "" });
+  // Polling state
+  const [isPolling, setIsPolling] = useState(false);
+  const pollCountRef = useRef(0);
+  const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const MAX_POLL_COUNT = 120; // 120 × 5s = 10 phút
+  const POLL_INTERVAL = 5000;
+
+  const paymentCode = userId.split("-")[0].substring(0, 6).toUpperCase();
 
   // Kiểm tra đơn active cho đúng gói này
   const activePlanRequest = requests.find(
     (r) => r.status === "approved" && r.plan_id === plan.id && r.expires_at && new Date(r.expires_at) > new Date()
   );
-  // Đơn đang chờ (bất kỳ gói)
-  const pendingRequest = requests.find((r) => r.status === "pending");
+  // Đơn đang chờ của đúng gói này
+  const pendingForThisPlan = requests.find((r) => r.status === "pending" && r.plan_id === plan.id);
+
+  // Dừng polling nếu đã approved hoặc component unmount
+  useEffect(() => {
+    if (activePlanRequest && isPolling) {
+      stopPolling();
+      toast.success("🎉 Gói thành viên đã được kích hoạt thành công!");
+    }
+  }, [activePlanRequest]);
+
+  useEffect(() => {
+    return () => stopPolling(); // cleanup on unmount
+  }, []);
+
+  function startPolling() {
+    if (pollTimerRef.current) return; // đã đang chạy
+    pollCountRef.current = 0;
+    setIsPolling(true);
+    pollTimerRef.current = setInterval(async () => {
+      pollCountRef.current += 1;
+      await qc.invalidateQueries({ queryKey: ["membership_requests"] });
+      onRefreshRequests();
+
+      // Kiểm tra trong cache ngay sau refetch
+      const cached = qc.getQueryData<MembershipRequest[]>(["membership_requests", "mine"]);
+      const approved = cached?.find(
+        (r) => r.status === "approved" && r.plan_id === plan.id
+      );
+      if (approved) {
+        stopPolling();
+        return;
+      }
+
+      if (pollCountRef.current >= MAX_POLL_COUNT) {
+        stopPolling();
+        toast.info("Hệ thống đã ngừng kiểm tra tự động. Vui lòng tải lại trang để cập nhật trạng thái.");
+      }
+    }, POLL_INTERVAL);
+  }
+
+  function stopPolling() {
+    if (pollTimerRef.current) {
+      clearInterval(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
+    setIsPolling(false);
+  }
 
   const submit = useMutation({
     mutationFn: async () => {
-      let cName = form.contact_name.trim();
-      let cPhone = form.contact_phone.trim();
-      
-      if (plan.price_amount > 0) {
-        if (cName.length < 2) throw new Error("Vui lòng nhập tên liên hệ.");
-        if (!/^[0-9+\s.-]{8,15}$/.test(cPhone))
-          throw new Error("Số điện thoại chưa hợp lệ.");
-      } else {
-        cName = cName || "Quà Tặng";
-        cPhone = cPhone || "0000000000";
-      }
-
       const { error } = await supabase.from("membership_requests").insert({
         user_id: userId,
         shop_id: shopId,
         plan_id: plan.id,
-        contact_name: cName,
-        contact_phone: cPhone,
-        note: form.note.trim() || null,
+        contact_name: "Khách hàng",
+        contact_phone: "0000000000",
+        note: `Tự kích hoạt qua QR - Mã: PET${paymentCode}`,
         amount: plan.price_amount,
-        status: "pending",
+        status: plan.price_amount === 0 ? "pending" : "pending",
       } as any);
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success(plan.price_amount === 0 ? "Nhận quà tặng thành công!" : "Đã gửi đơn! Vui lòng hoàn tất thanh toán theo mã QR bên dưới.");
-      setForm({ contact_name: "", contact_phone: "", note: "" });
+      if (plan.price_amount === 0) {
+        toast.success("Đã gửi yêu cầu nhận quà tặng! Hệ thống đang xử lý...");
+      } else {
+        toast.success("Đã ghi nhận yêu cầu! Hệ thống sẽ tự động kích hoạt sau khi xác nhận thanh toán.");
+      }
       void qc.invalidateQueries({ queryKey: ["membership_requests"] });
+      onRefreshRequests();
+      // Bắt đầu polling để theo dõi kích hoạt
+      startPolling();
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Gửi đơn thất bại."),
   });
 
-  const paymentCode = userId.split("-")[0].substring(0, 6).toUpperCase();
-
+  // ─── Đã có gói active ───
   if (activePlanRequest) {
     return (
       <div className="mt-8 rounded-3xl border-2 border-emerald-200 bg-emerald-50 p-6">
@@ -291,36 +337,73 @@ function RequestSection({
     );
   }
 
-  if (pendingRequest && pendingRequest.plan_id === plan.id) {
+  // ─── Đang chờ xác nhận (đã bấm, đang polling) ───
+  if (pendingForThisPlan) {
     return (
       <div className="mt-8 rounded-3xl bg-amber-50 p-6 ring-1 ring-amber-200">
-        <h2 className="text-xl font-semibold text-amber-900">Đơn đang chờ xử lý</h2>
-        <p className="mt-2 text-sm text-amber-800">
-          Bạn đã gửi đơn cho gói <strong>{plan.name}</strong>. Nếu bạn đã chuyển khoản với nội dung{" "}
-          <strong className="font-mono">PET{paymentCode}</strong>, hệ thống sẽ tự động duyệt trong vài phút.
-        </p>
+        <div className="flex items-start gap-4">
+          <div className="flex-1">
+            <h2 className="text-xl font-semibold text-amber-900">
+              {isPolling ? "⏳ Đang chờ xác nhận thanh toán..." : "Đơn đang chờ xử lý"}
+            </h2>
+            <p className="mt-2 text-sm text-amber-800">
+              {plan.price_amount > 0 ? (
+                <>
+                  Sau khi bạn chuyển khoản với nội dung{" "}
+                  <strong className="font-mono">PET{paymentCode}</strong>, hệ thống sẽ tự động kích hoạt gói{" "}
+                  <strong>{plan.name}</strong> trong vòng <strong>1–3 phút</strong>.
+                  {isPolling && (
+                    <span className="mt-1 block text-xs text-amber-600">
+                      🔄 Hệ thống đang tự động kiểm tra mỗi 5 giây...
+                    </span>
+                  )}
+                </>
+              ) : (
+                "Yêu cầu của bạn đang được xử lý. Vui lòng chờ trong giây lát."
+              )}
+            </p>
+          </div>
+          {isPolling && (
+            <div className="shrink-0">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-300 border-t-amber-700" />
+            </div>
+          )}
+        </div>
 
-        {/* Vẫn hiện QR để khách hàng có thể thanh toán nếu chưa */}
-        <div className="mt-6 rounded-2xl bg-white p-4 ring-1 ring-border">
-          <h3 className="font-semibold text-sm mb-3">Chưa thanh toán? Quét mã QR ngay:</h3>
-          <div className="flex items-start gap-4">
-            <img decoding="async"
-              src={`https://qr.sepay.vn/img?acc=00003554020&bank=TPBank&amount=${plan.price_amount}&des=PET${paymentCode}`}
-              alt="QR Code"
-              className="w-32 h-32 rounded-xl ring-1 ring-border"
-            />
-            <div className="text-sm space-y-1">
-              <p>Ngân hàng: <strong>TPBank</strong></p>
-              <p>Số TK: <strong>00003554020</strong></p>
-              <p>Số tiền: <strong className="text-terra">{formatPrice(plan.price_amount)}</strong></p>
-              <p>Nội dung: <strong className="font-mono text-terra">PET{paymentCode}</strong></p>
+        {plan.price_amount > 0 && (
+          <div className="mt-6 rounded-2xl bg-white p-4 ring-1 ring-border">
+            <h3 className="font-semibold text-sm mb-3 text-center">Thông tin chuyển khoản</h3>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <img
+                decoding="async"
+                src={`https://qr.sepay.vn/img?acc=00003554020&bank=TPBank&amount=${plan.price_amount}&des=PET${paymentCode}`}
+                alt="QR Code"
+                className="w-36 h-36 rounded-xl ring-1 ring-border shrink-0"
+              />
+              <div className="text-sm space-y-1.5">
+                <p>Ngân hàng: <strong>TPBank</strong></p>
+                <p>Số TK: <strong>00003554020</strong></p>
+                <p>Số tiền: <strong className="text-terra">{formatPrice(plan.price_amount)}</strong></p>
+                <p>Nội dung CK: <strong className="font-mono text-terra text-base">PET{paymentCode}</strong></p>
+                <p className="text-xs text-ink-soft pt-1">⚡ Kích hoạt tự động sau khi thanh toán thành công.</p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {!isPolling && (
+          <button
+            onClick={startPolling}
+            className="mt-4 rounded-full bg-amber-700 px-4 py-2 text-sm font-semibold text-white"
+          >
+            Kiểm tra lại trạng thái
+          </button>
+        )}
       </div>
     );
   }
 
+  // ─── Chưa có đơn — hiện QR + nút xác nhận ý định CK ───
   return (
     <>
       <section className="mt-8 rounded-3xl bg-background p-6 md:p-8 ring-1 ring-border">
@@ -330,97 +413,80 @@ function RequestSection({
           </span>
           <span className="text-sm font-bold text-terra">{formatPrice(plan.price_amount)}</span>
         </div>
-        <h2 className="text-2xl font-semibold text-terra-deep mb-2">{plan.price_amount === 0 ? "Nhận Quà Tặng" : "Thanh toán & Gửi đơn"}</h2>
+        <h2 className="text-2xl font-semibold text-terra-deep mb-2">
+          {plan.price_amount === 0 ? "Nhận Quà Tặng" : "Thanh toán & Kích hoạt tự động"}
+        </h2>
         <p className="text-ink-soft text-sm mb-6">
-          {plan.price_amount === 0 ? "Quà tặng thành viên sớm từ 1Pet.Asia" : `Hệ thống sẽ tự động kích hoạt gói ${plan.name} cho bạn trong 1–3 phút sau khi chuyển khoản thành công.`}
+          {plan.price_amount === 0
+            ? "Quà tặng thành viên sớm từ 1Pet.Asia"
+            : `Quét mã QR bên dưới để thanh toán. Gói ${plan.name} sẽ được kích hoạt tự động ngay sau khi hệ thống xác nhận giao dịch thành công.`}
         </p>
 
-        <div className="grid gap-10 md:grid-cols-2">
-          {/* Cột mã QR */}
-          {plan.price_amount > 0 && (
-            <div className="order-2 md:order-1 flex flex-col items-center rounded-3xl bg-sand-deep/30 p-6 ring-1 ring-border/50">
-              <h3 className="font-semibold mb-1">Quét mã QR để thanh toán</h3>
-              <p className="text-xs text-ink-soft text-center mb-4">
-                Quét mã để điền tự động nội dung chuyển khoản.
-              </p>
+        {plan.price_amount > 0 ? (
+          // Gói có phí: Hiện QR trước, bấm 1 nút để xác nhận ý định CK
+          <div className="flex flex-col sm:flex-row items-start gap-8">
+            {/* QR Code */}
+            <div className="flex flex-col items-center rounded-3xl bg-sand-deep/30 p-5 ring-1 ring-border/50 w-full sm:w-auto">
+              <p className="font-semibold text-sm mb-3 text-center">Bước 1: Quét QR để thanh toán</p>
               <div className="rounded-2xl overflow-hidden bg-white ring-2 ring-terra/20 p-2 shadow-sm">
-                <img decoding="async"
+                <img
+                  decoding="async"
                   src={`https://qr.sepay.vn/img?acc=00003554020&bank=TPBank&amount=${plan.price_amount}&des=PET${paymentCode}`}
                   alt="QR Code Thanh Toán"
-                  className="w-full max-w-[220px] aspect-square object-contain"
+                  className="w-48 h-48 object-contain"
                 />
               </div>
-              <div className="mt-4 space-y-1 text-sm text-center">
+              <div className="mt-3 space-y-1 text-sm text-center">
                 <p>Ngân hàng: <strong>TPBank</strong></p>
                 <p>Số tài khoản: <strong>00003554020</strong></p>
                 <p>Số tiền: <strong className="text-terra">{formatPrice(plan.price_amount)}</strong></p>
-                <p>Nội dung: <strong className="font-mono text-terra">PET{paymentCode}</strong></p>
+                <p>Nội dung CK: <strong className="font-mono text-terra text-base">PET{paymentCode}</strong></p>
               </div>
             </div>
-          )}
 
-          {/* Cột điền thông tin */}
-          <div className="order-1 md:order-2">
-            <div className="space-y-4">
-              {plan.price_amount > 0 ? (
-                <>
-                  <label className="block">
-                    <span className="text-sm font-medium">1. Số điện thoại đăng ký</span>
-                    <input
-                      className={inputCls}
-                      placeholder="VD: 0912345678"
-                      value={form.contact_phone}
-                      onChange={(e) => setForm({ ...form, contact_phone: e.target.value })}
-                    />
-                    <p className="mt-1.5 text-xs text-terra font-medium">
-                      * Nhập SĐT trước để mã QR cập nhật đúng nội dung chuyển khoản!
-                    </p>
-                  </label>
-                  <label className="block">
-                    <span className="text-sm font-medium">2. Tên liên hệ</span>
-                    <input
-                      className={inputCls}
-                      value={form.contact_name}
-                      onChange={(e) => setForm({ ...form, contact_name: e.target.value })}
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="text-sm font-medium">3. Ghi chú (tuỳ chọn)</span>
-                    <textarea
-                      rows={2}
-                      className={inputCls}
-                      value={form.note}
-                      onChange={(e) => setForm({ ...form, note: e.target.value })}
-                    />
-                  </label>
-                </>
-              ) : (
-                <div className="rounded-3xl bg-emerald-50 p-6 ring-1 ring-emerald-200">
-                  <h3 className="text-lg font-semibold text-emerald-900 mb-2">🎁 Quà tặng dành riêng cho bạn!</h3>
-                  <p className="text-sm text-emerald-800 mb-4">
-                    Nhấn nút bên dưới để nhận ngay đặc quyền 1 bài đăng trên blog hệ thống của 1Pet.Asia hoàn toàn miễn phí.
-                  </p>
-                </div>
-              )}
-
-              <div className="pt-2">
-                <button
-                  type="button"
-                  disabled={submit.isPending}
-                  onClick={() => submit.mutate()}
-                  className="w-full rounded-full bg-terra px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-60 shadow-md shadow-terra/20"
-                >
-                  {submit.isPending ? "Đang xử lý..." : plan.price_amount === 0 ? "Nhận Ưu Đãi Ngay" : "Tôi đã thanh toán & Gửi đơn"}
-                </button>
-                {plan.price_amount > 0 && (
-                  <p className="mt-3 text-center text-xs text-ink-soft">
-                    Hãy đảm bảo bạn đã quét mã và chuyển khoản thành công trước khi gửi đơn.
-                  </p>
-                )}
+            {/* Nút xác nhận */}
+            <div className="flex-1 flex flex-col justify-center gap-4">
+              <div className="rounded-2xl bg-blue-50 p-4 ring-1 ring-blue-200">
+                <p className="text-sm text-blue-800 font-medium">📋 Hướng dẫn:</p>
+                <ol className="mt-2 space-y-1 text-sm text-blue-700 list-decimal list-inside">
+                  <li>Mở app ngân hàng và quét mã QR.</li>
+                  <li>Kiểm tra đúng số tiền và nội dung <strong className="font-mono">PET{paymentCode}</strong>.</li>
+                  <li>Xác nhận chuyển khoản.</li>
+                  <li>Bấm nút bên dưới — hệ thống tự động kích hoạt gói.</li>
+                </ol>
               </div>
+              <button
+                type="button"
+                disabled={submit.isPending}
+                onClick={() => submit.mutate()}
+                className="w-full rounded-full bg-terra px-5 py-3.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-60 shadow-md shadow-terra/20"
+              >
+                {submit.isPending ? "Đang xử lý..." : "Bước 2: Tôi đã chuyển khoản xong ✓"}
+              </button>
+              <p className="text-xs text-ink-soft text-center">
+                ⚡ Sau khi bấm, hệ thống sẽ tự kiểm tra và kích hoạt gói trong 1–3 phút.
+              </p>
             </div>
           </div>
-        </div>
+        ) : (
+          // Gói miễn phí
+          <div className="space-y-4">
+            <div className="rounded-3xl bg-emerald-50 p-6 ring-1 ring-emerald-200">
+              <h3 className="text-lg font-semibold text-emerald-900 mb-2">🎁 Quà tặng dành riêng cho bạn!</h3>
+              <p className="text-sm text-emerald-800">
+                Nhấn nút bên dưới để nhận ngay đặc quyền 1 bài đăng trên blog hệ thống của 1Pet.Asia hoàn toàn miễn phí.
+              </p>
+            </div>
+            <button
+              type="button"
+              disabled={submit.isPending}
+              onClick={() => submit.mutate()}
+              className="w-full rounded-full bg-terra px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-60 shadow-md shadow-terra/20"
+            >
+              {submit.isPending ? "Đang xử lý..." : "Nhận Ưu Đãi Ngay"}
+            </button>
+          </div>
+        )}
       </section>
 
       {/* Lịch sử đăng ký */}
