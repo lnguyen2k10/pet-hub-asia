@@ -8,7 +8,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import { CATEGORIES, CITIES, formatPrice, slugify } from "@/lib/pet";
+import { formatPrice, slugify } from "@/lib/pet";
 import {
   isAdminQuery,
   myMembershipRequestsQuery,
@@ -201,11 +201,13 @@ type ShopWithDeals = Shop & { deals: Deal[]; products: Product[] };
 
 function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string }) {
   const qc = useQueryClient();
+  const categoriesQ = useQuery(shopCategoriesQuery);
+  const locationsQ = useQuery(shopLocationsQuery);
   const [form, setForm] = useState({
     name: "",
     slug: "",
-    category: CATEGORIES[0].value as string,
-    city: CITIES[0] as string,
+    category: shop?.category ?? "",
+    city: shop?.city ?? "",
     address: "",
     phone: "",
     email: "",
@@ -246,6 +248,23 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
       is_published: shop.is_published,
     });
   }, [shop]);
+
+  useEffect(() => {
+    if (shop) return;
+    if (!form.category && categoriesQ.data?.length) {
+      setForm(f => ({ ...f, category: categoriesQ.data[0].slug }));
+    }
+    if (!form.city && locationsQ.data?.length) {
+      setForm(f => ({ ...f, city: locationsQ.data[0].name }));
+    }
+  }, [shop, categoriesQ.data, locationsQ.data, form.category, form.city]);
+
+  useEffect(() => {
+    if (listingToEdit) return;
+    if (!form.city && locationsQ.data?.length) {
+      setForm(f => ({ ...f, city: locationsQ.data[0].name }));
+    }
+  }, [listingToEdit, locationsQ.data, form.city]);
 
   const save = useMutation({
     mutationFn: async () => {
@@ -346,9 +365,9 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
             value={form.category}
             onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
           >
-            {CATEGORIES.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
+            {categoriesQ.data?.map((c) => (
+              <option key={c.slug} value={c.slug}>
+                {c.name}
               </option>
             ))}
           </select>
@@ -359,9 +378,9 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
             value={form.city}
             onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
           >
-            {CITIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
+            {locationsQ.data?.map((c) => (
+              <option key={c.slug} value={c.name}>
+                {c.name}
               </option>
             ))}
           </select>
@@ -1020,7 +1039,7 @@ const emptyListing = {
   summary: "",
   description: "",
   category: "",
-  city: CITIES[0] as string,
+  city: "",
   investment_note: "",
   contact_name: "",
   contact_phone: "",
@@ -1104,7 +1123,7 @@ function PartnerManager({ userId }: { userId: string }) {
       summary: l.summary ?? "",
       description: l.description ?? "",
       category: l.category ?? "",
-      city: l.city ?? (CITIES[0] as string),
+      city: l.city ?? "",
       investment_note: l.investment_note ?? "",
       contact_name: l.contact_name ?? "",
       contact_phone: l.contact_phone ?? "",

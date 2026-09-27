@@ -6,7 +6,8 @@ import { ProductDialog } from "@/components/product-dialog";
 import { ShopHeroCarousel } from "@/components/shop-hero-carousel";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { categoryLabel, shopInitials } from "@/lib/pet";
+import { shopInitials } from "@/lib/pet";
+import { useCategoryLabel } from "@/lib/queries";
 import { shopBySlugQuery, type Product } from "@/lib/queries";
 import { ClaimShopForm } from "@/components/claim-shop-form";
 
@@ -74,6 +75,7 @@ export const Route = createFileRoute("/shop/$slug")({
 function ShopLanding() {
   const { slug } = Route.useParams();
   const { data: shop, isLoading } = useQuery(shopBySlugQuery(slug));
+  const catLabel = useCategoryLabel(shop?.category);
 
   return (
     <div className="min-h-screen">

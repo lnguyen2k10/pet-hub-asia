@@ -1,9 +1,11 @@
 import { Link } from "@tanstack/react-router";
 
-import { categoryLabel, shopInitials } from "@/lib/pet";
+import { shopInitials } from "@/lib/pet";
+import { useCategoryLabel } from "@/lib/queries";
 import type { Shop } from "@/lib/queries";
 
 export function ShopCard({ shop }: { shop: Shop }) {
+  const catLabel = useCategoryLabel(shop.category);
   return (
     <Link
       to="/shop/$slug"
@@ -24,7 +26,7 @@ export function ShopCard({ shop }: { shop: Shop }) {
           </div>
         )}
         <span className="absolute right-3 top-3 rounded-full bg-background/90 px-2.5 py-1 text-xs font-medium text-terra-deep">
-          {categoryLabel(shop.category)}
+          {catLabel}
         </span>
 
         <div className="absolute -bottom-7 left-5">

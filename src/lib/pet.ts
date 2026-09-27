@@ -5,28 +5,6 @@ import hero1 from "@/assets/hero-1.jpg";
 import hero2 from "@/assets/hero-2.jpg";
 import hero3 from "@/assets/hero-3.jpg";
 
-export const CATEGORIES = [
-  { value: "pet-shop", label: "Pet shop" },
-  { value: "grooming", label: "Spa & Grooming" },
-  { value: "clinic", label: "Phòng khám thú y" },
-  { value: "food", label: "Thức ăn" },
-  { value: "accessory", label: "Phụ kiện" },
-  { value: "hotel", label: "Khách sạn thú cưng" },
-] as const;
-
-export const CITIES = [
-  "TP.HCM",
-  "Hà Nội",
-  "Đà Nẵng",
-  "Cần Thơ",
-  "Hải Phòng",
-  "Nha Trang",
-] as const;
-
-export function categoryLabel(value: string | null | undefined) {
-  return CATEGORIES.find((c) => c.value === value)?.label ?? "Pet shop";
-}
-
 export const HERO_SLIDES = [
   {
     image: hero1,

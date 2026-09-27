@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
-import { HERO_SLIDES, categoryLabel, dealImage } from "@/lib/pet";
+import { HERO_SLIDES, dealImage } from "@/lib/pet";
+import { useCategoryLabel } from "@/lib/queries";
 import type { Deal, Shop } from "@/lib/queries";
 
 type Slide = {
@@ -13,7 +14,7 @@ type Slide = {
 function buildSlides(shop: Shop & { deals: Deal[] }): Slide[] {
   const baseSub = shop.hero_subtitle ?? shop.description?.split("\n")[0] ?? `Chào mừng bạn đến với ${shop.name} — chăm sóc thú cưng tận tâm tại ${shop.city}.`;
   const baseTitle = shop.hero_title ?? shop.name;
-  const baseEyebrow = `${categoryLabel(shop.category)} · ${shop.city}`;
+  const baseEyebrow = `${catLabel} · ${shop.city}`;
 
   const slides: Slide[] = [];
 

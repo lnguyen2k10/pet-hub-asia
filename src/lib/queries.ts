@@ -522,3 +522,36 @@ export const myProfileQuery = queryOptions({
     return data;
   },
 });
+
+export const shopCategoriesQuery = queryOptions({
+  queryKey: ["shop_categories"],
+  staleTime: 5 * 60 * 1000,
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from("shop_categories" as any)
+      .select("*")
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data as { id: string; name: string; slug: string; sort_order: number }[];
+  },
+});
+
+export const shopLocationsQuery = queryOptions({
+  queryKey: ["shop_locations"],
+  staleTime: 5 * 60 * 1000,
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from("shop_locations" as any)
+      .select("*")
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data as { id: string; name: string; slug: string; sort_order: number }[];
+  },
+});
+
+export function useCategoryLabel(slug: string | null | undefined) {
+  const { data } = useQuery(shopCategoriesQuery);
+  return data?.find((c) => c.slug === slug)?.name ?? "Pet shop";
+}

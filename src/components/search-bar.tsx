@@ -9,7 +9,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { CATEGORIES, CITIES } from "@/lib/pet";
+import { useQuery } from "@tanstack/react-query";
+import { shopCategoriesQuery, shopLocationsQuery } from "@/lib/queries";
 
 type Props = {
   initial?: { q?: string; category?: string; city?: string };
@@ -20,6 +21,11 @@ export function SearchBar({ initial }: Props) {
   const [q, setQ] = useState(initial?.q ?? "");
   const [category, setCategory] = useState(initial?.category ?? "");
   const [city, setCity] = useState(initial?.city ?? "");
+
+  const categoriesQ = useQuery(shopCategoriesQuery);
+  const locationsQ = useQuery(shopLocationsQuery);
+  const categories = categoriesQ.data ?? [];
+  const locations = locationsQ.data ?? [];
 
   return (
     <form
@@ -52,9 +58,9 @@ export function SearchBar({ initial }: Props) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tất cả</SelectItem>
-            {CATEGORIES.map((c) => (
-              <SelectItem key={c.value} value={c.value}>
-                {c.label}
+            {categories.map((c) => (
+              <SelectItem key={c.slug} value={c.slug}>
+                {c.name}
               </SelectItem>
             ))}
           </SelectContent>
@@ -69,9 +75,9 @@ export function SearchBar({ initial }: Props) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tất cả</SelectItem>
-            {CITIES.map((c) => (
-              <SelectItem key={c} value={c}>
-                {c}
+            {locations.map((c) => (
+              <SelectItem key={c.slug} value={c.name}>
+                {c.name}
               </SelectItem>
             ))}
           </SelectContent>

@@ -4,7 +4,6 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { LISTING_TYPES, PartnerCard } from "@/components/partner-card";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { CITIES } from "@/lib/pet";
 import { partnerListingsSearchQuery } from "@/lib/queries";
 
 const TITLE = "Cơ hội kinh doanh thú cưng — Tìm đại lý & nhà phân phối | 1Pet.Asia";
@@ -76,7 +75,7 @@ function PartnersPage() {
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2.5">
-          {CITIES.map((city) => (
+          {cities.map((city) => (
             <Link
               key={city}
               to="/co-hoi-kinh-doanh"

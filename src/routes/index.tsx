@@ -8,8 +8,7 @@ import { SearchBar } from "@/components/search-bar";
 import { ShopCard } from "@/components/shop-card";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { CATEGORIES } from "@/lib/pet";
-import { blogPostsQuery, featuredDealsQuery, featuredShopsQuery, partnerListingsQuery } from "@/lib/queries";
+import { blogPostsQuery, featuredDealsQuery, featuredShopsQuery, partnerListingsQuery, shopCategoriesQuery } from "@/lib/queries";
 import { BlogCard } from "@/components/blog-card";
 
 
@@ -34,6 +33,8 @@ function Home() {
   const deals = useQuery(featuredDealsQuery);
   const partners = useQuery(partnerListingsQuery);
   const latestPosts = useQuery(blogPostsQuery());
+  const categoriesQ = useQuery(shopCategoriesQuery);
+  const categories = categoriesQ.data ?? [];
 
   return (
     <div className="min-h-screen">
@@ -51,14 +52,14 @@ function Home() {
             >
               Tất cả
             </Link>
-            {CATEGORIES.map((c) => (
+            {categories.map((c) => (
               <Link
-                key={c.value}
+                key={c.slug}
                 to="/shops"
-                search={{ category: c.value }}
+                search={{ category: c.slug }}
                 className="rounded-full bg-sand-deep px-4 py-2 text-sm font-medium ring-1 ring-border hover:bg-terra/15"
               >
-                {c.label}
+                {c.name}
               </Link>
             ))}
           </div>

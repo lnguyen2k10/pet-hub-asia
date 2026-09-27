@@ -3,8 +3,8 @@ import { useMutation } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 
-import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 
 export function ClaimShopForm({ shopId }: { shopId: string }) {
   const { user } = useAuth();
