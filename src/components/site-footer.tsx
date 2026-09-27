@@ -20,7 +20,7 @@ export function SiteFooter() {
             <Link to="/dang-nhap" className="hover:text-ink">
               Đăng nhập
             </Link>
-            <Link to="/quan-ly" className="hover:text-ink">
+            <Link to="/dang-nhap" className="hover:text-ink">
               Dành cho shop
             </Link>
             <Link to="/kich-hoat" className="hover:text-ink">

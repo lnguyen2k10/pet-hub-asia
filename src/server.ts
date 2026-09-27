@@ -174,12 +174,64 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
   }
 }
 
+async function handleContactSubmit(request: Request): Promise<Response> {
+  try {
+    const payload = await request.json();
+    const botToken = process.env["TELEGRAM_BOT_TOKEN"] || process.env["VITE_TELEGRAM_BOT_TOKEN"];
+    const chatId = process.env["TELEGRAM_CHAT_ID"] || process.env["VITE_TELEGRAM_CHAT_ID"];
+
+    if (!botToken || !chatId) {
+      console.warn("Chưa cấu hình Telegram Bot. Vui lòng thêm TELEGRAM_BOT_TOKEN và TELEGRAM_CHAT_ID vào .env");
+      return new Response(JSON.stringify({ success: true, message: "No telegram config" }), { 
+        status: 200, 
+        headers: { "content-type": "application/json" } 
+      });
+    }
+
+    const message = `🔔 **Có tin nhắn liên hệ mới từ 1Pet.Asia**\n\n` +
+      `👤 **Tên:** ${payload.name || "Không có tên"}\n` +
+      `📞 **SĐT/Email:** ${payload.contact || "Không có SĐT/Email"}\n` +
+      `💬 **Tin nhắn:**\n${payload.message || "Không có nội dung"}`;
+
+    const tgUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
+    const tgRes = await fetch(tgUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: message,
+        parse_mode: "Markdown"
+      })
+    });
+
+    if (!tgRes.ok) {
+      const err = await tgRes.text();
+      console.error("Lỗi gửi Telegram:", err);
+      throw new Error("Telegram API error");
+    }
+
+    return new Response(JSON.stringify({ success: true }), { 
+      status: 200, 
+      headers: { "content-type": "application/json" } 
+    });
+  } catch (error) {
+    console.error("Lỗi xử lý form liên hệ:", error);
+    return new Response(JSON.stringify({ success: false }), {
+      status: 400,
+      headers: { "content-type": "application/json" },
+    });
+  }
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const url = new URL(request.url);
       if (url.pathname === '/api/sepay' && request.method === 'POST') {
         return await handleSepayWebhook(request);
+      }
+      if (url.pathname === '/api/contact' && request.method === 'POST') {
+        return await handleContactSubmit(request);
       }
 
       const handler = await getServerEntry();

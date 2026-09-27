@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { toast } from "react-hot-toast";
 
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -56,8 +58,93 @@ function AboutPage() {
             Khám phá danh bạ
           </Link>
         </div>
+        
+        {/* Contact Form Section */}
+        <section className="mt-16 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-border sm:p-8">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold">Liên hệ với chúng tôi</h2>
+            <p className="mt-2 text-sm text-ink-soft">
+              Bạn có câu hỏi hoặc cần hỗ trợ? Hãy gửi tin nhắn cho đội ngũ quản trị, chúng tôi sẽ phản hồi sớm nhất.
+            </p>
+          </div>
+          <ContactForm />
+        </section>
       </main>
       <SiteFooter />
     </div>
+  );
+}
+
+function ContactForm() {
+  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({ name: "", contact: "", message: "" });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim() || !form.contact.trim() || !form.message.trim()) {
+      toast.error("Vui lòng điền đầy đủ thông tin.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      if (!res.ok) throw new Error("Gửi thất bại");
+      toast.success("Đã gửi tin nhắn thành công!");
+      setForm({ name: "", contact: "", message: "" });
+    } catch (err) {
+      toast.error("Có lỗi xảy ra, vui lòng thử lại sau.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="block">
+          <span className="mb-1.5 block text-sm font-semibold">Họ tên</span>
+          <input
+            type="text"
+            className="w-full rounded-xl border-none bg-sand px-4 py-3 text-sm ring-1 ring-inset ring-border focus:bg-background focus:ring-2 focus:ring-terra"
+            placeholder="Tên của bạn"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1.5 block text-sm font-semibold">SĐT / Email</span>
+          <input
+            type="text"
+            className="w-full rounded-xl border-none bg-sand px-4 py-3 text-sm ring-1 ring-inset ring-border focus:bg-background focus:ring-2 focus:ring-terra"
+            placeholder="090123... hoặc email@..."
+            value={form.contact}
+            onChange={(e) => setForm({ ...form, contact: e.target.value })}
+          />
+        </label>
+      </div>
+      <label className="block">
+        <span className="mb-1.5 block text-sm font-semibold">Tin nhắn</span>
+        <textarea
+          rows={4}
+          className="w-full rounded-xl border-none bg-sand px-4 py-3 text-sm ring-1 ring-inset ring-border focus:bg-background focus:ring-2 focus:ring-terra"
+          placeholder="Nội dung cần hỗ trợ..."
+          value={form.message}
+          onChange={(e) => setForm({ ...form, message: e.target.value })}
+        />
+      </label>
+      <button
+        type="submit"
+        disabled={loading}
+        className="rounded-full bg-ink px-6 py-3 text-sm font-semibold text-background hover:bg-ink/90 disabled:opacity-70"
+      >
+        {loading ? "Đang gửi..." : "Gửi tin nhắn"}
+      </button>
+    </form>
   );
 }

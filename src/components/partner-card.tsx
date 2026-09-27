@@ -142,7 +142,7 @@ export function PartnerCard({ listing }: { listing: PartnerListing }) {
 
             {listing.contact_phone ? (
               <a
-                href={`tel:${listing.contact_phone}`}
+                href={`tel:${listing.contact_phone.replace(/\\s+/g, "")}`}
                 className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-terra px-5 py-3 text-sm font-semibold text-primary-foreground"
               >
                 Gọi {listing.contact_phone}

@@ -206,7 +206,7 @@ function ShopLanding() {
                   </dl>
                   {shop.phone ? (
                     <a
-                      href={`tel:${shop.phone}`}
+                      href={`tel:${shop.phone.replace(/\\s+/g, "")}`}
                       className="mt-6 block rounded-full bg-terra px-5 py-2.5 text-center text-sm font-semibold text-primary-foreground"
                     >
                       Gọi shop ngay

@@ -9,9 +9,9 @@ const NAV = [
   { to: "/", label: "Trang chủ" },
   { to: "/shops", label: "Khám phá" },
   { to: "/uu-dai", label: "Ưu đãi" },
-  { to: "/co-hoi-kinh-doanh", label: "Cơ hội KD" },
+  { to: "/co-hoi-kinh-doanh", label: "Cơ hội kinh doanh" },
   { to: "/blog", label: "Blog" },
-  { to: "/gioi-thieu", label: "Về 1Pet" },
+  { to: "/gioi-thieu", label: "Giới thiệu" },
 ] as const;
 
 export function SiteHeader() {
