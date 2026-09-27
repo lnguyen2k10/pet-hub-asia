@@ -300,11 +300,11 @@ function PlanForm({
     is_featured: plan?.is_featured ?? false,
     is_active: plan?.is_active ?? true,
     sort_order: String(plan?.sort_order ?? 0),
-    max_deals: String(plan?.max_deals ?? 0),
-    max_products: String(plan?.max_products ?? 0),
-    featured_slots: String(plan?.featured_slots ?? 0),
-    max_partner_posts: String(plan?.max_partner_posts ?? 0),
-    max_blog_posts: String(plan?.max_blog_posts ?? 0),
+    quota_deals: String(plan?.quota_deals ?? 0),
+    quota_products: String(plan?.quota_products ?? 0),
+    quota_featured_slots: String(plan?.quota_featured_slots ?? 0),
+    quota_partner_posts: String(plan?.quota_partner_posts ?? 0),
+    quota_blog_posts: String(plan?.quota_blog_posts ?? 0),
   });
 
   const save = useMutation({
@@ -321,11 +321,11 @@ function PlanForm({
         is_featured: form.is_featured,
         is_active: form.is_active,
         sort_order: Number(form.sort_order) || 0,
-        max_deals: Number(form.max_deals) || 0,
-        max_products: Number(form.max_products) || 0,
-        featured_slots: Number(form.featured_slots) || 0,
-        max_partner_posts: Number(form.max_partner_posts) || 0,
-        max_blog_posts: Number(form.max_blog_posts) || 0,
+        quota_deals: Number(form.quota_deals) || 0,
+        quota_products: Number(form.quota_products) || 0,
+        quota_featured_slots: Number(form.quota_featured_slots) || 0,
+        quota_partner_posts: Number(form.quota_partner_posts) || 0,
+        quota_blog_posts: Number(form.quota_blog_posts) || 0,
       };
       if (plan) {
         const { error } = await supabase.from("membership_plans").update(payload).eq("id", plan.id);
@@ -380,23 +380,23 @@ function PlanForm({
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
             <label className="block">
               <span className="text-sm font-medium">Quota Ưu đãi</span>
-              <input className={inputCls} inputMode="numeric" value={form.max_deals} onChange={(e) => setForm({ ...form, max_deals: e.target.value })} />
+              <input className={inputCls} inputMode="numeric" value={form.quota_deals} onChange={(e) => setForm({ ...form, quota_deals: e.target.value })} />
             </label>
             <label className="block">
               <span className="text-sm font-medium">Quota Sản phẩm</span>
-              <input className={inputCls} inputMode="numeric" value={form.max_products} onChange={(e) => setForm({ ...form, max_products: e.target.value })} />
+              <input className={inputCls} inputMode="numeric" value={form.quota_products} onChange={(e) => setForm({ ...form, quota_products: e.target.value })} />
             </label>
             <label className="block">
               <span className="text-sm font-medium">Đẩy Nổi bật (số lần)</span>
-              <input className={inputCls} inputMode="numeric" value={form.featured_slots} onChange={(e) => setForm({ ...form, featured_slots: e.target.value })} />
+              <input className={inputCls} inputMode="numeric" value={form.quota_featured_slots} onChange={(e) => setForm({ ...form, quota_featured_slots: e.target.value })} />
             </label>
             <label className="block">
               <span className="text-sm font-medium">Quota Hợp tác kinh doanh</span>
-              <input className={inputCls} inputMode="numeric" value={form.max_partner_posts} onChange={(e) => setForm({ ...form, max_partner_posts: e.target.value })} />
+              <input className={inputCls} inputMode="numeric" value={form.quota_partner_posts} onChange={(e) => setForm({ ...form, quota_partner_posts: e.target.value })} />
             </label>
             <label className="block">
               <span className="text-sm font-medium">Quota Bài Blog</span>
-              <input className={inputCls} inputMode="numeric" value={form.max_blog_posts} onChange={(e) => setForm({ ...form, max_blog_posts: e.target.value })} />
+              <input className={inputCls} inputMode="numeric" value={form.quota_blog_posts} onChange={(e) => setForm({ ...form, quota_blog_posts: e.target.value })} />
             </label>
           </div>
         </div>
@@ -722,7 +722,7 @@ function UserManager() {
                       {new Date(p.created_at).toLocaleDateString("vi-VN")}
                     </td>
                     <td className="py-3 pr-4">
-                      {p.quota_blog_posts > 0 ? (
+                      {(p.quota_blog_posts ?? 0) > 0 ? (
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-terra">{p.quota_blog_posts} bài</span>
                           <button

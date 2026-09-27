@@ -231,7 +231,7 @@ function RequestSection({
   const MAX_POLL_COUNT = 120; // 120 × 5s = 10 phút
   const POLL_INTERVAL = 5000;
 
-  const paymentCode = userId.split("-")[0].substring(0, 6).toUpperCase();
+  const paymentCode = (userId.split("-")[0] || "").substring(0, 6).toUpperCase();
 
   // Kiểm tra đơn active cho đúng gói này
   const activePlanRequest = requests.find(

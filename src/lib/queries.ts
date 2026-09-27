@@ -261,11 +261,11 @@ export type MembershipPlan = {
   is_active: boolean;
   is_featured: boolean;
   sort_order: number;
-  max_deals: number;
-  max_products: number;
-  featured_slots: number;
-  max_partner_posts: number;
-  max_blog_posts: number;
+  quota_deals: number;
+  quota_products: number;
+  quota_featured_slots: number;
+  quota_partner_posts: number;
+  quota_blog_posts: number;
   created_at: string;
   updated_at: string;
 };

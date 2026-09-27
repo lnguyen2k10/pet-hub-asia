@@ -106,7 +106,7 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
 
         // Tìm đơn của user có user_id bắt đầu bằng paymentCode
         const userRequests = pendingRequests?.filter((r: { user_id: string }) => 
-          r.user_id.split("-")[0].substring(0, 6).toUpperCase() === paymentCode
+          (r.user_id.split("-")[0] || "").substring(0, 6).toUpperCase() === paymentCode
         ) || [];
 
         const transferAmount = payload.transferAmount ?? 0;
