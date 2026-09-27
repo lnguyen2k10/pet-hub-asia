@@ -332,7 +332,7 @@ function RequestSection({
         </div>
         <h2 className="text-2xl font-semibold text-terra-deep mb-2">{plan.price_amount === 0 ? "Nhận Quà Tặng" : "Thanh toán & Gửi đơn"}</h2>
         <p className="text-ink-soft text-sm mb-6">
-          {plan.price_amount === 0 ? "Nhập thông tin để nhận ngay gói quà tặng miễn phí." : `Hệ thống sẽ tự động kích hoạt gói ${plan.name} cho bạn trong 1–3 phút sau khi chuyển khoản thành công.`}
+          {plan.price_amount === 0 ? "Quà tặng thành viên sớm từ 1Pet.Asia" : `Hệ thống sẽ tự động kích hoạt gói ${plan.name} cho bạn trong 1–3 phút sau khi chuyển khoản thành công.`}
         </p>
 
         <div className="grid gap-10 md:grid-cols-2">
