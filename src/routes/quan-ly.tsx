@@ -1356,9 +1356,9 @@ function MembershipManager({ userId }: { userId: string }) {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-2xl bg-sand-deep/20 p-5 ring-1 ring-border">
-          <p className="text-sm font-medium text-ink-soft">Quota Trang Landingpage (Shop)</p>
+          <p className="text-sm font-medium text-ink-soft">Quota Uu dãi</p>
           <p className="mt-2 text-3xl font-bold text-terra-deep">
-            {profile?.quota_deals !== undefined && profile.quota_deals > 0 ? "1" : "0"}
+            {profile?.quota_deals ?? 0}
           </p>
         </div>
         <div className="rounded-2xl bg-sand-deep/20 p-5 ring-1 ring-border">
