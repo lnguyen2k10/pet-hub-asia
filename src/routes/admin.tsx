@@ -8,6 +8,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { BlogManager } from "@/components/blog-manager";
 import { AdminShops } from "@/components/admin-shops";
+import { AdminShopClaims } from "@/components/admin-shop-claims";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPrice } from "@/lib/pet";
@@ -85,6 +86,7 @@ function AdminPage() {
 
   const TABS = [
     { id: "requests", label: "Đơn đăng ký", show: true },
+    { id: "shop_claims", label: "Duyệt nhận Shop", show: true },
     { id: "shops", label: "Danh bạ Shop", show: true },
     { id: "blog", label: "Quản lý Blog", show: true },
     { id: "plans", label: "Gói thành viên", show: isAdmin },
@@ -128,6 +130,13 @@ function AdminPage() {
             <div>
               <h1 className="mb-6 text-3xl sm:text-4xl">Đơn đăng ký thành viên</h1>
               <RequestsTable />
+            </div>
+          )}
+          {activeTab === "shop_claims" && (
+            <div>
+              <h1 className="mb-2 text-3xl sm:text-4xl">Duyệt nhận Shop</h1>
+              <p className="mb-6 text-ink-soft">Duyệt yêu cầu nhận quyền quản lý từ các chủ Shop</p>
+              <AdminShopClaims />
             </div>
           )}
           {activeTab === "shops" && (
