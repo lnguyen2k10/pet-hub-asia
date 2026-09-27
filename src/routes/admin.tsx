@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { BlogManager } from "@/components/blog-manager";
+import { AdminShops } from "@/components/admin-shops";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPrice } from "@/lib/pet";
@@ -84,6 +85,7 @@ function AdminPage() {
 
   const TABS = [
     { id: "requests", label: "Đơn đăng ký", show: true },
+    { id: "shops", label: "Danh bạ Shop", show: true },
     { id: "blog", label: "Quản lý Blog", show: true },
     { id: "plans", label: "Gói thành viên", show: isAdmin },
     { id: "settings", label: "Cài đặt thanh toán", show: isAdmin },
@@ -126,6 +128,13 @@ function AdminPage() {
             <div>
               <h1 className="mb-6 text-3xl sm:text-4xl">Đơn đăng ký thành viên</h1>
               <RequestsTable />
+            </div>
+          )}
+          {activeTab === "shops" && (
+            <div>
+              <h1 className="mb-2 text-3xl sm:text-4xl">Danh bạ Shop</h1>
+              <p className="mb-6 text-ink-soft">Danh sách tất cả các shop (Mời Zalo 1 chạm)</p>
+              <AdminShops />
             </div>
           )}
           {activeTab === "blog" && (
