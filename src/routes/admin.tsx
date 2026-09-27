@@ -300,6 +300,11 @@ function PlanForm({
     is_featured: plan?.is_featured ?? false,
     is_active: plan?.is_active ?? true,
     sort_order: String(plan?.sort_order ?? 0),
+    max_deals: String(plan?.max_deals ?? 0),
+    max_products: String(plan?.max_products ?? 0),
+    featured_slots: String(plan?.featured_slots ?? 0),
+    max_partner_posts: String(plan?.max_partner_posts ?? 0),
+    max_blog_posts: String(plan?.max_blog_posts ?? 0),
   });
 
   const save = useMutation({
@@ -316,6 +321,11 @@ function PlanForm({
         is_featured: form.is_featured,
         is_active: form.is_active,
         sort_order: Number(form.sort_order) || 0,
+        max_deals: Number(form.max_deals) || 0,
+        max_products: Number(form.max_products) || 0,
+        featured_slots: Number(form.featured_slots) || 0,
+        max_partner_posts: Number(form.max_partner_posts) || 0,
+        max_blog_posts: Number(form.max_blog_posts) || 0,
       };
       if (plan) {
         const { error } = await supabase.from("membership_plans").update(payload).eq("id", plan.id);
@@ -360,6 +370,37 @@ function PlanForm({
           <span className="text-sm font-medium">Thứ tự hiển thị</span>
           <input className={inputCls} inputMode="numeric" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: e.target.value })} />
         </label>
+
+        {/* Cấu hình Quota */}
+        <div className="col-span-1 sm:col-span-2 mt-2 rounded-xl bg-black/5 p-4 ring-1 ring-border">
+          <div className="mb-4">
+            <h4 className="font-semibold">Cấu hình Quota (Quyền lợi kích hoạt)</h4>
+            <p className="text-xs text-ink-soft">Lưu ý: Nhập -1 nếu không giới hạn (áp dụng cho Quota Sản phẩm).</p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+            <label className="block">
+              <span className="text-sm font-medium">Quota Ưu đãi</span>
+              <input className={inputCls} inputMode="numeric" value={form.max_deals} onChange={(e) => setForm({ ...form, max_deals: e.target.value })} />
+            </label>
+            <label className="block">
+              <span className="text-sm font-medium">Quota Sản phẩm</span>
+              <input className={inputCls} inputMode="numeric" value={form.max_products} onChange={(e) => setForm({ ...form, max_products: e.target.value })} />
+            </label>
+            <label className="block">
+              <span className="text-sm font-medium">Đẩy Nổi bật (số lần)</span>
+              <input className={inputCls} inputMode="numeric" value={form.featured_slots} onChange={(e) => setForm({ ...form, featured_slots: e.target.value })} />
+            </label>
+            <label className="block">
+              <span className="text-sm font-medium">Quota Hợp tác kinh doanh</span>
+              <input className={inputCls} inputMode="numeric" value={form.max_partner_posts} onChange={(e) => setForm({ ...form, max_partner_posts: e.target.value })} />
+            </label>
+            <label className="block">
+              <span className="text-sm font-medium">Quota Bài Blog</span>
+              <input className={inputCls} inputMode="numeric" value={form.max_blog_posts} onChange={(e) => setForm({ ...form, max_blog_posts: e.target.value })} />
+            </label>
+          </div>
+        </div>
+
         <label className="block sm:col-span-2">
           <span className="text-sm font-medium">Tính năng (mỗi dòng một tính năng)</span>
           <textarea rows={4} className={inputCls} value={form.features} onChange={(e) => setForm({ ...form, features: e.target.value })} placeholder={"Landing page shop\nHiển thị danh sách\nHuy hiệu xác minh"} />
