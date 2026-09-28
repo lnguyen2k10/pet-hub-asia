@@ -28,8 +28,8 @@ ALTER TABLE public.promo_codes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.promo_code_uses ENABLE ROW LEVEL SECURITY;
 
 -- Policy cho admin (Full access)
-CREATE POLICY "Admin full access promo_codes" ON public.promo_codes FOR ALL USING (public.is_admin());
-CREATE POLICY "Admin full access promo_code_uses" ON public.promo_code_uses FOR ALL USING (public.is_admin());
+CREATE POLICY "Admin full access promo_codes" ON public.promo_codes FOR ALL USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'));
+CREATE POLICY "Admin full access promo_code_uses" ON public.promo_code_uses FOR ALL USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'));
 
 -- Người dùng có thể xem mã (để RPC kiểm tra, nhưng RPC thường bypass RLS nếu định nghĩa SECURITY DEFINER)
 -- Tốt nhất không cần policy SELECT cho user vì ta dùng RPC SECURITY DEFINER.
