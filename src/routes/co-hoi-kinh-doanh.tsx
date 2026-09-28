@@ -4,7 +4,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { LISTING_TYPES, PartnerCard } from "@/components/partner-card";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { partnerListingsSearchQuery } from "@/lib/queries";
+import { partnerListingsSearchQuery, shopLocationsQuery } from "@/lib/queries";
 
 const TITLE = "Cơ hội kinh doanh thú cưng — Tìm đại lý & nhà phân phối | 1Pet.Asia";
 const DESC =
@@ -36,6 +36,7 @@ export const Route = createFileRoute("/co-hoi-kinh-doanh")({
 function PartnersPage() {
   const search = Route.useSearch();
   const listings = useQuery(partnerListingsSearchQuery(search));
+  const locationsQ = useQuery(shopLocationsQuery);
 
   return (
     <div className="min-h-screen">
@@ -75,24 +76,24 @@ function PartnersPage() {
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2.5">
-          {cities.map((city) => (
+          {locationsQ.data?.map((city) => (
             <Link
-              key={city}
+              key={city.slug}
               to="/co-hoi-kinh-doanh"
               search={
-                search.city === city
+                search.city === city.name
                   ? search.listing_type
                     ? { listing_type: search.listing_type }
                     : {}
                   : search.listing_type
-                    ? { listing_type: search.listing_type, city }
-                    : { city }
+                    ? { listing_type: search.listing_type, city: city.name }
+                    : { city: city.name }
               }
               className={`rounded-full px-3.5 py-1.5 text-xs font-medium ring-1 ring-border ${
-                search.city === city ? "bg-ink text-background" : "bg-card hover:bg-terra/10"
+                search.city === city.name ? "bg-ink text-background" : "bg-card hover:bg-terra/10"
               }`}
             >
-              {city}
+              {city.name}
             </Link>
           ))}
         </div>

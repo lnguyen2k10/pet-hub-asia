@@ -18,7 +18,7 @@ export function ClaimShopForm({ shopId }: { shopId: string }) {
       if (!user) throw new Error("Vui lòng đăng nhập");
       if (!phone || !email) throw new Error("Vui lòng nhập SĐT và Email");
 
-      const { error } = await (supabase.from("shop_claims") as any).insert([
+      const { error } = await supabase.from("shop_claims" as any).insert([
         {
           shop_id: shopId,
           user_id: user.id,
@@ -70,7 +70,7 @@ export function ClaimShopForm({ shopId }: { shopId: string }) {
         </p>
         <div className="mt-4 flex gap-3">
           <Link
-            to="/login"
+            to="/dang-nhap"
             className="rounded-full bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700"
           >
             Đăng nhập / Đăng ký

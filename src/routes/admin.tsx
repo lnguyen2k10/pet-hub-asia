@@ -20,6 +20,8 @@ import {
   allProfilesAdminQuery,
   allUserRolesAdminQuery,
   userRoleQuery,
+  shopCategoriesQuery,
+  shopLocationsQuery,
   type MembershipPlan,
   type MembershipRequest,
   type MembershipSettings,

@@ -8,8 +8,8 @@ export function AdminShopClaims() {
   const { data: claims, isLoading } = useQuery({
     queryKey: ["admin-shop-claims"],
     queryFn: async () => {
-      const { data, error } = await (supabase
-        .from("shop_claims") as any)
+      const { data, error } = await supabase
+        .from("shop_claims" as any)
         .select(`
           id,
           status,
@@ -28,7 +28,7 @@ export function AdminShopClaims() {
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await (supabase.from("shop_claims") as any)
+      const { error } = await supabase.from("shop_claims" as any)
         .update({ status })
         .eq("id", id);
       if (error) throw error;

@@ -16,6 +16,8 @@ import {
   myProfileQuery,
   myPartnerListingsQuery,
   myShopQuery,
+  shopCategoriesQuery,
+  shopLocationsQuery,
   type Deal,
   type MyPartnerListing,
   type Product,
@@ -252,10 +254,10 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
   useEffect(() => {
     if (shop) return;
     if (!form.category && categoriesQ.data?.length) {
-      setForm(f => ({ ...f, category: categoriesQ.data[0].slug }));
+      setForm(f => ({ ...f, category: categoriesQ.data?.[0]?.slug ?? "" }));
     }
     if (!form.city && locationsQ.data?.length) {
-      setForm(f => ({ ...f, city: locationsQ.data[0].name }));
+      setForm(f => ({ ...f, city: locationsQ.data?.[0]?.name ?? "" }));
     }
   }, [shop, categoriesQ.data, locationsQ.data, form.category, form.city]);
 
@@ -1047,6 +1049,7 @@ const emptyListing = {
 
 function PartnerManager({ userId }: { userId: string }) {
   const qc = useQueryClient();
+  const locationsQ = useQuery(shopLocationsQuery);
   const listingsQ = useQuery(myPartnerListingsQuery);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -1231,9 +1234,9 @@ function PartnerManager({ userId }: { userId: string }) {
               value={draft.city}
               onChange={(e) => setDraft((d) => ({ ...d, city: e.target.value }))}
             >
-              {CITIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
+              {locationsQ.data?.map((c) => (
+                <option key={c.slug} value={c.name}>
+                  {c.name}
                 </option>
               ))}
             </select>

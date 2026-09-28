@@ -533,7 +533,7 @@ export const shopCategoriesQuery = queryOptions({
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: false });
     if (error) console.error('Supabase query error:', error.message || error);
-    return data as { id: string; name: string; slug: string; sort_order: number }[];
+    return data as unknown as { id: string; name: string; slug: string; sort_order: number }[];
   },
 });
 
@@ -547,7 +547,7 @@ export const shopLocationsQuery = queryOptions({
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: false });
     if (error) console.error('Supabase query error:', error.message || error);
-    return data as { id: string; name: string; slug: string; sort_order: number }[];
+    return data as unknown as { id: string; name: string; slug: string; sort_order: number }[];
   },
 });
 
