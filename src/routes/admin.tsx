@@ -566,21 +566,10 @@ function RequestsTable() {
         })
         .eq("id", req.id);
       if (error) throw error;
-      if (status === "approved" && req.shop_id) {
-        await supabase.from("shops").update({ is_published: true }).eq("id", req.shop_id);
-      }
-      if (status === "approved" && plan && req.user_id) {
-        const { data: profile } = await supabase.from("profiles").select("*").eq("id", req.user_id).single();
-        if (profile) {
-          await supabase.from("profiles").update({
-            quota_deals: (profile.quota_deals || 0) + (plan.quota_deals || 0),
-            quota_products: (profile.quota_products || 0) + (plan.quota_products || 0),
-            quota_featured_slots: (profile.quota_featured_slots || 0) + (plan.quota_featured_slots || 0),
-            quota_partner_posts: (profile.quota_partner_posts || 0) + (plan.quota_partner_posts || 0),
-            quota_blog_posts: (profile.quota_blog_posts || 0) + (plan.quota_blog_posts || 0),
-            membership_until: expires.toISOString(),
-          } as any).eq("id", req.user_id);
-        }
+      if (status === "approved" && req.user_id) {
+        await supabase.from("profiles").update({
+          membership_until: expires.toISOString(),
+        } as any).eq("id", req.user_id);
       }
     },
     onSuccess: () => {
