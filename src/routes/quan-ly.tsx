@@ -3,7 +3,7 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { ImageUpload, uploadShopImage } from "@/components/image-upload";
+import { ImageUpload } from "@/components/image-upload";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { useAuth } from "@/hooks/use-auth";
@@ -180,7 +180,7 @@ function DashboardPage() {
                 {activeTab === "deals" && shopQ.data && <DealsManager shop={shopQ.data} userId={user.id} />}
                 {activeTab === "products" && shopQ.data && <ProductsManager shop={shopQ.data} userId={user.id} />}
                 {activeTab === "partner" && <PartnerManager userId={user.id} />}
-                {activeTab === "membership" && <MembershipManager userId={user.id} />}
+                {activeTab === "membership" && <MembershipManager />}
                 {activeTab === "account" && <AccountManager userId={user.id} />}
                 
                 {!shopQ.data && activeTab !== "info" && activeTab !== "membership" && activeTab !== "partner" && (
@@ -271,7 +271,7 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
   });
 
   const profileQ = useQuery(myProfileQuery);
-  const hasActivePlan = (profileQ.data?.quota_deals ?? 0) > 0 || (profileQ.data?.quota_products ?? 0) > 0 || (profileQ.data?.quota_blog_posts ?? 0) > 0;
+  const hasActivePlan = (profileQ.data?.quota_deals ?? 0) !== 0 || (profileQ.data?.quota_products ?? 0) !== 0 || (profileQ.data?.quota_blog_posts ?? 0) !== 0;
 
   useEffect(() => {
     if (!shop) return;
@@ -556,7 +556,7 @@ function DealsManager({ shop, userId }: { shop: ShopWithDeals; userId: string })
   const [draft, setDraft] = useState({ ...emptyDeal });
   const profileQ = useQuery(myProfileQuery);
   const quota_deals = profileQ.data?.quota_deals ?? 0;
-  const isOverQuota = !editingId && shop.deals.length >= quota_deals;
+  const isOverQuota = !editingId && quota_deals !== -1 && shop.deals.length >= quota_deals;
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ["shop"] });
@@ -1395,11 +1395,11 @@ function PartnerManager({ userId }: { userId: string }) {
     </section>
   );
 }
-function MembershipManager({ userId }: { userId: string }) {
+function MembershipManager() {
   const profileQ = useQuery(myProfileQuery);
   const plansQ = useQuery(membershipPlansQuery);
   const reqQ = useQuery(myMembershipRequestsQuery);
-  const router = useRouter();
+  const qc = useQueryClient();
 
   if (profileQ.isLoading || plansQ.isLoading || reqQ.isLoading) {
     return <div className="h-64 animate-pulse rounded-3xl bg-sand-deep/60" />;
@@ -1467,7 +1467,7 @@ function MembershipManager({ userId }: { userId: string }) {
         </div>
       </div>
 
-      <PromoCodeForm onRedeemed={() => qc.invalidateQueries({ queryKey: ["myProfile"] })} />
+      <PromoCodeForm onRedeemed={() => qc.invalidateQueries({ queryKey: ["profile", "mine"] })} />
 
       <div className="mt-8 border-t border-border pt-8">
         <h3 className="font-hand text-2xl text-ink">Lịch sử đăng ký / Nâng cấp</h3>

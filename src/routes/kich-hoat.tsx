@@ -155,7 +155,11 @@ function MembershipPage() {
           </div>
         ) : (
           <>
-            <div className={`mt-10 grid gap-4 ${plans.length === 1 ? "max-w-sm" : plans.length === 2 ? "sm:grid-cols-2" : "sm:grid-cols-3"}`}>
+            <div
+              className={`mt-10 grid gap-4 ${
+                { 1: "max-w-sm", 2: "sm:grid-cols-2" }[plans.length] || "sm:grid-cols-3"
+              }`}
+            >
               {plans.map((plan) => (
                 <PlanCard
                   key={plan.id}

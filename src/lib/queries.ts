@@ -95,7 +95,10 @@ export function searchShopsQuery(filters: SearchFilters) {
     staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<Shop[]> => {
       let query = supabase.from("shops").select("*").eq("is_published", true);
-      if (filters.q) query = query.ilike("name", `%${filters.q}%`);
+      if (filters.q) {
+        const safeQ = filters.q.replace(/,/g, " ");
+        query = query.or(`name.ilike.%${safeQ}%,city.ilike.%${safeQ}%,address.ilike.%${safeQ}%`);
+      }
       if (filters.category) query = query.eq("category", filters.category);
       if (filters.city) query = query.eq("city", filters.city);
       const { data, error } = await query.order("rating", { ascending: false }).limit(60);
@@ -553,5 +556,5 @@ export const shopLocationsQuery = queryOptions({
 
 export function useCategoryLabel(slug: string | null | undefined) {
   const { data } = useQuery(shopCategoriesQuery);
-  return data?.find((c) => c.slug === slug)?.name ?? "Pet shop";
+  return data?.find((c) => c.slug === slug)?.name ?? "Cửa hàng thú cưng";
 }

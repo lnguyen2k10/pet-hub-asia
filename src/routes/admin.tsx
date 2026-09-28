@@ -15,7 +15,7 @@ import { formatPrice } from "@/lib/pet";
 import {
   allMembershipPlansQuery,
   allMembershipRequestsQuery,
-  isAdminQuery,
+
   membershipSettingsQuery,
   allProfilesAdminQuery,
   allUserRolesAdminQuery,
@@ -695,12 +695,12 @@ function UserManager() {
 
   const setRole = useMutation({
     mutationFn: async ({ userId, newRole, oldRole }: { userId: string; newRole: string | null; oldRole: string | null }) => {
-      if (oldRole) {
-        const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", oldRole as any);
+      if (newRole) {
+        const { error } = await supabase.from("user_roles").upsert({ user_id: userId, role: newRole as any }, { onConflict: "user_id, role" });
         if (error) throw error;
       }
-      if (newRole) {
-        const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: newRole as any });
+      if (oldRole && oldRole !== newRole) {
+        const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", oldRole as any);
         if (error) throw error;
       }
     },
@@ -796,7 +796,7 @@ function UserManager() {
                       </td>
                       <td className="py-3 pr-4">
                         {shopsMap.get(p.id) ? (
-                          <a href={`/shop/${shopsMap.get(p.id)?.slug}`} target="_blank" className="text-terra font-medium hover:underline text-sm">
+                          <a href={`/shop/${shopsMap.get(p.id)?.slug}`} target="_blank" rel="noopener noreferrer" className="text-terra font-medium hover:underline text-sm">
                             {shopsMap.get(p.id)?.name}
                           </a>
                         ) : (
