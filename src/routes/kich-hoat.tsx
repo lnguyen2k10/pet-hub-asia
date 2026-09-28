@@ -240,6 +240,9 @@ function RequestSection({
   // Đơn đang chờ của đúng gói này
   const pendingForThisPlan = requests.find((r) => r.status === "pending" && r.plan_id === plan.id);
 
+  // Kiểm tra xem đã từng nhận gói Free này bao giờ chưa (bất kể trạng thái)
+  const hasClaimedFreePlanEver = plan.price_amount === 0 && requests.some((r) => r.plan_id === plan.id);
+
   // Dừng polling nếu đã approved hoặc component unmount
   useEffect(() => {
     if (activePlanRequest && isPolling) {
@@ -399,6 +402,21 @@ function RequestSection({
             Kiểm tra lại trạng thái
           </button>
         )}
+      </div>
+    );
+  }
+
+  // ─── Đã từng nhận gói Free nhưng đã hết hạn hoặc bị từ chối ───
+  if (hasClaimedFreePlanEver) {
+    return (
+      <div className="mt-8 rounded-3xl bg-sand-deep/40 p-6 ring-1 ring-border text-center">
+        <span className="text-3xl">🎁</span>
+        <h2 className="mt-3 text-lg font-semibold text-ink">
+          Bạn đã sử dụng đặc quyền này
+        </h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          Gói ưu đãi miễn phí này chỉ được áp dụng 1 lần duy nhất cho mỗi tài khoản.
+        </p>
       </div>
     );
   }
