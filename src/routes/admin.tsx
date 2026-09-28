@@ -692,6 +692,14 @@ function UserManager() {
   const qc = useQueryClient();
   const profilesQ = useQuery(allProfilesAdminQuery);
   const rolesQ = useQuery(allUserRolesAdminQuery);
+  const shopsQ = useQuery({
+    queryKey: ['admin', 'profiles-shops'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('shops').select('owner_id, name, slug').not('owner_id', 'is', null);
+      if (error) throw error;
+      return data;
+    }
+  });
 
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<any>({});
@@ -761,6 +769,7 @@ function UserManager() {
 
   const profiles = profilesQ.data ?? [];
   const rolesMap = new Map((rolesQ.data ?? []).map((r) => [r.user_id, r.role]));
+  const shopsMap = new Map((shopsQ.data ?? []).map((s) => [s.owner_id, s]));
 
   return (
     <section className="mt-8 rounded-3xl bg-background p-6 ring-1 ring-border">
@@ -775,6 +784,7 @@ function UserManager() {
             <thead>
               <tr className="border-b border-border">
                 <th className="py-3 font-semibold">Thành viên</th>
+                <th className="py-3 font-semibold">Shop quản lý</th>
                 <th className="py-3 font-semibold">Ngày đăng ký</th>
                 <th className="py-3 font-semibold">Quota Blog</th>
                 <th className="py-3 font-semibold">Vai trò hiện tại</th>
@@ -794,6 +804,15 @@ function UserManager() {
                       <td className="py-3 pr-4">
                         <p className="font-medium">{p.full_name || "Chưa có tên"}</p>
                         <p className="text-xs text-ink-soft opacity-60">{p.id.slice(0, 8)}...</p>
+                      </td>
+                      <td className="py-3 pr-4">
+                        {shopsMap.get(p.id) ? (
+                          <a href={`/shop/${shopsMap.get(p.id)?.slug}`} target="_blank" className="text-terra font-medium hover:underline text-sm">
+                            {shopsMap.get(p.id)?.name}
+                          </a>
+                        ) : (
+                          <span className="text-xs opacity-50 text-ink-soft">Không có</span>
+                        )}
                       </td>
                       <td className="py-3 pr-4 text-ink-soft">
                         {new Date(p.created_at).toLocaleDateString("vi-VN")}
