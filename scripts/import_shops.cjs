@@ -73,8 +73,11 @@ async function importShops() {
       phone: shop.phone ? shop.phone.substring(0, 50) : null,
       email: shop.email ? shop.email.substring(0, 255) : null,
       website: shop.website ? shop.website.substring(0, 255) : null,
+      fanpage: shop.fanpage ? shop.fanpage.substring(0, 255) : null,
       logo_url: shop.logo || null,
-      cover_url: coverUrl,
+      cover_url: shop.images && shop.images.length > 0 ? shop.images[0] : null,
+      cover_url_2: shop.images && shop.images.length > 1 ? shop.images[1] : null,
+      cover_url_3: shop.images && shop.images.length > 2 ? shop.images[2] : null,
       category: 'pet-shop', // Mặc định
       is_published: true
     };
