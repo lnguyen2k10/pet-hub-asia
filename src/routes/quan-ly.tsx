@@ -52,6 +52,51 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
+function PromoCodeForm({ onRedeemed }: { onRedeemed: () => void }) {
+  const [code, setCode] = useState('');
+  const redeem = useMutation({
+    mutationFn: async () => {
+      if (!code.trim()) throw new Error('Vui lòng nhập mã quà tặng');
+      const { data, error } = await supabase.rpc('redeem_promo_code', { p_code: code.trim() });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data: any) => {
+      toast.success(data?.message || 'Đổi mã quà tặng thành công!');
+      setCode('');
+      onRedeemed();
+    },
+    onError: (e: any) => {
+      toast.error(e.message || 'Mã không hợp lệ hoặc đã hết hạn.');
+    }
+  });
+
+  return (
+    <div className="mt-8 rounded-3xl bg-amber-50 p-6 ring-1 ring-amber-200 flex flex-col md:flex-row items-center gap-4">
+      <div className="flex-1">
+        <h3 className="text-lg font-bold text-amber-900">🎁 Có mã quà tặng?</h3>
+        <p className="text-sm text-amber-800">Nhập mã để nhận thêm Quota đăng bài miễn phí!</p>
+      </div>
+      <div className="flex w-full max-w-sm gap-2">
+        <input 
+          type="text" 
+          placeholder="Nhập mã của bạn..."
+          value={code}
+          onChange={(e) => setCode(e.target.value.toUpperCase())}
+          className="flex-1 rounded-full border border-amber-300 bg-white px-4 py-2 text-sm font-semibold outline-none focus:ring-2 focus:ring-amber-500 uppercase"
+        />
+        <button 
+          disabled={redeem.isPending || !code.trim()}
+          onClick={() => redeem.mutate()}
+          className="rounded-full bg-amber-600 px-6 py-2 text-sm font-bold text-white shadow-sm hover:bg-amber-700 disabled:opacity-60 shrink-0"
+        >
+          {redeem.isPending ? 'Đang đổi...' : 'Đổi mã'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function DashboardPage() {
   const { user, loading } = useAuth();
   const shopQ = useQuery({ ...myShopQuery, enabled: !!user });
@@ -1421,6 +1466,8 @@ function MembershipManager({ userId }: { userId: string }) {
           </Link>
         </div>
       </div>
+
+      <PromoCodeForm onRedeemed={() => qc.invalidateQueries({ queryKey: ["myProfile"] })} />
 
       <div className="mt-8 border-t border-border pt-8">
         <h3 className="font-hand text-2xl text-ink">Lịch sử đăng ký / Nâng cấp</h3>

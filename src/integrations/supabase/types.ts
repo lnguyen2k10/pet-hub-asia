@@ -151,6 +151,51 @@ export type Database = {
         ]
       }
 
+      promo_codes: {
+        Row: {
+          id: string
+          code: string
+          description: string | null
+          quota_deals: number
+          quota_products: number
+          quota_featured_slots: number
+          quota_partner_posts: number
+          quota_blog_posts: number
+          max_uses: number
+          uses_count: number
+          expires_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          code: string
+          description?: string | null
+          quota_deals?: number
+          quota_products?: number
+          quota_featured_slots?: number
+          quota_partner_posts?: number
+          quota_blog_posts?: number
+          max_uses?: number
+          uses_count?: number
+          expires_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          code?: string
+          description?: string | null
+          quota_deals?: number
+          quota_products?: number
+          quota_featured_slots?: number
+          quota_partner_posts?: number
+          quota_blog_posts?: number
+          max_uses?: number
+          uses_count?: number
+          expires_at?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       membership_plans: {
         Row: {
           id: string
