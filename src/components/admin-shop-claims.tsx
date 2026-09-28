@@ -17,12 +17,27 @@ export function AdminShopClaims() {
           contact_email,
           proof_message,
           created_at,
-          shops ( name, slug ),
-          profiles ( full_name, email )
+          user_id,
+          shops ( name, slug )
         `)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data;
+      
+      if (!data || data.length === 0) return [];
+      
+      // Fetch profiles manually to bypass missing foreign key issue
+      const userIds = [...new Set(data.map((c: any) => c.user_id))];
+      const { data: profilesData } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", userIds);
+        
+      const profileMap = new Map((profilesData || []).map(p => [p.id, p]));
+      
+      return data.map((c: any) => ({
+        ...c,
+        profiles: profileMap.get(c.user_id) || { full_name: "Không rõ", email: "" }
+      }));
     },
   });
 
