@@ -455,6 +455,7 @@ export type Database = {
             has_claimed_free_blog?: boolean
           id: string
           updated_at: string
+          membership_until?: string | null
         }
         Insert: {
           created_at?: string
@@ -467,6 +468,7 @@ export type Database = {
           quota_partner_posts?: number
           quota_blog_posts?: number
           has_claimed_free_blog?: boolean
+          membership_until?: string | null
         }
         Update: {
           created_at?: string
@@ -479,6 +481,7 @@ export type Database = {
           quota_partner_posts?: number
           quota_blog_posts?: number
           has_claimed_free_blog?: boolean
+          membership_until?: string | null
         }
         Relationships: []
       }
