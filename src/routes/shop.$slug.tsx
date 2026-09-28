@@ -39,10 +39,32 @@ export const Route = createFileRoute("/shop/$slug")({
       `Thông tin, sản phẩm, dịch vụ và ưu đãi của ${name}${loaderData?.city ? ` tại ${loaderData.city}` : ""} trên 1Pet.Asia.`
     ).slice(0, 155);
     const cover = loaderData?.cover;
+    
+    const url = `https://www.1pet.asia/shop/${params.slug}`;
+    
+    // JSON-LD Schema
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "PetStore",
+      "name": name,
+      "image": cover ? [cover] : [],
+      "description": desc,
+      "url": url,
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": loaderData?.city || "Vietnam",
+        "addressCountry": "VN"
+      }
+    };
+    
     return {
+      links: [
+        { rel: "canonical", href: url }
+      ],
       meta: [
         { title },
         { name: "description", content: desc },
+        { property: "og:url", content: url },
         { property: "og:title", content: title },
         { property: "og:description", content: desc },
         { property: "og:type", content: "website" },
@@ -54,6 +76,12 @@ export const Route = createFileRoute("/shop/$slug")({
             ]
           : []),
       ],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify(schema)
+        }
+      ]
     };
   },
 
@@ -120,7 +148,7 @@ function ShopLanding() {
                       </span>
                     )}
                     <div>
-                      <h2 className="font-display text-2xl font-semibold">{shop.name}</h2>
+                      <h1 className="font-display text-2xl font-semibold">{shop.name}</h1>
                       <p className="text-sm text-ink-soft">
                         <span className="text-terra">★</span> {shop.rating} ({shop.review_count}{" "}
                         đánh giá)

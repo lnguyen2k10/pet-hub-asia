@@ -659,7 +659,7 @@ function RequestsTable() {
                     <button
                       type="button"
                       disabled={review.isPending}
-                      onClick={() => review.mutate({ req: r, status: "approved", durationDays, plan })}
+                      onClick={() => review.mutate({ req: r, status: "approved", durationDays, plan: plan || null })}
                       className="rounded-full bg-terra px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
                     >
                       Duyệt ({plan ? `${plan.period_label}` : "1 năm"})
@@ -667,7 +667,7 @@ function RequestsTable() {
                     <button
                       type="button"
                       disabled={review.isPending}
-                      onClick={() => review.mutate({ req: r, status: "rejected", durationDays: 0, plan })}
+                      onClick={() => review.mutate({ req: r, status: "rejected", durationDays: 0, plan: plan || null })}
                       className="rounded-full bg-secondary px-4 py-2 text-sm font-semibold text-ink disabled:opacity-60"
                     >
                       Từ chối
