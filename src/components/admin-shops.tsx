@@ -1,8 +1,38 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 export function AdminShops() {
+  const qc = useQueryClient();
+  const [editingShop, setEditingShop] = useState<any>(null);
+  const [editForm, setEditForm] = useState<any>({});
+
+  const updateShop = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const { error } = await supabase.from("shops").update(data).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Đã cập nhật thông tin shop.");
+      setEditingShop(null);
+      qc.invalidateQueries({ queryKey: ["admin-shops"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const deleteShop = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("shops").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Đã xóa shop.");
+      qc.invalidateQueries({ queryKey: ["admin-shops"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const { data: shops, isLoading } = useQuery({
     queryKey: ["admin-shops"],
     queryFn: async () => {
@@ -56,7 +86,56 @@ Nếu cần hỗ trợ gì shop cứ nhắn lại cho mình. Chúc shop buôn ma
   }
 
   return (
-    <div className="overflow-x-auto rounded-3xl ring-1 ring-border bg-white shadow-sm">
+    <>
+      {editingShop && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold">Chỉnh sửa Shop</h3>
+            <div className="mt-4 space-y-4">
+              <label className="block">
+                <span className="text-sm font-medium">Tên Shop</span>
+                <input
+                  className="mt-1 w-full rounded-lg border p-2 text-sm outline-none ring-1 ring-border focus:ring-terra"
+                  value={editForm.name || ""}
+                  onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                />
+              </label>
+              <label className="block">
+                <span className="text-sm font-medium">Slug</span>
+                <input
+                  className="mt-1 w-full rounded-lg border p-2 text-sm outline-none ring-1 ring-border focus:ring-terra"
+                  value={editForm.slug || ""}
+                  onChange={e => setEditForm({ ...editForm, slug: e.target.value })}
+                />
+              </label>
+              <label className="block">
+                <span className="text-sm font-medium">Số điện thoại</span>
+                <input
+                  className="mt-1 w-full rounded-lg border p-2 text-sm outline-none ring-1 ring-border focus:ring-terra"
+                  value={editForm.phone || ""}
+                  onChange={e => setEditForm({ ...editForm, phone: e.target.value })}
+                />
+              </label>
+              <div className="mt-6 flex justify-end gap-2">
+                <button
+                  onClick={() => setEditingShop(null)}
+                  className="rounded-lg px-4 py-2 text-sm font-medium hover:bg-sand-deep"
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={() => updateShop.mutate({ id: editingShop.id, data: editForm })}
+                  disabled={updateShop.isPending}
+                  className="rounded-lg bg-terra px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+                >
+                  Lưu thay đổi
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      <div className="overflow-x-auto rounded-3xl ring-1 ring-border bg-white shadow-sm">
       <table className="w-full text-left text-sm">
         <thead className="bg-sand-deep/40 text-ink-soft">
           <tr>
@@ -86,15 +165,34 @@ Nếu cần hỗ trợ gì shop cứ nhắn lại cho mình. Chúc shop buôn ma
                   </span>
                 )}
               </td>
-              <td className="px-6 py-4">
+              <td className="px-6 py-4 flex flex-wrap gap-2">
                 {!shop.owner_id && (
                   <button
                     onClick={() => handleZaloInvite(shop)}
                     className="rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700"
                   >
-                    💬 Mời Zalo (Auto Copy)
+                    💬 Mời Zalo
                   </button>
                 )}
+                <button
+                  onClick={() => {
+                    setEditingShop(shop);
+                    setEditForm({ name: shop.name, slug: shop.slug, phone: shop.phone });
+                  }}
+                  className="rounded-full bg-sand-deep px-3 py-1.5 text-xs font-semibold text-ink shadow-sm hover:bg-sand"
+                >
+                  ✏️ Sửa
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm("Xóa shop này vĩnh viễn?")) {
+                      deleteShop.mutate(shop.id);
+                    }
+                  }}
+                  className="rounded-full bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 shadow-sm hover:bg-rose-100"
+                >
+                  🗑️ Xóa
+                </button>
               </td>
             </tr>
           ))}
@@ -108,5 +206,6 @@ Nếu cần hỗ trợ gì shop cứ nhắn lại cho mình. Chúc shop buôn ma
         </tbody>
       </table>
     </div>
+    </>
   );
 }
