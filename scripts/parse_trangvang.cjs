@@ -70,7 +70,9 @@ for (const file of files) {
           const urlMatch = imgStr.match(/!\[.*?\]\((.*?)\)/);
           if (urlMatch && urlMatch[1]) {
             const url = urlMatch[1];
-            if (url.includes('logo.')) {
+            if (url.includes('zalo') || url.includes('icon') || url.includes('banner')) {
+              // Ignore generic icons
+            } else if (url.includes('logo.')) {
               shop.logo = url;
             } else {
               shop.images.push(url);
