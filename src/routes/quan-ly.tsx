@@ -259,12 +259,7 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
     }
   }, [shop, categoriesQ.data, locationsQ.data, form.category, form.city]);
 
-  useEffect(() => {
-    if (listingToEdit) return;
-    if (!form.city && locationsQ.data?.length) {
-      setForm(f => ({ ...f, city: locationsQ.data[0].name }));
-    }
-  }, [listingToEdit, locationsQ.data, form.city]);
+
 
   const save = useMutation({
     mutationFn: async () => {
