@@ -64,20 +64,15 @@ async function importShops() {
       .replace(/(^-|-$)+/g, '') // Xóa gạch ngang ở đầu và cuối
       + '-' + Math.random().toString(36).substring(2, 7); // Thêm random để đảm bảo unique
 
-    // Gộp email và website vào description vì database không có cột riêng
-    let extraInfo = '';
-    if (shop.email) extraInfo += `\nEmail: ${shop.email}`;
-    if (shop.website) extraInfo += `\nWebsite: ${shop.website}`;
-    
-    const finalDescription = (shop.description || '') + (extraInfo ? '\n\n' + extraInfo.trim() : '');
-
     const payload = {
       name: shop.name.substring(0, 255),
       slug: slug,
-      description: finalDescription.substring(0, 1000),
+      description: shop.description ? shop.description.substring(0, 1000) : null,
       address: shop.address,
       city: city,
       phone: shop.phone ? shop.phone.substring(0, 50) : null,
+      email: shop.email ? shop.email.substring(0, 255) : null,
+      website: shop.website ? shop.website.substring(0, 255) : null,
       logo_url: shop.logo || null,
       cover_url: coverUrl,
       category: 'pet-shop', // Mặc định
