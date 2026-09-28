@@ -11,10 +11,10 @@ type Slide = {
   subtitle: string;
 };
 
-function buildSlides(shop: Shop & { deals: Deal[] }): Slide[] {
+function buildSlides(shop: Shop & { deals: Deal[] }, catLabel: string | null | undefined): Slide[] {
   const baseSub = shop.hero_subtitle ?? shop.description?.split("\n")[0] ?? `Chào mừng bạn đến với ${shop.name} — chăm sóc thú cưng tận tâm tại ${shop.city}.`;
   const baseTitle = shop.hero_title ?? shop.name;
-  const baseEyebrow = `${catLabel} · ${shop.city}`;
+  const baseEyebrow = `${catLabel ?? shop.category} · ${shop.city}`;
 
   const slides: Slide[] = [];
 
@@ -69,8 +69,9 @@ function buildSlides(shop: Shop & { deals: Deal[] }): Slide[] {
 }
 
 export function ShopHeroCarousel({ shop }: { shop: Shop & { deals: Deal[] } }) {
+  const catLabel = useCategoryLabel(shop.category);
   const [active, setActive] = useState(0);
-  const slides = buildSlides(shop);
+  const slides = buildSlides(shop, catLabel);
 
   useEffect(() => {
     const id = setInterval(() => setActive((i) => (i + 1) % slides.length), 6000);
