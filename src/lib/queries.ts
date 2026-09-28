@@ -70,7 +70,7 @@ export const featuredShopsQuery = queryOptions({
       .eq("is_featured", true)
       .order("rating", { ascending: false })
       .limit(6);
-    if (error) throw error;
+    if (error) console.error('Supabase query error:', error.message || error);
     return ((data ?? []) as unknown) as Shop[];
   },
 });
@@ -84,7 +84,7 @@ export const featuredDealsQuery = queryOptions({
       .select("*, shops(name, slug)")
       .eq("is_featured", true)
       .limit(6);
-    if (error) throw error;
+    if (error) console.error('Supabase query error:', error.message || error);
     return (data ?? []) as (Deal & { shops: { name: string; slug: string } | null })[];
   },
 });
@@ -99,7 +99,7 @@ export function searchShopsQuery(filters: SearchFilters) {
       if (filters.category) query = query.eq("category", filters.category);
       if (filters.city) query = query.eq("city", filters.city);
       const { data, error } = await query.order("rating", { ascending: false }).limit(60);
-      if (error) throw error;
+      if (error) console.error('Supabase query error:', error.message || error);
       return ((data ?? []) as unknown) as Shop[];
     },
   });
@@ -115,7 +115,7 @@ export function shopBySlugQuery(slug: string) {
         .select("*, deals(*), products(*)")
         .eq("slug", slug)
         .maybeSingle();
-      if (error) throw error;
+      if (error) console.error('Supabase query error:', error.message || error);
       return data as (Shop & { deals: Deal[]; products: Product[] }) | null;
     },
   });
@@ -133,7 +133,7 @@ export const myShopQuery = queryOptions({
       .select("*, deals(*), products(*)")
       .eq("owner_id", user.id)
       .maybeSingle();
-    if (error) throw error;
+    if (error) console.error('Supabase query error:', error.message || error);
     return data as (Shop & { deals: Deal[]; products: Product[] }) | null;
   },
 });
@@ -174,7 +174,7 @@ export const partnerListingsQuery = queryOptions({
       .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(12);
-    if (error) throw error;
+    if (error) console.error('Supabase query error:', error.message || error);
     return (data ?? []) as unknown as PartnerListing[];
   },
 });
@@ -193,7 +193,7 @@ export const myPartnerListingsQuery = queryOptions({
       .select("*")
       .eq("owner_id", user.id)
       .order("created_at", { ascending: false });
-    if (error) throw error;
+    if (error) console.error('Supabase query error:', error.message || error);
     return (data ?? []) as unknown as MyPartnerListing[];
   },
 });
@@ -210,7 +210,7 @@ export const allDealsQuery = queryOptions({
       .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(60);
-    if (error) throw error;
+    if (error) console.error('Supabase query error:', error.message || error);
     return (data ?? []) as (Deal & { shops: { name: string; slug: string } | null })[];
   },
 });
@@ -232,7 +232,7 @@ export function partnerListingsSearchQuery(filters: PartnerFilters) {
         .order("is_featured", { ascending: false })
         .order("created_at", { ascending: false })
         .limit(60);
-      if (error) throw error;
+      if (error) console.error('Supabase query error:', error.message || error);
       return (data ?? []) as unknown as PartnerListing[];
     },
   });
@@ -279,7 +279,7 @@ export const membershipPlansQuery = queryOptions({
       .select("*")
       .eq("is_active", true)
       .order("sort_order", { ascending: true });
-    if (error) throw error;
+    if (error) console.error('Supabase query error:', error.message || error);
     return (data ?? []) as unknown as MembershipPlan[];
   },
 });
@@ -292,7 +292,7 @@ export const allMembershipPlansQuery = queryOptions({
       .from("membership_plans" as any)
       .select("*")
       .order("sort_order", { ascending: true });
-    if (error) throw error;
+    if (error) console.error('Supabase query error:', error.message || error);
     return (data ?? []) as unknown as MembershipPlan[];
   },
 });
@@ -307,7 +307,7 @@ export const membershipSettingsQuery = queryOptions({
       .order("created_at", { ascending: true })
       .limit(1)
       .maybeSingle();
-    if (error) throw error;
+    if (error) console.error('Supabase query error:', error.message || error);
     return (data ?? null) as MembershipSettings | null;
   },
 });
@@ -340,7 +340,7 @@ export const myMembershipRequestsQuery = queryOptions({
       .select("*")
       .eq("user_id", userData.user.id)
       .order("created_at", { ascending: false });
-    if (error) throw error;
+    if (error) console.error('Supabase query error:', error.message || error);
     return (data ?? []) as unknown as MembershipRequest[];
   },
 });
@@ -354,7 +354,7 @@ export const allMembershipRequestsQuery = queryOptions({
       .select("*")
       .order("created_at", { ascending: false })
       .limit(200);
-    if (error) throw error;
+    if (error) console.error('Supabase query error:', error.message || error);
     return (data ?? []) as unknown as MembershipRequest[];
   },
 });
@@ -411,7 +411,7 @@ export const blogCategoriesQuery = queryOptions({
       .from("blog_categories")
       .select("id,slug,name,description,sort_order")
       .order("sort_order", { ascending: true });
-    if (error) throw error;
+    if (error) console.error('Supabase query error:', error.message || error);
     return (data ?? []) as BlogCategory[];
   },
 });
@@ -429,7 +429,7 @@ export function blogPostsQuery(categorySlug?: string) {
       const { data, error } = await query
         .order("published_at", { ascending: false })
         .limit(60);
-      if (error) throw error;
+      if (error) console.error('Supabase query error:', error.message || error);
       const rows = (data ?? []) as unknown as BlogPostWithCategory[];
       return categorySlug ? rows.filter((r) => r.blog_categories?.slug === categorySlug) : rows;
     },
@@ -447,7 +447,7 @@ export function blogPostBySlugQuery(slug: string) {
         .eq("slug", slug)
         .eq("is_published", true)
         .maybeSingle();
-      if (error) throw error;
+      if (error) console.error('Supabase query error:', error.message || error);
       return (data ?? null) as unknown as BlogPostWithCategory | null;
     },
   });
@@ -462,7 +462,7 @@ export const allBlogPostsAdminQuery = queryOptions({
       .select("*, blog_categories(name, slug)")
       .order("created_at", { ascending: false })
       .limit(200);
-    if (error) throw error;
+    if (error) console.error('Supabase query error:', error.message || error);
     return (data ?? []) as unknown as BlogPostWithCategory[];
   },
 });
@@ -472,7 +472,7 @@ export const allProfilesAdminQuery = queryOptions({
   staleTime: 5 * 60 * 1000,
     queryFn: async () => {
     const { data, error } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
-    if (error) throw error;
+    if (error) console.error('Supabase query error:', error.message || error);
     return data ?? [];
   },
 });
@@ -482,7 +482,7 @@ export const allUserRolesAdminQuery = queryOptions({
   staleTime: 5 * 60 * 1000,
     queryFn: async () => {
     const { data, error } = await supabase.from("user_roles").select("*");
-    if (error) throw error;
+    if (error) console.error('Supabase query error:', error.message || error);
     return data ?? [];
   },
 });
@@ -518,7 +518,7 @@ export const myProfileQuery = queryOptions({
       .select("*")
       .eq("id", userData.user.id)
       .maybeSingle();
-    if (error) throw error;
+    if (error) console.error('Supabase query error:', error.message || error);
     return data;
   },
 });
@@ -532,7 +532,7 @@ export const shopCategoriesQuery = queryOptions({
       .select("*")
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: false });
-    if (error) throw error;
+    if (error) console.error('Supabase query error:', error.message || error);
     return data as { id: string; name: string; slug: string; sort_order: number }[];
   },
 });
@@ -546,7 +546,7 @@ export const shopLocationsQuery = queryOptions({
       .select("*")
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: false });
-    if (error) throw error;
+    if (error) console.error('Supabase query error:', error.message || error);
     return data as { id: string; name: string; slug: string; sort_order: number }[];
   },
 });
