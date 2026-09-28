@@ -543,10 +543,12 @@ function RequestsTable() {
       req,
       status,
       durationDays,
+      plan,
     }: {
       req: MembershipRequest;
       status: "approved" | "rejected";
       durationDays: number;
+      plan?: MembershipPlan | null;
     }) => {
       const today = new Date();
       const expires = new Date(today);
@@ -565,6 +567,19 @@ function RequestsTable() {
       if (error) throw error;
       if (status === "approved" && req.shop_id) {
         await supabase.from("shops").update({ is_published: true }).eq("id", req.shop_id);
+      }
+      if (status === "approved" && plan && req.user_id) {
+        const { data: profile } = await supabase.from("profiles").select("*").eq("id", req.user_id).single();
+        if (profile) {
+          await supabase.from("profiles").update({
+            quota_deals: (profile.quota_deals || 0) + (plan.quota_deals || 0),
+            quota_products: (profile.quota_products || 0) + (plan.quota_products || 0),
+            quota_featured_slots: (profile.quota_featured_slots || 0) + (plan.quota_featured_slots || 0),
+            quota_partner_posts: (profile.quota_partner_posts || 0) + (plan.quota_partner_posts || 0),
+            quota_blog_posts: (profile.quota_blog_posts || 0) + (plan.quota_blog_posts || 0),
+            membership_until: expires.toISOString(),
+          }).eq("id", req.user_id);
+        }
       }
     },
     onSuccess: () => {
@@ -643,7 +658,7 @@ function RequestsTable() {
                     <button
                       type="button"
                       disabled={review.isPending}
-                      onClick={() => review.mutate({ req: r, status: "approved", durationDays })}
+                      onClick={() => review.mutate({ req: r, status: "approved", durationDays, plan })}
                       className="rounded-full bg-terra px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
                     >
                       Duyệt ({plan ? `${plan.period_label}` : "1 năm"})
@@ -651,7 +666,7 @@ function RequestsTable() {
                     <button
                       type="button"
                       disabled={review.isPending}
-                      onClick={() => review.mutate({ req: r, status: "rejected", durationDays: 0 })}
+                      onClick={() => review.mutate({ req: r, status: "rejected", durationDays: 0, plan })}
                       className="rounded-full bg-secondary px-4 py-2 text-sm font-semibold text-ink disabled:opacity-60"
                     >
                       Từ chối
