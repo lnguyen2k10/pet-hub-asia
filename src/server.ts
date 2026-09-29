@@ -105,7 +105,7 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
       } 
       // Fallback tự tìm trong nội dung chuyển khoản
       else if (payload.content) {
-        const match = payload.content.toUpperCase().match(/PET\s*([A-Z0-9]{6})/);
+        const match = payload.content.toUpperCase().match(/PET\s*([A-Z0-9]{8})/);
         if (match) paymentCode = match[1];
       }
 
@@ -123,12 +123,17 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
             amount: payload.transferAmount,
             content: payload.content
           });
-          // PostgreSQL Error 23505 = Unique Violation
-          if (logErr && logErr.code === "23505") {
-            console.log(`⚠️ Bỏ qua webhook trùng lặp: ${payload.id}`);
-            return new Response(JSON.stringify({ success: true, message: "Duplicate" }), { status: 200 });
+          if (logErr) {
+            // PostgreSQL Error 23505 = Unique Violation
+            if (logErr.code === "23505") {
+              console.log(`⚠️ Bỏ qua webhook trùng lặp: ${payload.id}`);
+              return new Response(JSON.stringify({ success: true, message: "Duplicate" }), { status: 200 });
+            } else {
+              console.error("❌ Lỗi khi ghi log webhook idempotency:", logErr);
+              return new Response(JSON.stringify({ success: false, message: "Webhook log error" }), { status: 500 });
+            }
           }
-          if (!logErr) webhookLogged = true;
+          webhookLogged = true;
         }
 
         // Lấy tất cả đơn pending
