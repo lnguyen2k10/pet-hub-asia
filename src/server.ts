@@ -69,9 +69,16 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
       payload = JSON.parse(rawBody);
     } else {
       // Xác thực bằng API Key thông thường
-      if (expectedToken && !authHeader.includes(expectedToken)) {
-        console.error("Auth failed. Expected:", expectedToken, "Got:", authHeader);
-        return new Response(JSON.stringify({ success: false, message: "Unauthorized", debug_header: authHeader }), { status: 401 });
+      // Nếu không cấu hình token → từ chối hoàn toàn (tránh bypass khi ENV bị thiếu)
+      if (!expectedToken) {
+        console.error("SEPAY_WEBHOOK_TOKEN chưa được cấu hình — từ chối request.");
+        return new Response(JSON.stringify({ success: false, message: "Webhook not configured" }), { status: 503 });
+      }
+      // So sánh chính xác toàn bộ chuỗi (không dùng .includes() để tránh partial match)
+      const providedToken = authHeader.replace(/^Bearer\s+/i, "").trim();
+      if (providedToken !== expectedToken) {
+        console.error("Auth failed: token không khớp.");
+        return new Response(JSON.stringify({ success: false, message: "Unauthorized" }), { status: 401 });
       }
       payload = await request.json();
     }
@@ -111,14 +118,15 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
 
         const transferAmount = payload.transferAmount ?? 0;
         
-        // Chọn đơn khớp số tiền gần nhất, hoặc lấy đơn mới nhất
+        // Chỉ duyệt khi số tiền khớp trong ngưỡng ±5% — KHÔNG fallback lấy đơn tùy tiện
         let requestRecord = null;
         if (userRequests.length > 0) {
-          // Ưu tiên đơn có amount khớp trong ngưỡng ±10%
-          const exactMatch = userRequests.find((r: { amount: number }) =>
-            Math.abs(r.amount - transferAmount) / Math.max(r.amount, 1) < 0.1
-          );
-          requestRecord = exactMatch ?? userRequests[0];
+          requestRecord = userRequests.find((r: { amount: number }) =>
+            Math.abs(r.amount - transferAmount) / Math.max(r.amount, 1) < 0.05
+          ) ?? null;
+          if (!requestRecord) {
+            console.warn(`⚠️ Không tìm được đơn khớp tiền cho mã ${paymentCode}. Chuyển khoản: ${transferAmount}đ. Đơn pending: ${userRequests.map((r: any) => r.amount).join(", ")}. Bỏ qua.`);
+          }
         }
 
         if (requestRecord) {

@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-<br />
 import { toast } from "sonner";
 
 import { SiteFooter } from "@/components/site-footer";
