@@ -1,4 +1,4 @@
-﻿import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 <br />
@@ -681,17 +681,23 @@ function UserManager() {
   const qc = useQueryClient();
   const profilesQ = useQuery(allProfilesAdminQuery);
   const rolesQ = useQuery(allUserRolesAdminQuery);
+
+  // Fetch ALL shops with owner_id to support multi-shop per user
   const shopsQ = useQuery({
-    queryKey: ['admin', 'profiles-shops'],
+    queryKey: ['admin', 'all-shops-owners'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('shops').select('owner_id, name, slug').not('owner_id', 'is', null);
+      const { data, error } = await supabase
+        .from('shops')
+        .select('owner_id, id, name, slug, is_published')
+        .not('owner_id', 'is', null);
       if (error) throw error;
-      return data;
+      return data as { owner_id: string; id: string; name: string; slug: string; is_published: boolean }[];
     }
   });
 
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<any>({});
+  const [search, setSearch] = useState("");
 
   const setRole = useMutation({
     mutationFn: async ({ userId, newRole, oldRole }: { userId: string; newRole: string | null; oldRole: string | null }) => {
@@ -715,10 +721,9 @@ function UserManager() {
     mutationFn: async (userId: string) => {
       const { data, error: fetchErr } = await supabase.from("profiles").select("quota_blog_posts").eq("id", userId).single();
       if (fetchErr) throw fetchErr;
-      const current = data.quota_blog_posts || 0;
+      const current = (data as any).quota_blog_posts || 0;
       if (current <= 0) throw new Error("Thành viên không còn quota blog.");
-      
-      const { error } = await supabase.from("profiles").update({ quota_blog_posts: current - 1 }).eq("id", userId);
+      const { error } = await supabase.from("profiles").update({ quota_blog_posts: current - 1 } as any).eq("id", userId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -730,8 +735,6 @@ function UserManager() {
 
   const updateProfile = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      // Remove any undefined or null values before updating if necessary, or just send
-      // But we just send the form data. Supabase might complain if membership_until is empty string for a timestamp
       if (!data.membership_until) data.membership_until = null;
       const { error } = await supabase.from("profiles").update(data).eq("id", id);
       if (error) throw error;
@@ -758,63 +761,110 @@ function UserManager() {
 
   const profiles = profilesQ.data ?? [];
   const rolesMap = new Map((rolesQ.data ?? []).map((r) => [r.user_id, r.role]));
-  const shopsMap = new Map((shopsQ.data ?? []).map((s) => [s.owner_id, s]));
+
+  // Build map userId -> shops[]
+  const shopsMap = new Map<string, { id: string; name: string; slug: string; is_published: boolean }[]>();
+  (shopsQ.data ?? []).forEach(s => {
+    if (!s.owner_id) return;
+    const existing = shopsMap.get(s.owner_id) ?? [];
+    shopsMap.set(s.owner_id, [...existing, { id: s.id, name: s.name, slug: s.slug, is_published: s.is_published }]);
+  });
+
+  const filtered = search
+    ? profiles.filter(p =>
+        ((p as any).full_name ?? "").toLowerCase().includes(search.toLowerCase()) ||
+        p.id.includes(search)
+      )
+    : profiles;
 
   return (
-    <section className="mt-8 rounded-3xl bg-background p-6 ring-1 ring-border">
-      <h2 className="mb-4 text-xl font-semibold">Tài khoản thành viên ({profiles.length})</h2>
+    <section className="mt-4 rounded-3xl bg-background p-6 ring-1 ring-border">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <h2 className="text-xl font-semibold">Tài khoản thành viên ({profiles.length})</h2>
+        <input
+          className="min-w-0 w-60 rounded-xl border border-border bg-sand-deep/30 px-4 py-2 text-sm outline-none focus:border-terra"
+          placeholder="Tìm theo tên, ID..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+      </div>
       {profilesQ.isLoading ? (
         <div className="h-32 animate-pulse rounded-2xl bg-sand-deep/60" />
-      ) : profiles.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <p className="text-sm text-ink-soft">Chưa có thành viên nào.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead>
               <tr className="border-b border-border">
-                <th className="py-3 font-semibold">Thành viên</th>
-                <th className="py-3 font-semibold">Shop quản lý</th>
-                <th className="py-3 font-semibold">Ngày đăng ký</th>
-                <th className="py-3 font-semibold">Quota Blog</th>
-                <th className="py-3 font-semibold">Vai trò hiện tại</th>
-                <th className="py-3 text-right font-semibold">Hành động</th>
+                <th className="py-3 pr-4 font-semibold">Thành viên</th>
+                <th className="py-3 pr-4 font-semibold">Shop quản lý</th>
+                <th className="py-3 pr-4 font-semibold">Hạn thành viên</th>
+                <th className="py-3 pr-4 font-semibold">Quota Blog</th>
+                <th className="py-3 pr-4 font-semibold">Vai trò</th>
+                <th className="py-3 text-right font-semibold">Thao tác</th>
               </tr>
             </thead>
             <tbody>
-              {profiles.map((p) => {
+              {filtered.map((p) => {
                 const currentRole = rolesMap.get(p.id) || null;
-                const isAdmin = currentRole === "admin";
+                const isAdminRole = currentRole === "admin";
                 const isMod = currentRole === "moderator";
                 const isEditing = editingUserId === p.id;
-                
+                const userShops = shopsMap.get(p.id) ?? [];
+                const profile = p as any;
+
                 return (
                   <React.Fragment key={p.id}>
-                    <tr className="border-b border-border/50">
+                    <tr className="border-b border-border/50 hover:bg-sand-deep/10 transition-colors">
                       <td className="py-3 pr-4">
-                        <p className="font-medium">{p.full_name || "Chưa có tên"}</p>
-                        <p className="text-xs text-ink-soft opacity-60">{p.id.slice(0, 8)}...</p>
+                        <p className="font-semibold">{profile.full_name || <span className="italic text-ink-soft">Chưa có tên</span>}</p>
+                        <p className="text-xs font-mono text-ink-soft">{p.id.slice(0, 14)}…</p>
+                        <p className="text-xs text-ink-soft">
+                          Tham gia: {new Date(p.created_at).toLocaleDateString("vi-VN")}
+                        </p>
                       </td>
                       <td className="py-3 pr-4">
-                        {shopsMap.get(p.id) ? (
-                          <a href={`/shop/${shopsMap.get(p.id)?.slug}`} target="_blank" rel="noopener noreferrer" className="text-terra font-medium hover:underline text-sm">
-                            {shopsMap.get(p.id)?.name}
-                          </a>
+                        {userShops.length > 0 ? (
+                          <div className="flex flex-col gap-1">
+                            {userShops.map(s => (
+                              <a
+                                key={s.id}
+                                href={`/shop/${s.slug}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1.5 text-terra font-medium hover:underline text-xs"
+                              >
+                                {s.name}
+                                {!s.is_published && (
+                                  <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-amber-700">ẩn</span>
+                                )}
+                              </a>
+                            ))}
+                          </div>
                         ) : (
-                          <span className="text-xs opacity-50 text-ink-soft">Không có</span>
+                          <span className="text-xs text-ink-soft opacity-60">Không có</span>
                         )}
                       </td>
-                      <td className="py-3 pr-4 text-ink-soft">
-                        {new Date(p.created_at).toLocaleDateString("vi-VN")}
+                      <td className="py-3 pr-4">
+                        {profile.membership_until ? (
+                          <span className={`text-xs font-semibold ${new Date(profile.membership_until) > new Date() ? "text-emerald-700" : "text-rose-600"}`}>
+                            {new Date(profile.membership_until).toLocaleDateString("vi-VN")}
+                            {new Date(profile.membership_until) < new Date() ? " (hết hạn)" : ""}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-ink-soft">Không có</span>
+                        )}
                       </td>
                       <td className="py-3 pr-4">
-                        {(p.quota_blog_posts ?? 0) > 0 ? (
+                        {(profile.quota_blog_posts ?? 0) > 0 ? (
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold text-terra">{p.quota_blog_posts} bài</span>
+                            <span className="font-semibold text-terra">{profile.quota_blog_posts} bài</span>
                             <button
                               type="button"
                               disabled={consumeBlogQuota.isPending}
                               onClick={() => {
-                                if (confirm(`Xác nhận đã đăng bài cho ${p.full_name || "thành viên này"} và trừ 1 quota?`)) {
+                                if (confirm(`Xác nhận đã đăng bài cho ${profile.full_name || "thành viên này"} và trừ 1 quota?`)) {
                                   consumeBlogQuota.mutate(p.id);
                                 }
                               }}
@@ -828,7 +878,7 @@ function UserManager() {
                         )}
                       </td>
                       <td className="py-3 pr-4">
-                        {isAdmin ? (
+                        {isAdminRole ? (
                           <span className="rounded-full bg-terra/10 px-2.5 py-1 text-xs font-semibold text-terra">Admin</span>
                         ) : isMod ? (
                           <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">Moderator</span>
@@ -836,116 +886,98 @@ function UserManager() {
                           <span className="text-xs text-ink-soft">Thành viên</span>
                         )}
                       </td>
-                      <td className="py-3 text-right flex items-center justify-end gap-2">
-                        <select
-                          className="rounded-xl border border-border bg-transparent px-2 py-1 text-xs outline-none"
-                          value={currentRole || ""}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setRole.mutate({ userId: p.id, newRole: val || null, oldRole: currentRole });
-                          }}
-                        >
-                          <option value="">Thành viên thường</option>
-                          <option value="moderator">Moderator (Duyệt bài/đơn)</option>
-                          <option value="admin">Super Admin</option>
-                        </select>
-                        <button 
-                          onClick={() => {
-                            if (isEditing) setEditingUserId(null);
-                            else {
-                              setEditingUserId(p.id);
-                              setEditForm({
-                                full_name: p.full_name || "",
-                                quota_deals: p.quota_deals || 0,
-                                quota_products: p.quota_products || 0,
-                                quota_featured_slots: p.quota_featured_slots || 0,
-                                quota_partner_posts: p.quota_partner_posts || 0,
-                                quota_blog_posts: p.quota_blog_posts || 0,
-                                membership_until: (p as any).membership_until ? (p as any).membership_until.slice(0,10) : "",
-                              });
-                            }
-                          }}
-                          className="rounded bg-sand-deep/40 px-3 py-1 text-xs font-semibold hover:bg-sand-deep/60"
-                        >
-                          {isEditing ? "Đóng" : "Sửa"}
-                        </button>
-                        <button 
-                          onClick={() => {
-                            if (confirm(`Bạn có chắc muốn xoá hồ sơ thành viên ${p.full_name}?`)) {
-                              deleteProfile.mutate(p.id);
-                            }
-                          }}
-                          className="rounded bg-red-100 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-200"
-                        >
-                          Xoá
-                        </button>
+                      <td className="py-3 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <select
+                            className="rounded-xl border border-border bg-transparent px-2 py-1 text-xs outline-none"
+                            value={currentRole || ""}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setRole.mutate({ userId: p.id, newRole: val || null, oldRole: currentRole });
+                            }}
+                          >
+                            <option value="">Thành viên</option>
+                            <option value="moderator">Moderator</option>
+                            <option value="admin">Super Admin</option>
+                          </select>
+                          <button
+                            onClick={() => {
+                              if (isEditing) setEditingUserId(null);
+                              else {
+                                setEditingUserId(p.id);
+                                setEditForm({
+                                  full_name: profile.full_name || "",
+                                  quota_deals: profile.quota_deals || 0,
+                                  quota_products: profile.quota_products || 0,
+                                  quota_featured_slots: profile.quota_featured_slots || 0,
+                                  quota_partner_posts: profile.quota_partner_posts || 0,
+                                  quota_blog_posts: profile.quota_blog_posts || 0,
+                                  membership_until: profile.membership_until ? profile.membership_until.slice(0, 10) : "",
+                                });
+                              }
+                            }}
+                            className="rounded bg-sand-deep/40 px-3 py-1 text-xs font-semibold hover:bg-sand-deep/60"
+                          >
+                            {isEditing ? "Đóng" : "Sửa"}
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm(`Xoá hồ sơ "${profile.full_name || p.id}"?`)) {
+                                deleteProfile.mutate(p.id);
+                              }
+                            }}
+                            className="rounded bg-red-100 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-200"
+                          >
+                            Xoá
+                          </button>
+                        </div>
                       </td>
                     </tr>
                     {isEditing && (
                       <tr>
-                        <td colSpan={5} className="bg-sand-deep/10 px-4 py-4 border-b border-border">
+                        <td colSpan={6} className="bg-sand-deep/10 px-4 py-4 border-b border-border">
                           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                             <label className="block">
                               <span className="text-xs font-medium text-ink-soft">Họ và tên</span>
-                              <input 
-                                className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra" 
-                                value={editForm.full_name} 
-                                onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })} 
+                              <input
+                                className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra"
+                                value={editForm.full_name}
+                                onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
                               />
                             </label>
                             <label className="block">
                               <span className="text-xs font-medium text-ink-soft">Hạn thành viên</span>
-                              <input 
+                              <input
                                 type="date"
-                                className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra" 
-                                value={editForm.membership_until} 
-                                onChange={(e) => setEditForm({ ...editForm, membership_until: e.target.value })} 
+                                className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra"
+                                value={editForm.membership_until}
+                                onChange={(e) => setEditForm({ ...editForm, membership_until: e.target.value })}
                               />
                             </label>
                             <label className="block">
                               <span className="text-xs font-medium text-ink-soft">Quota Ưu đãi</span>
-                              <input 
-                                type="number"
-                                className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra" 
-                                value={editForm.quota_deals} 
-                                onChange={(e) => setEditForm({ ...editForm, quota_deals: Number(e.target.value) })} 
-                              />
+                              <input type="number" className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra"
+                                value={editForm.quota_deals} onChange={(e) => setEditForm({ ...editForm, quota_deals: Number(e.target.value) })} />
                             </label>
                             <label className="block">
                               <span className="text-xs font-medium text-ink-soft">Quota Sản phẩm</span>
-                              <input 
-                                type="number"
-                                className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra" 
-                                value={editForm.quota_products} 
-                                onChange={(e) => setEditForm({ ...editForm, quota_products: Number(e.target.value) })} 
-                              />
+                              <input type="number" className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra"
+                                value={editForm.quota_products} onChange={(e) => setEditForm({ ...editForm, quota_products: Number(e.target.value) })} />
                             </label>
                             <label className="block">
-                              <span className="text-xs font-medium text-ink-soft">Quota Đẩy SP</span>
-                              <input 
-                                type="number"
-                                className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra" 
-                                value={editForm.quota_featured_slots} 
-                                onChange={(e) => setEditForm({ ...editForm, quota_featured_slots: Number(e.target.value) })} 
-                              />
+                              <span className="text-xs font-medium text-ink-soft">Quota Đẩy nổi bật</span>
+                              <input type="number" className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra"
+                                value={editForm.quota_featured_slots} onChange={(e) => setEditForm({ ...editForm, quota_featured_slots: Number(e.target.value) })} />
                             </label>
                             <label className="block">
                               <span className="text-xs font-medium text-ink-soft">Quota Cơ hội KD</span>
-                              <input 
-                                type="number"
-                                className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra" 
-                                value={editForm.quota_partner_posts} 
-                                onChange={(e) => setEditForm({ ...editForm, quota_partner_posts: Number(e.target.value) })} 
-                              />
+                              <input type="number" className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra"
+                                value={editForm.quota_partner_posts} onChange={(e) => setEditForm({ ...editForm, quota_partner_posts: Number(e.target.value) })} />
                             </label>
                             <label className="block">
                               <span className="text-xs font-medium text-ink-soft">Quota Bài Blog</span>
-                              <input 
-                                type="number"
-                                className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra" 
-                                value={editForm.quota_blog_posts} 
-                                onChange={(e) => setEditForm({ ...editForm, quota_blog_posts: Number(e.target.value) })} 
-                              />
+                              <input type="number" className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra"
+                                value={editForm.quota_blog_posts} onChange={(e) => setEditForm({ ...editForm, quota_blog_posts: Number(e.target.value) })} />
                             </label>
                             <div className="flex items-end pb-1">
                               <button
