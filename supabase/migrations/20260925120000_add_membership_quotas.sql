@@ -15,18 +15,8 @@ ADD COLUMN IF NOT EXISTS quota_partner_posts integer DEFAULT 0,
 ADD COLUMN IF NOT EXISTS quota_blog_posts integer DEFAULT 0,
 ADD COLUMN IF NOT EXISTS has_claimed_free_blog boolean DEFAULT false;
 
--- Clean existing plans
-TRUNCATE TABLE public.membership_plans CASCADE;
-
--- Insert new plans
-INSERT INTO public.membership_plans (
-  name, description, price_amount, duration_days, period_label, features, is_featured, sort_order,
-  max_deals, max_products, featured_slots, max_partner_posts, max_blog_posts
-) VALUES
-('Gói Premium', '1 Trang Landingpage chính thức, đăng 1 ưu đãi, Đăng 20 sản phẩm, 1 lần xuất hiển trong danh sách nổi bật trong 7 ngày', 299000, 365, 'năm', ARRAY['1 Trang Landingpage', '1 Ưu đãi', '20 Sản phẩm', '1 lần xuất hiện nổi bật (7 ngày)'], false, 1, 1, 20, 1, 0, 0),
-('Gói VIP', '1 Trang Landingpage chính thức, đăng 3 ưu đãi, Đăng không giới hạn sản phẩm, 3 lần xuất hiển trong danh sách nổi bật trong 7 ngày', 399000, 365, 'năm', ARRAY['1 Trang Landingpage', '3 Ưu đãi (có thể chỉnh sửa)', 'Không giới hạn sản phẩm', '3 lần xuất hiện nổi bật (7 ngày)'], true, 2, 3, -1, 3, 0, 0),
-('Gói hợp tác kinh doanh', 'Đăng 1 tin hợp tác kinh doanh hiệu lực trong 1 năm, có thể chỉnh sửa nội dung không giới hạn', 100000, 365, 'năm', ARRAY['1 tin hợp tác kinh doanh', 'Chỉnh sửa không giới hạn'], false, 3, 0, 0, 0, 1, 0),
-('Quà tặng (Đăng ký sớm)', 'Tặng 1 bài đăng Blog. Áp dụng cho khách hàng đăng ký sớm.', 0, 3650, 'không giới hạn', ARRAY['1 bài đăng Blog', 'Miễn phí cho khách đăng ký sớm'], false, 4, 0, 0, 0, 0, 1);
+-- Clean existing plans is removed to prevent data loss on production
+-- Instead of truncating, you should manually run UPDATE statements if you need to modify existing plans.
 
 -- Function xử lý cộng dồn quota khi request được approve
 CREATE OR REPLACE FUNCTION public.process_approved_membership()

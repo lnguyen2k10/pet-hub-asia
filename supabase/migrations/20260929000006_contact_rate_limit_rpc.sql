@@ -28,3 +28,9 @@ BEGIN
   RETURN v_count;
 END;
 $$;
+
+-- Thu hồi quyền truy cập tự do từ client (chỉ cho phép admin / service_role sử dụng)
+REVOKE EXECUTE ON FUNCTION public.increment_contact_rate_limit(text) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.increment_contact_rate_limit(text) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.increment_contact_rate_limit(text) FROM authenticated;
+

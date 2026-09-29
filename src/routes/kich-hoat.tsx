@@ -343,8 +343,8 @@ function RequestSection({
   }
 
   // ─── Đang chờ xác nhận (đã bấm, đang polling) ───
-  if (pendingForThisPlan?.id) {
-    const paymentCode = pendingForThisPlan.id.split("-")[0].toUpperCase();
+  if (pendingForThisPlan) {
+    const paymentCode = (pendingForThisPlan!.id || "").split("-")[0].toUpperCase();
 
     return (
       <div className="mt-8 rounded-3xl bg-amber-50 p-6 ring-1 ring-amber-200">

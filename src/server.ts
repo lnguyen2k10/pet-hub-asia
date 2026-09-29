@@ -224,6 +224,10 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
           }
         } else {
           console.log(`⚠️ Không tìm thấy đơn chờ duyệt cho Code: ${paymentCode}`);
+          if (webhookLogged) {
+            await supabaseAdmin.from("sepay_webhooks_log").delete().eq("id", String(payload.id));
+          }
+          return new Response(JSON.stringify({ success: false, message: "No matching pending request found" }), { status: 404 });
         }
       }
     }
