@@ -63,6 +63,12 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
     let payload;
 
     if (signature && timestamp) {
+      // Chống Replay attack: kiểm tra timestamp không quá 5 phút
+      const reqTime = new Date(timestamp).getTime();
+      if (Math.abs(Date.now() - reqTime) > 5 * 60 * 1000) {
+        return new Response(JSON.stringify({ success: false, message: "Timestamp expired" }), { status: 400 });
+      }
+
       // Xác thực bằng HMAC-SHA256 (Bảo mật cao nhất)
       const rawBody = await request.text();
       const expectedSignature = 'sha256=' + crypto.createHmac('sha256', expectedToken).update(timestamp + '.' + rawBody).digest('hex');
@@ -127,8 +133,8 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
         let requestRecord = null;
         if (userRequests.length > 0) {
           requestRecord = userRequests.find((r: any) => {
-            // Dùng giá trị gốc của plan để tránh user spoof amount lúc tạo đơn
-            const planPrice = r.membership_plans?.price ?? r.amount;
+            // Dùng giá trị gốc của plan (price_amount) để tránh user spoof amount lúc tạo đơn
+            const planPrice = r.membership_plans?.price_amount ?? r.amount;
             return Math.abs(planPrice - transferAmount) / Math.max(planPrice, 1) < 0.05;
           }) ?? null;
           if (!requestRecord) {
@@ -312,8 +318,26 @@ async function handleAdminCreateUser(request: Request): Promise<Response> {
   }
 }
 
+const contactRateLimits = new Map<string, { count: number; expires: number }>();
+
 async function handleContactSubmit(request: Request): Promise<Response> {
   try {
+    const ip = request.headers.get("cf-connecting-ip") || "unknown-ip";
+    const now = Date.now();
+    const rateData = contactRateLimits.get(ip) || { count: 0, expires: now + 15 * 60 * 1000 };
+    if (now > rateData.expires) {
+      rateData.count = 0;
+      rateData.expires = now + 15 * 60 * 1000;
+    }
+    rateData.count++;
+    contactRateLimits.set(ip, rateData);
+
+    if (rateData.count > 5) {
+      return new Response(JSON.stringify({ success: false, error: "Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau." }), {
+        status: 429, headers: { "content-type": "application/json" }
+      });
+    }
+
     const raw = await request.json() as Record<string, unknown>;
 
     // Validate độ dài tối đa

@@ -7,9 +7,18 @@
 --   3. redeem_promo_code: FOR UPDATE lock + SET search_path
 -- =============================================================================
 
--- ── 1. Storage: sửa UPDATE/DELETE chỉ cho phép owner ─────────────────────────
+-- ── 1. Storage: sửa INSERT/UPDATE/DELETE chỉ cho phép owner ─────────────────────────
+DROP POLICY IF EXISTS "Auth Insert shop-media" ON storage.objects;
 DROP POLICY IF EXISTS "Auth Update shop-media" ON storage.objects;
 DROP POLICY IF EXISTS "Auth Delete shop-media" ON storage.objects;
+
+CREATE POLICY "Owner Insert shop-media"
+ON storage.objects FOR INSERT
+WITH CHECK (
+  bucket_id = 'shop-media'
+  AND auth.role() = 'authenticated'
+  AND (storage.foldername(name))[1] = auth.uid()::text
+);
 
 CREATE POLICY "Owner Update shop-media"
 ON storage.objects FOR UPDATE

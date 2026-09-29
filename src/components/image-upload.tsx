@@ -55,8 +55,6 @@ export function ImageUpload({ label, value, onChange, userId, folder, aspect = "
     setBusy(true);
     try {
       const result = await uploadShopImage(file, userId, folder);
-      // Xóa ảnh cũ trước khi gán URL mới
-      if (value) void deleteShopImage(value);
       onChange(result.url);
       toast.success("Đã tải ảnh lên!");
     } catch (e) {
@@ -97,10 +95,7 @@ export function ImageUpload({ label, value, onChange, userId, folder, aspect = "
             {value ? (
               <button
                 type="button"
-                onClick={() => {
-                  void deleteShopImage(value);
-                  onChange("");
-                }}
+                onClick={() => onChange("")}
                 className="rounded-full px-3 py-1.5 text-xs font-medium text-ink-soft hover:text-terra-deep"
               >
                 Gỡ ảnh
