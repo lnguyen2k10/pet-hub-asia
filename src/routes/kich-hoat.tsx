@@ -129,8 +129,10 @@ function MembershipPage() {
   const shopQ = useQuery({ ...myShopQuery, enabled: !!user });
 
   const plans = plansQ.data ?? [];
+  const requests = requestsQ.data ?? [];
+  const displayPlans = plans.filter((p) => p.price_amount > 0 || !requests.some((r) => r.plan_id === p.id));
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
-  const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? (plans.length === 1 ? plans[0] : null);
+  const selectedPlan = displayPlans.find((p) => p.id === selectedPlanId) ?? (displayPlans.length === 1 ? displayPlans[0] : null);
 
   return (
     <div className="min-h-screen">
@@ -157,10 +159,10 @@ function MembershipPage() {
           <>
             <div
               className={`mt-10 grid gap-4 ${
-                { 1: "max-w-sm", 2: "sm:grid-cols-2" }[plans.length] || "sm:grid-cols-3"
+                { 1: "max-w-sm", 2: "sm:grid-cols-2" }[displayPlans.length] || "sm:grid-cols-3"
               }`}
             >
-              {plans.map((plan) => (
+              {displayPlans.map((plan) => (
                 <PlanCard
                   key={plan.id}
                   plan={plan}
@@ -169,7 +171,7 @@ function MembershipPage() {
                 />
               ))}
             </div>
-            {plans.length > 1 && !selectedPlan && (
+            {displayPlans.length > 1 && !selectedPlan && (
               <p className="mt-4 text-sm font-medium text-terra animate-pulse">
                 ↑ Chọn một gói để tiếp tục thanh toán
               </p>
@@ -197,7 +199,7 @@ function MembershipPage() {
                 userId={user.id}
                 shopId={shopQ.data?.id ?? null}
                 plan={selectedPlan}
-                requests={requestsQ.data ?? []}
+                requests={requests}
                 loading={requestsQ.isLoading}
                 onRefreshRequests={() => qc.invalidateQueries({ queryKey: ["membership_requests"] })}
               />
