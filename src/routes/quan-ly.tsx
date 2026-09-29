@@ -835,7 +835,7 @@ function ProductsManager({ shop, userId }: { shop: ShopWithDeals; userId: string
   });
 
   async function downloadTemplate() {
-    const XLSX = await import("xlsx");
+    const XLSX = await import("@e965/xlsx");
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(PRODUCT_TEMPLATE), "san-pham");
     XLSX.writeFile(wb, "mau-nhap-san-pham.xlsx");
@@ -844,7 +844,7 @@ function ProductsManager({ shop, userId }: { shop: ShopWithDeals; userId: string
   async function handleFile(file: File) {
     setImporting(true);
     try {
-      const XLSX = await import("xlsx");
+      const XLSX = await import("@e965/xlsx");
       const wb = XLSX.read(await file.arrayBuffer(), { type: "array" });
       const sheetName = wb.SheetNames[0];
       const sheet = sheetName ? wb.Sheets[sheetName] : undefined;

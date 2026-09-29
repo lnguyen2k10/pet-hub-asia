@@ -55,6 +55,11 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
     const timestamp = request.headers.get("X-SePay-Timestamp");
     const expectedToken = (process.env["SEPAY_WEBHOOK_TOKEN"] || "").trim();
     
+    if (!expectedToken) {
+      console.error("SEPAY_WEBHOOK_TOKEN chưa được cấu hình — từ chối request.");
+      return new Response(JSON.stringify({ success: false, message: "Webhook not configured" }), { status: 503 });
+    }
+
     let payload;
 
     if (signature && timestamp) {
@@ -121,11 +126,13 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
         // Chỉ duyệt khi số tiền khớp trong ngưỡng ±5% — KHÔNG fallback lấy đơn tùy tiện
         let requestRecord = null;
         if (userRequests.length > 0) {
-          requestRecord = userRequests.find((r: { amount: number }) =>
-            Math.abs(r.amount - transferAmount) / Math.max(r.amount, 1) < 0.05
-          ) ?? null;
+          requestRecord = userRequests.find((r: any) => {
+            // Dùng giá trị gốc của plan để tránh user spoof amount lúc tạo đơn
+            const planPrice = r.membership_plans?.price ?? r.amount;
+            return Math.abs(planPrice - transferAmount) / Math.max(planPrice, 1) < 0.05;
+          }) ?? null;
           if (!requestRecord) {
-            console.warn(`⚠️ Không tìm được đơn khớp tiền cho mã ${paymentCode}. Chuyển khoản: ${transferAmount}đ. Đơn pending: ${userRequests.map((r: any) => r.amount).join(", ")}. Bỏ qua.`);
+            console.warn(`⚠️ Không tìm được đơn khớp tiền cho mã ${paymentCode}. Chuyển khoản: ${transferAmount}đ. Bỏ qua.`);
           }
         }
 
@@ -206,6 +213,24 @@ async function handleAdminCreateUser(request: Request): Promise<Response> {
       return new Response(JSON.stringify({ success: false, error: "No service key" }), { status: 500, headers: { "content-type": "application/json" } });
     }
     const adminClient = createClient(supabaseUrl, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
+
+    const authHeader = request.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), { status: 401, headers: { "content-type": "application/json" } });
+    }
+    const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+
+    // Xác thực user gọi API
+    const { data: callerData, error: callerErr } = await adminClient.auth.getUser(token);
+    if (callerErr || !callerData.user) {
+      return new Response(JSON.stringify({ success: false, error: "Unauthorized user" }), { status: 401, headers: { "content-type": "application/json" } });
+    }
+
+    // Kiểm tra role admin
+    const { data: roleData } = await adminClient.from("user_roles").select("role").eq("user_id", callerData.user.id).eq("role", "admin").single();
+    if (!roleData) {
+      return new Response(JSON.stringify({ success: false, error: "Forbidden: Admins only" }), { status: 403, headers: { "content-type": "application/json" } });
+    }
 
     const payload = await request.json() as {
       email: string;

@@ -171,8 +171,7 @@ export const partnerListingsQuery = queryOptions({
   queryKey: ["partner_listings", "published"],
   staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<PartnerListing[]> => {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const columns = sessionData.session ? PARTNER_CONTACT_COLUMNS : PARTNER_PUBLIC_COLUMNS;
+    const columns = PARTNER_PUBLIC_COLUMNS;
     const { data, error } = await supabase
       .from("partner_listings")
       .select(columns)
@@ -230,8 +229,7 @@ export function partnerListingsSearchQuery(filters: PartnerFilters) {
     queryKey: ["partner_listings", "search", filters],
     staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<PartnerListing[]> => {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const columns = sessionData.session ? PARTNER_CONTACT_COLUMNS : PARTNER_PUBLIC_COLUMNS;
+      const columns = PARTNER_PUBLIC_COLUMNS;
       let query = supabase.from("partner_listings").select(columns).eq("is_published", true);
       if (filters.q) query = query.ilike("title", `%${filters.q}%`);
       if (filters.listing_type) query = query.eq("listing_type", filters.listing_type);
