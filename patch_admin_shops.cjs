@@ -1,7 +1,7 @@
-const fs = require('fs');
-let code = fs.readFileSync('src/components/admin-shops.tsx', 'utf8');
+const fs = require("fs");
+let code = fs.readFileSync("src/components/admin-shops.tsx", "utf8");
 
-if (!code.includes('const deleteShop')) {
+if (!code.includes("const deleteShop")) {
   // Add state and mutations
   const mutations = `
   const [editingShop, setEditingShop] = React.useState<any>(null);
@@ -33,17 +33,20 @@ if (!code.includes('const deleteShop')) {
     onError: (e: Error) => toast.error(e.message),
   });
   `;
-  
-  if (!code.includes('import React')) {
-      code = 'import React from \"react\";\n' + code;
-  }
-  
-  if (!code.includes('useQueryClient')) {
-      code = code.replace('useQuery } from', 'useQuery, useQueryClient } from');
+
+  if (!code.includes("import React")) {
+    code = 'import React from \"react\";\n' + code;
   }
 
-  code = code.replace(/const \{ data: shops, isLoading \} = useQuery\(\{/, mutations + '\n  const { data: shops, isLoading } = useQuery({');
-  
+  if (!code.includes("useQueryClient")) {
+    code = code.replace("useQuery } from", "useQuery, useQueryClient } from");
+  }
+
+  code = code.replace(
+    /const \{ data: shops, isLoading \} = useQuery\(\{/,
+    mutations + "\n  const { data: shops, isLoading } = useQuery({",
+  );
+
   const editModal = `
       {editingShop && (
         <div className=\"fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4\">
@@ -94,9 +97,9 @@ if (!code.includes('const deleteShop')) {
         </div>
       )}
   `;
-  
-  code = code.replace('return (', editModal + '\n  return (');
-  
+
+  code = code.replace("return (", editModal + "\n  return (");
+
   const actionButtons = `
                   <button
                     onClick={() => {
@@ -118,9 +121,12 @@ if (!code.includes('const deleteShop')) {
                     🗑️ Xóa
                   </button>
   `;
-  
-  code = code.replace(/<\/td>\s*<\/tr>/g, actionButtons + '\n              </td>\n            </tr>');
-  
-  fs.writeFileSync('src/components/admin-shops.tsx', code);
-  console.log('AdminShops updated');
+
+  code = code.replace(
+    /<\/td>\s*<\/tr>/g,
+    actionButtons + "\n              </td>\n            </tr>",
+  );
+
+  fs.writeFileSync("src/components/admin-shops.tsx", code);
+  console.log("AdminShops updated");
 }

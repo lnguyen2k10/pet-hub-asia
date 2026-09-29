@@ -46,7 +46,7 @@ function isH3SwallowedErrorBody(body: string): boolean {
 
 import { createClient } from "@supabase/supabase-js";
 
-import * as crypto from 'node:crypto';
+import * as crypto from "node:crypto";
 
 async function handleSepayWebhook(request: Request): Promise<Response> {
   try {
@@ -54,10 +54,12 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
     const signature = request.headers.get("X-SePay-Signature");
     const timestamp = request.headers.get("X-SePay-Timestamp");
     const expectedToken = (process.env["SEPAY_WEBHOOK_TOKEN"] || "").trim();
-    
+
     if (!expectedToken) {
       console.error("SEPAY_WEBHOOK_TOKEN chưa được cấu hình — từ chối request.");
-      return new Response(JSON.stringify({ success: false, message: "Webhook not configured" }), { status: 503 });
+      return new Response(JSON.stringify({ success: false, message: "Webhook not configured" }), {
+        status: 503,
+      });
     }
 
     let payload;
@@ -66,16 +68,25 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
       // Chống Replay attack: kiểm tra timestamp không quá 5 phút
       const reqTime = new Date(timestamp).getTime();
       if (Math.abs(Date.now() - reqTime) > 5 * 60 * 1000) {
-        return new Response(JSON.stringify({ success: false, message: "Timestamp expired" }), { status: 400 });
+        return new Response(JSON.stringify({ success: false, message: "Timestamp expired" }), {
+          status: 400,
+        });
       }
 
       // Xác thực bằng HMAC-SHA256 (Bảo mật cao nhất)
       const rawBody = await request.text();
-      const expectedSignature = 'sha256=' + crypto.createHmac('sha256', expectedToken).update(timestamp + '.' + rawBody).digest('hex');
-      
+      const expectedSignature =
+        "sha256=" +
+        crypto
+          .createHmac("sha256", expectedToken)
+          .update(timestamp + "." + rawBody)
+          .digest("hex");
+
       if (signature !== expectedSignature) {
         console.error("HMAC Auth failed. Expected:", expectedSignature, "Got:", signature);
-        return new Response(JSON.stringify({ success: false, message: "Invalid HMAC signature" }), { status: 401 });
+        return new Response(JSON.stringify({ success: false, message: "Invalid HMAC signature" }), {
+          status: 401,
+        });
       }
       payload = JSON.parse(rawBody);
     } else {
@@ -83,13 +94,17 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
       // Nếu không cấu hình token → từ chối hoàn toàn (tránh bypass khi ENV bị thiếu)
       if (!expectedToken) {
         console.error("SEPAY_WEBHOOK_TOKEN chưa được cấu hình — từ chối request.");
-        return new Response(JSON.stringify({ success: false, message: "Webhook not configured" }), { status: 503 });
+        return new Response(JSON.stringify({ success: false, message: "Webhook not configured" }), {
+          status: 503,
+        });
       }
       // So sánh chính xác toàn bộ chuỗi (không dùng .includes() để tránh partial match)
       const providedToken = authHeader.replace(/^Bearer\s+/i, "").trim();
       if (providedToken !== expectedToken) {
         console.error("Auth failed: token không khớp.");
-        return new Response(JSON.stringify({ success: false, message: "Unauthorized" }), { status: 401 });
+        return new Response(JSON.stringify({ success: false, message: "Unauthorized" }), {
+          status: 401,
+        });
       }
       payload = await request.json();
     }
@@ -98,11 +113,11 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
     if (payload.transferType === "in") {
       let paymentCode = "";
       const prefix = "PET";
-      
+
       // SePay tự trích xuất nếu có cấu hình Cú pháp
       if (payload.code && payload.code.toUpperCase().startsWith(prefix)) {
         paymentCode = payload.code.substring(prefix.length).trim().toUpperCase();
-      } 
+      }
       // Fallback tự tìm trong nội dung chuyển khoản
       else if (payload.content) {
         const match = payload.content.toUpperCase().match(/PET\s*([A-Z0-9]{8})/);
@@ -112,7 +127,7 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
       if (paymentCode) {
         const supabaseAdmin = createClient(
           process.env["VITE_SUPABASE_URL"] || process.env["SUPABASE_URL"] || "",
-          process.env["SUPABASE_SERVICE_ROLE_KEY"] || ""
+          process.env["SUPABASE_SERVICE_ROLE_KEY"] || "",
         );
 
         let webhookLogged = false;
@@ -121,16 +136,21 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
           const { error: logErr } = await supabaseAdmin.from("sepay_webhooks_log").insert({
             id: String(payload.id),
             amount: payload.transferAmount,
-            content: payload.content
+            content: payload.content,
           });
           if (logErr) {
             // PostgreSQL Error 23505 = Unique Violation
             if (logErr.code === "23505") {
               console.log(`⚠️ Bỏ qua webhook trùng lặp: ${payload.id}`);
-              return new Response(JSON.stringify({ success: true, message: "Duplicate" }), { status: 200 });
+              return new Response(JSON.stringify({ success: true, message: "Duplicate" }), {
+                status: 200,
+              });
             } else {
               console.error("❌ Lỗi khi ghi log webhook idempotency:", logErr);
-              return new Response(JSON.stringify({ success: false, message: "Webhook log error" }), { status: 500 });
+              return new Response(
+                JSON.stringify({ success: false, message: "Webhook log error" }),
+                { status: 500 },
+              );
             }
           }
           webhookLogged = true;
@@ -144,23 +164,27 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
           .order("created_at", { ascending: false });
 
         // Tìm đơn của user có request.id bắt đầu bằng paymentCode
-        const userRequests = pendingRequests?.filter((r: { id: string }) => 
-          (r.id.split("-")[0] || "").toUpperCase() === paymentCode
-        ) || [];
+        const userRequests =
+          pendingRequests?.filter(
+            (r: { id: string }) => (r.id.split("-")[0] || "").toUpperCase() === paymentCode,
+          ) || [];
 
         const transferAmount = payload.transferAmount ?? 0;
-        
+
         // Chỉ duyệt khi số tiền khớp trong ngưỡng ±5% — Bắt buộc có gói
         let requestRecord = null;
         if (userRequests.length > 0) {
-          requestRecord = userRequests.find((r: any) => {
-            // Bắt buộc phải có plan_id và giá của plan, chặn đứng fallback amount
-            if (!r.plan_id || !r.membership_plans?.price_amount) return false;
-            const planPrice = r.membership_plans.price_amount;
-            return Math.abs(planPrice - transferAmount) / Math.max(planPrice, 1) < 0.05;
-          }) ?? null;
+          requestRecord =
+            userRequests.find((r: any) => {
+              // Bắt buộc phải có plan_id và giá của plan, chặn đứng fallback amount
+              if (!r.plan_id || !r.membership_plans?.price_amount) return false;
+              const planPrice = r.membership_plans.price_amount;
+              return Math.abs(planPrice - transferAmount) / Math.max(planPrice, 1) < 0.05;
+            }) ?? null;
           if (!requestRecord) {
-            console.warn(`⚠️ Không tìm được đơn khớp tiền (hoặc đơn không có gói) cho mã ${paymentCode}. Chuyển khoản: ${transferAmount}đ. Bỏ qua.`);
+            console.warn(
+              `⚠️ Không tìm được đơn khớp tiền (hoặc đơn không có gói) cho mã ${paymentCode}. Chuyển khoản: ${transferAmount}đ. Bỏ qua.`,
+            );
           }
         }
 
@@ -179,60 +203,75 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
             .maybeSingle();
 
           if (existingApproved) {
-            console.log(`⚠️ User ${requestRecord.user_id} đã có gói active đến ${existingApproved.expires_at}. Bỏ qua để tránh trùng lặp. Đơn ID: ${requestRecord.id}`);
+            console.log(
+              `⚠️ User ${requestRecord.user_id} đã có gói active đến ${existingApproved.expires_at}. Bỏ qua để tránh trùng lặp. Đơn ID: ${requestRecord.id}`,
+            );
           } else {
-          // Lấy thời hạn từ gói (nếu có), mặc định 365 ngày
-          const plan = (requestRecord as { membership_plans?: { duration_days?: number } }).membership_plans;
-          const durationDays: number = plan?.duration_days ?? 365;
-          
-          const expiresAt = new Date(now);
-          expiresAt.setDate(expiresAt.getDate() + durationDays);
+            // Lấy thời hạn từ gói (nếu có), mặc định 365 ngày
+            const plan = (requestRecord as { membership_plans?: { duration_days?: number } })
+              .membership_plans;
+            const durationDays: number = plan?.duration_days ?? 365;
 
-          const { error: updateError } = await supabaseAdmin
-            .from("membership_requests")
-            .update({
-              status: "approved",
-              reviewed_at: now.toISOString(),
-              starts_at: now.toISOString(),
-              expires_at: expiresAt.toISOString(),
-              admin_note: `Duyệt tự động qua SePay (GD: ${payload.id ?? "N/A"}, Tiền: ${transferAmount}đ, Hạn: ${durationDays} ngày)`
-            })
-            .eq("id", requestRecord.id);
+            const expiresAt = new Date(now);
+            expiresAt.setDate(expiresAt.getDate() + durationDays);
 
-          // Nếu shop chưa publish → publish luôn (PHẢI kiểm tra quyền sở hữu)
-          if (!updateError && requestRecord.shop_id) {
-            const { data: shopRecord } = await supabaseAdmin
-              .from("shops")
-              .select("owner_id")
-              .eq("id", requestRecord.shop_id)
-              .maybeSingle();
-            
-            if (shopRecord && shopRecord.owner_id === requestRecord.user_id) {
-              await supabaseAdmin
+            const { error: updateError } = await supabaseAdmin
+              .from("membership_requests")
+              .update({
+                status: "approved",
+                reviewed_at: now.toISOString(),
+                starts_at: now.toISOString(),
+                expires_at: expiresAt.toISOString(),
+                admin_note: `Duyệt tự động qua SePay (GD: ${payload.id ?? "N/A"}, Tiền: ${transferAmount}đ, Hạn: ${durationDays} ngày)`,
+              })
+              .eq("id", requestRecord.id);
+
+            // Nếu shop chưa publish → publish luôn (PHẢI kiểm tra quyền sở hữu)
+            if (!updateError && requestRecord.shop_id) {
+              const { data: shopRecord } = await supabaseAdmin
                 .from("shops")
-                .update({ is_published: true })
-                .eq("id", requestRecord.shop_id);
-            } else {
-              console.warn(`⚠️ User ${requestRecord.user_id} không sở hữu shop ${requestRecord.shop_id}. Không tự động publish.`);
-            }
-          }
+                .select("owner_id")
+                .eq("id", requestRecord.shop_id)
+                .maybeSingle();
 
-          if (updateError) {
-            console.error("Lỗi khi duyệt tự động:", updateError);
-            if (webhookLogged) {
-              await supabaseAdmin.from("sepay_webhooks_log").delete().eq("id", String(payload.id));
+              if (shopRecord && shopRecord.owner_id === requestRecord.user_id) {
+                await supabaseAdmin
+                  .from("shops")
+                  .update({ is_published: true })
+                  .eq("id", requestRecord.shop_id);
+              } else {
+                console.warn(
+                  `⚠️ User ${requestRecord.user_id} không sở hữu shop ${requestRecord.shop_id}. Không tự động publish.`,
+                );
+              }
             }
-            return new Response(JSON.stringify({ success: false, message: "Update failed" }), { status: 500 });
-          } else {
-            console.log(`✅ Đã kích hoạt gói ${durationDays} ngày cho đơn ${requestRecord.id} (code: ${paymentCode})`);
-          }
+
+            if (updateError) {
+              console.error("Lỗi khi duyệt tự động:", updateError);
+              if (webhookLogged) {
+                await supabaseAdmin
+                  .from("sepay_webhooks_log")
+                  .delete()
+                  .eq("id", String(payload.id));
+              }
+              return new Response(JSON.stringify({ success: false, message: "Update failed" }), {
+                status: 500,
+              });
+            } else {
+              console.log(
+                `✅ Đã kích hoạt gói ${durationDays} ngày cho đơn ${requestRecord.id} (code: ${paymentCode})`,
+              );
+            }
           }
         } else {
           console.log(`⚠️ Không tìm thấy đơn chờ duyệt cho Code: ${paymentCode}`);
           if (webhookLogged) {
             await supabaseAdmin.from("sepay_webhooks_log").delete().eq("id", String(payload.id));
           }
-          return new Response(JSON.stringify({ success: false, message: "No matching pending request found" }), { status: 404 });
+          return new Response(
+            JSON.stringify({ success: false, message: "No matching pending request found" }),
+            { status: 404 },
+          );
         }
       }
     }
@@ -256,29 +295,48 @@ async function handleAdminCreateUser(request: Request): Promise<Response> {
     const supabaseUrl = process.env["SUPABASE_URL"] || process.env["VITE_SUPABASE_URL"] || "";
     const serviceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"] || "";
     if (!serviceKey) {
-      return new Response(JSON.stringify({ success: false, error: "No service key" }), { status: 500, headers: { "content-type": "application/json" } });
+      return new Response(JSON.stringify({ success: false, error: "No service key" }), {
+        status: 500,
+        headers: { "content-type": "application/json" },
+      });
     }
-    const adminClient = createClient(supabaseUrl, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
+    const adminClient = createClient(supabaseUrl, serviceKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
 
     const authHeader = request.headers.get("Authorization");
     if (!authHeader) {
-      return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), { status: 401, headers: { "content-type": "application/json" } });
+      return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
+        status: 401,
+        headers: { "content-type": "application/json" },
+      });
     }
     const token = authHeader.replace(/^Bearer\s+/i, "").trim();
 
     // Xác thực user gọi API
     const { data: callerData, error: callerErr } = await adminClient.auth.getUser(token);
     if (callerErr || !callerData.user) {
-      return new Response(JSON.stringify({ success: false, error: "Unauthorized user" }), { status: 401, headers: { "content-type": "application/json" } });
+      return new Response(JSON.stringify({ success: false, error: "Unauthorized user" }), {
+        status: 401,
+        headers: { "content-type": "application/json" },
+      });
     }
 
     // Kiểm tra role admin
-    const { data: roleData } = await adminClient.from("user_roles").select("role").eq("user_id", callerData.user.id).eq("role", "admin").single();
+    const { data: roleData } = await adminClient
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", callerData.user.id)
+      .eq("role", "admin")
+      .single();
     if (!roleData) {
-      return new Response(JSON.stringify({ success: false, error: "Forbidden: Admins only" }), { status: 403, headers: { "content-type": "application/json" } });
+      return new Response(JSON.stringify({ success: false, error: "Forbidden: Admins only" }), {
+        status: 403,
+        headers: { "content-type": "application/json" },
+      });
     }
 
-    const payload = await request.json() as {
+    const payload = (await request.json()) as {
       email: string;
       password: string;
       full_name?: string;
@@ -291,7 +349,10 @@ async function handleAdminCreateUser(request: Request): Promise<Response> {
     };
 
     if (!payload.email || !payload.password) {
-      return new Response(JSON.stringify({ success: false, error: "Email và mật khẩu bắt buộc" }), { status: 400, headers: { "content-type": "application/json" } });
+      return new Response(JSON.stringify({ success: false, error: "Email và mật khẩu bắt buộc" }), {
+        status: 400,
+        headers: { "content-type": "application/json" },
+      });
     }
 
     // Tạo auth user (email đã xác nhận sẵn)
@@ -301,7 +362,10 @@ async function handleAdminCreateUser(request: Request): Promise<Response> {
       email_confirm: true,
     });
     if (authErr || !authData.user) {
-      return new Response(JSON.stringify({ success: false, error: authErr?.message ?? "Tạo tài khoản thất bại" }), { status: 400, headers: { "content-type": "application/json" } });
+      return new Response(
+        JSON.stringify({ success: false, error: authErr?.message ?? "Tạo tài khoản thất bại" }),
+        { status: 400, headers: { "content-type": "application/json" } },
+      );
     }
 
     const userId = authData.user.id;
@@ -316,44 +380,55 @@ async function handleAdminCreateUser(request: Request): Promise<Response> {
 
     // Tạo shop nếu cung cấp tên
     if (payload.shop_name && payload.shop_slug) {
-      const { data: shopData, error: shopErr } = await adminClient.from("shops").insert({
-        owner_id: userId,
-        name: payload.shop_name,
-        slug: payload.shop_slug,
-        category: payload.shop_category || "pet-shop",
-        city: payload.shop_city || "TP.HCM",
-        phone: payload.shop_phone || null,
-        address: payload.shop_address || null,
-        is_published: true,
-        is_featured: false,
-      } as any).select("id, slug").single();
+      const { data: shopData, error: shopErr } = await adminClient
+        .from("shops")
+        .insert({
+          owner_id: userId,
+          name: payload.shop_name,
+          slug: payload.shop_slug,
+          category: payload.shop_category || "pet-shop",
+          city: payload.shop_city || "TP.HCM",
+          phone: payload.shop_phone || null,
+          address: payload.shop_address || null,
+          is_published: true,
+          is_featured: false,
+        } as any)
+        .select("id, slug")
+        .single();
 
       if (shopErr) {
         console.error("Lỗi tạo shop:", shopErr.message);
         // Không rollback user — trả về để admin biết và sửa thủ công
-        return new Response(JSON.stringify({
-          success: true,
-          user_id: userId,
-          shop_created: false,
-          shop_error: shopErr.message,
-        }), { status: 200, headers: { "content-type": "application/json" } });
+        return new Response(
+          JSON.stringify({
+            success: true,
+            user_id: userId,
+            shop_created: false,
+            shop_error: shopErr.message,
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        );
       }
 
       shopId = (shopData as any)?.id ?? null;
       shopSlug = (shopData as any)?.slug ?? null;
     }
 
-    return new Response(JSON.stringify({
-      success: true,
-      user_id: userId,
-      email: payload.email,
-      shop_id: shopId,
-      shop_slug: shopSlug,
-    }), { status: 200, headers: { "content-type": "application/json" } });
+    return new Response(
+      JSON.stringify({
+        success: true,
+        user_id: userId,
+        email: payload.email,
+        shop_id: shopId,
+        shop_slug: shopSlug,
+      }),
+      { status: 200, headers: { "content-type": "application/json" } },
+    );
   } catch (error) {
     console.error("handleAdminCreateUser error:", error);
     return new Response(JSON.stringify({ success: false, error: String(error) }), {
-      status: 500, headers: { "content-type": "application/json" },
+      status: 500,
+      headers: { "content-type": "application/json" },
     });
   }
 }
@@ -363,54 +438,82 @@ async function handleContactSubmit(request: Request): Promise<Response> {
     const ip = request.headers.get("cf-connecting-ip") || "unknown-ip";
     const supabaseUrl = process.env["SUPABASE_URL"] || process.env["VITE_SUPABASE_URL"] || "";
     const serviceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"] || "";
-    
+
     if (!serviceKey || !supabaseUrl) {
-      return new Response(JSON.stringify({ success: false, error: "Hệ thống chưa cấu hình đủ biến môi trường." }), {
-        status: 503, headers: { "content-type": "application/json" }
-      });
+      return new Response(
+        JSON.stringify({ success: false, error: "Hệ thống chưa cấu hình đủ biến môi trường." }),
+        {
+          status: 503,
+          headers: { "content-type": "application/json" },
+        },
+      );
     }
 
     if (ip !== "unknown-ip") {
-      const adminClient = createClient(supabaseUrl, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
-      
-      const { data: requestCount, error: rpcError } = await adminClient.rpc("increment_contact_rate_limit", { p_ip: ip });
-      
+      const adminClient = createClient(supabaseUrl, serviceKey, {
+        auth: { autoRefreshToken: false, persistSession: false },
+      });
+
+      const { data: requestCount, error: rpcError } = await adminClient.rpc(
+        "increment_contact_rate_limit",
+        { p_ip: ip },
+      );
+
       if (rpcError) {
         console.error("Lỗi rate limit:", rpcError);
-        return new Response(JSON.stringify({ success: false, error: "Lỗi hệ thống, vui lòng thử lại sau." }), {
-          status: 500, headers: { "content-type": "application/json" }
-        });
+        return new Response(
+          JSON.stringify({ success: false, error: "Lỗi hệ thống, vui lòng thử lại sau." }),
+          {
+            status: 500,
+            headers: { "content-type": "application/json" },
+          },
+        );
       }
 
       if (requestCount && requestCount > 5) {
-        return new Response(JSON.stringify({ success: false, error: "Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau 15 phút." }), {
-          status: 429, headers: { "content-type": "application/json" }
-        });
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau 15 phút.",
+          }),
+          {
+            status: 429,
+            headers: { "content-type": "application/json" },
+          },
+        );
       }
     }
 
-    const raw = await request.json() as Record<string, unknown>;
+    const raw = (await request.json()) as Record<string, unknown>;
 
     // Validate độ dài tối đa
-    const name    = String(raw["name"]    ?? "").slice(0, 100);
+    const name = String(raw["name"] ?? "").slice(0, 100);
     const contact = String(raw["contact"] ?? "").slice(0, 100);
     const message = String(raw["message"] ?? "").slice(0, 2000);
 
     if (!message.trim()) {
-      return new Response(JSON.stringify({ success: false, error: "Tin nhắn không được để trống." }), {
-        status: 400, headers: { "content-type": "application/json" }
-      });
+      return new Response(
+        JSON.stringify({ success: false, error: "Tin nhắn không được để trống." }),
+        {
+          status: 400,
+          headers: { "content-type": "application/json" },
+        },
+      );
     }
 
     const botToken = process.env["TELEGRAM_BOT_TOKEN"] || process.env["VITE_TELEGRAM_BOT_TOKEN"];
-    const chatId   = process.env["TELEGRAM_CHAT_ID"]   || process.env["VITE_TELEGRAM_CHAT_ID"];
+    const chatId = process.env["TELEGRAM_CHAT_ID"] || process.env["VITE_TELEGRAM_CHAT_ID"];
 
     if (!botToken || !chatId) {
       console.warn("Chưa cấu hình Telegram Bot.");
       // Trả 503 thay vì 200 giả — frontend biết là chưa gửi được
-      return new Response(JSON.stringify({ success: false, error: "Liên hệ chưa cấu hình, vui lòng thử lại sau." }), {
-        status: 503, headers: { "content-type": "application/json" }
-      });
+      return new Response(
+        JSON.stringify({ success: false, error: "Liên hệ chưa cấu hình, vui lòng thử lại sau." }),
+        {
+          status: 503,
+          headers: { "content-type": "application/json" },
+        },
+      );
     }
 
     // Escape Markdown đặc biệt để tránh lỗi Telegram parse
@@ -425,7 +528,7 @@ async function handleContactSubmit(request: Request): Promise<Response> {
     const tgRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text, parse_mode: "MarkdownV2" })
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: "MarkdownV2" }),
     });
 
     if (!tgRes.ok) {
@@ -435,12 +538,14 @@ async function handleContactSubmit(request: Request): Promise<Response> {
     }
 
     return new Response(JSON.stringify({ success: true }), {
-      status: 200, headers: { "content-type": "application/json" }
+      status: 200,
+      headers: { "content-type": "application/json" },
     });
   } catch (error) {
     console.error("Lỗi xử lý form liên hệ:", error);
     return new Response(JSON.stringify({ success: false }), {
-      status: 400, headers: { "content-type": "application/json" },
+      status: 400,
+      headers: { "content-type": "application/json" },
     });
   }
 }
@@ -449,13 +554,13 @@ export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const url = new URL(request.url);
-      if (url.pathname === '/api/sepay' && request.method === 'POST') {
+      if (url.pathname === "/api/sepay" && request.method === "POST") {
         return await handleSepayWebhook(request);
       }
-      if (url.pathname === '/api/contact' && request.method === 'POST') {
+      if (url.pathname === "/api/contact" && request.method === "POST") {
         return await handleContactSubmit(request);
       }
-      if (url.pathname === '/api/admin/create-user' && request.method === 'POST') {
+      if (url.pathname === "/api/admin/create-user" && request.method === "POST") {
         return await handleAdminCreateUser(request);
       }
 

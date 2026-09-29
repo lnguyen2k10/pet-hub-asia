@@ -1,11 +1,6 @@
 import { useState } from "react";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { shopInitials } from "@/lib/pet";
 import type { PartnerListing } from "@/lib/queries";
 
@@ -31,7 +26,8 @@ export function PartnerCard({ listing }: { listing: PartnerListing }) {
         className="group flex w-full cursor-pointer flex-col overflow-hidden rounded-2xl bg-card text-left ring-1 ring-border transition-transform duration-300 hover:-translate-y-1.5"
       >
         {listing.cover_url ? (
-          <img decoding="async"
+          <img
+            decoding="async"
             src={listing.cover_url}
             alt={listing.company_name}
             loading="lazy"
@@ -45,7 +41,8 @@ export function PartnerCard({ listing }: { listing: PartnerListing }) {
         <div className="flex flex-1 flex-col p-5">
           <div className="flex items-center gap-3">
             {listing.logo_url ? (
-              <img decoding="async"
+              <img
+                decoding="async"
                 src={listing.logo_url}
                 alt={listing.company_name}
                 loading="lazy"
@@ -78,7 +75,8 @@ export function PartnerCard({ listing }: { listing: PartnerListing }) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto p-0">
           {listing.cover_url ? (
-            <img decoding="async"
+            <img
+              decoding="async"
               src={listing.cover_url}
               alt={listing.company_name}
               className="aspect-[16/8] w-full object-cover"
@@ -157,7 +155,6 @@ export function PartnerCard({ listing }: { listing: PartnerListing }) {
                 Đăng nhập để xem thông tin liên hệ
               </a>
             ) : null}
-
           </div>
         </DialogContent>
       </Dialog>

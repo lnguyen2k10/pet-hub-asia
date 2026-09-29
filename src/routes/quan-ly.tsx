@@ -25,7 +25,8 @@ import {
 } from "@/lib/queries";
 
 const TITLE = "Trang quản lý shop — 1Pet.Asia";
-const DESC = "Chủ shop tạo và chỉnh sửa landing page, sản phẩm, ưu đãi và tin tìm đại lý trên 1Pet.Asia.";
+const DESC =
+  "Chủ shop tạo và chỉnh sửa landing page, sản phẩm, ưu đãi và tin tìm đại lý trên 1Pet.Asia.";
 
 export const Route = createFileRoute("/quan-ly")({
   head: () => ({
@@ -53,22 +54,22 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 function PromoCodeForm({ onRedeemed }: { onRedeemed: () => void }) {
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState("");
   const redeem = useMutation({
     mutationFn: async () => {
-      if (!code.trim()) throw new Error('Vui lòng nhập mã quà tặng');
-      const { data, error } = await supabase.rpc('redeem_promo_code', { p_code: code.trim() });
+      if (!code.trim()) throw new Error("Vui lòng nhập mã quà tặng");
+      const { data, error } = await supabase.rpc("redeem_promo_code", { p_code: code.trim() });
       if (error) throw error;
       return data;
     },
     onSuccess: (data: any) => {
-      toast.success(data?.message || 'Đổi mã quà tặng thành công!');
-      setCode('');
+      toast.success(data?.message || "Đổi mã quà tặng thành công!");
+      setCode("");
       onRedeemed();
     },
     onError: (e: any) => {
-      toast.error(e.message || 'Mã không hợp lệ hoặc đã hết hạn.');
-    }
+      toast.error(e.message || "Mã không hợp lệ hoặc đã hết hạn.");
+    },
   });
 
   return (
@@ -78,19 +79,19 @@ function PromoCodeForm({ onRedeemed }: { onRedeemed: () => void }) {
         <p className="text-sm text-amber-800">Nhập mã để nhận thêm Quota đăng bài miễn phí!</p>
       </div>
       <div className="flex w-full max-w-sm gap-2">
-        <input 
-          type="text" 
+        <input
+          type="text"
           placeholder="Nhập mã của bạn..."
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
           className="flex-1 rounded-full border border-amber-300 bg-white px-4 py-2 text-sm font-semibold outline-none focus:ring-2 focus:ring-amber-500 uppercase"
         />
-        <button 
+        <button
           disabled={redeem.isPending || !code.trim()}
           onClick={() => redeem.mutate()}
           className="rounded-full bg-amber-600 px-6 py-2 text-sm font-bold text-white shadow-sm hover:bg-amber-700 disabled:opacity-60 shrink-0"
         >
-          {redeem.isPending ? 'Đang đổi...' : 'Đổi mã'}
+          {redeem.isPending ? "Đang đổi..." : "Đổi mã"}
         </button>
       </div>
     </div>
@@ -149,7 +150,9 @@ function DashboardPage() {
         <aside className="w-full shrink-0 space-y-1 md:w-64">
           <div className="mb-4 px-3">
             <p className="font-hand text-2xl text-terra-deep">xin chào</p>
-            <p className="text-xs text-ink-soft font-medium uppercase tracking-wider">Quản lý shop</p>
+            <p className="text-xs text-ink-soft font-medium uppercase tracking-wider">
+              Quản lý shop
+            </p>
           </div>
           {TABS.map((tab) => (
             <button
@@ -177,17 +180,24 @@ function DashboardPage() {
             ) : (
               <div className="space-y-10">
                 {activeTab === "info" && <ShopForm shop={shopQ.data ?? null} userId={user.id} />}
-                {activeTab === "deals" && shopQ.data && <DealsManager shop={shopQ.data} userId={user.id} />}
-                {activeTab === "products" && shopQ.data && <ProductsManager shop={shopQ.data} userId={user.id} />}
+                {activeTab === "deals" && shopQ.data && (
+                  <DealsManager shop={shopQ.data} userId={user.id} />
+                )}
+                {activeTab === "products" && shopQ.data && (
+                  <ProductsManager shop={shopQ.data} userId={user.id} />
+                )}
                 {activeTab === "partner" && <PartnerManager userId={user.id} />}
                 {activeTab === "membership" && <MembershipManager />}
                 {activeTab === "account" && <AccountManager userId={user.id} />}
-                
-                {!shopQ.data && activeTab !== "info" && activeTab !== "membership" && activeTab !== "partner" && (
-                  <div className="rounded-2xl bg-sand-deep/20 p-8 text-center text-ink-soft">
-                    Vui lòng tạo thông tin shop ở mục "Thông tin chung" trước.
-                  </div>
-                )}
+
+                {!shopQ.data &&
+                  activeTab !== "info" &&
+                  activeTab !== "membership" &&
+                  activeTab !== "partner" && (
+                    <div className="rounded-2xl bg-sand-deep/20 p-8 text-center text-ink-soft">
+                      Vui lòng tạo thông tin shop ở mục "Thông tin chung" trước.
+                    </div>
+                  )}
               </div>
             )}
           </div>
@@ -271,7 +281,10 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
   });
 
   const profileQ = useQuery(myProfileQuery);
-  const hasActivePlan = (profileQ.data?.quota_deals ?? 0) !== 0 || (profileQ.data?.quota_products ?? 0) !== 0 || (profileQ.data?.quota_blog_posts ?? 0) !== 0;
+  const hasActivePlan =
+    (profileQ.data?.quota_deals ?? 0) !== 0 ||
+    (profileQ.data?.quota_products ?? 0) !== 0 ||
+    (profileQ.data?.quota_blog_posts ?? 0) !== 0;
 
   useEffect(() => {
     if (!shop) return;
@@ -299,14 +312,12 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
   useEffect(() => {
     if (shop) return;
     if (!form.category && categoriesQ.data?.length) {
-      setForm(f => ({ ...f, category: categoriesQ.data?.[0]?.slug ?? "" }));
+      setForm((f) => ({ ...f, category: categoriesQ.data?.[0]?.slug ?? "" }));
     }
     if (!form.city && locationsQ.data?.length) {
-      setForm(f => ({ ...f, city: locationsQ.data?.[0]?.name ?? "" }));
+      setForm((f) => ({ ...f, city: locationsQ.data?.[0]?.name ?? "" }));
     }
   }, [shop, categoriesQ.data, locationsQ.data, form.category, form.city]);
-
-
 
   const save = useMutation({
     mutationFn: async () => {
@@ -340,7 +351,10 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
         is_published: form.is_published,
       };
       if (shop) {
-        const { error } = await supabase.from("shops").update(payload as any).eq("id", shop.id);
+        const { error } = await supabase
+          .from("shops")
+          .update(payload as any)
+          .eq("id", shop.id);
         if (error) throw error;
       } else {
         const { error } = await supabase.from("shops").insert(payload as any);
@@ -525,7 +539,12 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
             disabled={!hasActivePlan}
             onChange={(e) => setForm((f) => ({ ...f, is_published: e.target.checked }))}
           />
-          Hiển thị công khai trong danh bạ {(!hasActivePlan) && <span className="text-rose-500 font-medium">(Bạn cần kích hoạt Gói thành viên để được hiển thị)</span>}
+          Hiển thị công khai trong danh bạ{" "}
+          {!hasActivePlan && (
+            <span className="text-rose-500 font-medium">
+              (Bạn cần kích hoạt Gói thành viên để được hiển thị)
+            </span>
+          )}
         </label>
         <div className="sm:col-span-2">
           <button
@@ -618,7 +637,8 @@ function DealsManager({ shop, userId }: { shop: ShopWithDeals; userId: string })
             >
               <div className="flex min-w-0 gap-3">
                 {deal.image_url ? (
-                  <img decoding="async"
+                  <img
+                    decoding="async"
                     src={deal.image_url}
                     alt={deal.title}
                     className="size-14 shrink-0 rounded-xl object-cover ring-1 ring-border"
@@ -934,7 +954,8 @@ function ProductsManager({ shop, userId }: { shop: ShopWithDeals; userId: string
             >
               <div className="flex min-w-0 items-center gap-3">
                 {p.image_url ? (
-                  <img decoding="async"
+                  <img
+                    decoding="async"
                     src={p.image_url}
                     alt={p.name}
                     className="size-12 shrink-0 rounded-xl object-cover ring-1 ring-border"
@@ -1050,7 +1071,11 @@ function ProductsManager({ shop, userId }: { shop: ShopWithDeals; userId: string
             disabled={saveProduct.isPending || isOverQuota}
             className="rounded-full bg-terra px-6 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-60"
           >
-            {editingId ? "Lưu sản phẩm" : isOverQuota ? `Hết quota (${quota_products})` : "Thêm sản phẩm"}
+            {editingId
+              ? "Lưu sản phẩm"
+              : isOverQuota
+                ? `Hết quota (${quota_products})`
+                : "Thêm sản phẩm"}
           </button>
           {editingId ? (
             <button
@@ -1101,7 +1126,10 @@ function PartnerManager({ userId }: { userId: string }) {
   const [draft, setDraft] = useState({ ...emptyListing });
   const profileQ = useQuery(myProfileQuery);
   const quota_partner_posts = profileQ.data?.quota_partner_posts ?? 0;
-  const isOverQuota = !editingId && quota_partner_posts !== -1 && (listingsQ.data?.length ?? 0) >= quota_partner_posts;
+  const isOverQuota =
+    !editingId &&
+    quota_partner_posts !== -1 &&
+    (listingsQ.data?.length ?? 0) >= quota_partner_posts;
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["partner_listings"] });
   const reset = () => {
@@ -1380,7 +1408,11 @@ function PartnerManager({ userId }: { userId: string }) {
               disabled={saveListing.isPending || isOverQuota}
               className="rounded-full bg-terra px-6 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-60"
             >
-              {editingId ? "Lưu tin đăng" : isOverQuota ? `Hết quota (${quota_partner_posts})` : "Đăng tin"}
+              {editingId
+                ? "Lưu tin đăng"
+                : isOverQuota
+                  ? `Hết quota (${quota_partner_posts})`
+                  : "Đăng tin"}
             </button>
             <button
               type="button"
@@ -1413,17 +1445,13 @@ function MembershipManager() {
     <section className="space-y-8">
       <div>
         <h2 className="font-hand text-3xl text-terra-deep">Gói thành viên của tôi</h2>
-        <p className="mt-2 text-ink-soft">
-          Theo dõi và quản lý các quyền lợi từ gói thành viên.
-        </p>
+        <p className="mt-2 text-ink-soft">Theo dõi và quản lý các quyền lợi từ gói thành viên.</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-2xl bg-sand-deep/20 p-5 ring-1 ring-border">
           <p className="text-sm font-medium text-ink-soft">Quota Ưu đãi</p>
-          <p className="mt-2 text-3xl font-bold text-terra-deep">
-            {profile?.quota_deals ?? 0}
-          </p>
+          <p className="mt-2 text-3xl font-bold text-terra-deep">{profile?.quota_deals ?? 0}</p>
         </div>
         <div className="rounded-2xl bg-sand-deep/20 p-5 ring-1 ring-border">
           <p className="text-sm font-medium text-ink-soft">Quota Sản phẩm</p>
@@ -1454,8 +1482,11 @@ function MembershipManager() {
       <div className="mt-8 border-t border-border pt-8">
         <h3 className="font-hand text-2xl text-ink">Nâng cấp / Mua thêm gói</h3>
         <p className="mt-2 text-ink-soft">
-          Bạn có thể nâng cấp lên gói cao hơn hoặc mua thêm để tăng quota. <br/>
-          <i>Lưu ý: Các gói trên hệ thống không tự động gia hạn (tự động trừ tiền). Gói sẽ tự động huỷ khi hết hạn, bạn có quyền chủ động gia hạn bất cứ lúc nào.</i>
+          Bạn có thể nâng cấp lên gói cao hơn hoặc mua thêm để tăng quota. <br />
+          <i>
+            Lưu ý: Các gói trên hệ thống không tự động gia hạn (tự động trừ tiền). Gói sẽ tự động
+            huỷ khi hết hạn, bạn có quyền chủ động gia hạn bất cứ lúc nào.
+          </i>
         </p>
         <div className="mt-6 flex flex-wrap gap-4">
           <Link
@@ -1476,20 +1507,33 @@ function MembershipManager() {
             <p className="text-sm text-ink-soft">Chưa có lịch sử giao dịch.</p>
           ) : (
             requests.map((r) => {
-              const plan = plans.find(p => p.id === r.plan_id);
+              const plan = plans.find((p) => p.id === r.plan_id);
               return (
-                <div key={r.id} className="flex items-center justify-between rounded-xl bg-background p-4 ring-1 ring-border shadow-sm">
+                <div
+                  key={r.id}
+                  className="flex items-center justify-between rounded-xl bg-background p-4 ring-1 ring-border shadow-sm"
+                >
                   <div>
                     <p className="font-medium text-ink">{plan ? plan.name : "Gói thành viên"}</p>
-                    <p className="text-sm text-ink-soft">{new Date(r.created_at).toLocaleDateString("vi-VN")}</p>
+                    <p className="text-sm text-ink-soft">
+                      {new Date(r.created_at).toLocaleDateString("vi-VN")}
+                    </p>
                   </div>
                   <div>
-                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                      r.status === "approved" ? "bg-green-100 text-green-800" :
-                      r.status === "pending" ? "bg-yellow-100 text-yellow-800" :
-                      "bg-red-100 text-red-800"
-                    }`}>
-                      {r.status === "approved" ? "Thành công" : r.status === "pending" ? "Đang chờ" : "Từ chối"}
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                        r.status === "approved"
+                          ? "bg-green-100 text-green-800"
+                          : r.status === "pending"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {r.status === "approved"
+                        ? "Thành công"
+                        : r.status === "pending"
+                          ? "Đang chờ"
+                          : "Từ chối"}
                     </span>
                   </div>
                 </div>
@@ -1502,9 +1546,112 @@ function MembershipManager() {
   );
 }
 
-
-function AccountManager({ userId }: { userId: string }) { const { user } = useAuth(); const qc = useQueryClient(); const profileQ = useQuery(myProfileQuery); const [name, setName] = useState(""); const [password, setPassword] = useState(""); useEffect(() => { if (profileQ.data) { setName(profileQ.data.full_name ?? ""); } }, [profileQ.data]); const saveProfile = useMutation({ mutationFn: async () => { const { error } = await supabase.from("profiles").update({ full_name: name }).eq("id", userId); if (error) throw error; }, onSuccess: () => { toast.success("Đã cập nhật tên!"); qc.invalidateQueries({ queryKey: ["profile", "mine"] }); }, onError: (e: Error) => toast.error(e.message) }); const savePassword = useMutation({ mutationFn: async () => { if (password.length < 6) throw new Error("Mật khẩu quá ngắn"); const { error } = await supabase.auth.updateUser({ password }); if (error) throw error; }, onSuccess: () => { toast.success("Đã cập nhật mật khẩu!"); setPassword(""); }, onError: (e: Error) => toast.error(e.message) }); return ( <section className="space-y-8"> <div> <h2 className="font-hand text-3xl text-terra-deep">Tài khoản</h2> <p className="mt-2 text-ink-soft">Quản lý thông tin đăng nhập và hồ sơ cá nhân.</p> </div> <div className="grid gap-8 sm:grid-cols-2"> <form onSubmit={e => { e.preventDefault(); saveProfile.mutate(); }} className="space-y-4 rounded-3xl bg-sand-deep/30 p-6 ring-1 ring-border"> <h3 className="font-semibold">Hồ sơ cá nhân</h3>
+function AccountManager({ userId }: { userId: string }) {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const profileQ = useQuery(myProfileQuery);
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  useEffect(() => {
+    if (profileQ.data) {
+      setName(profileQ.data.full_name ?? "");
+    }
+  }, [profileQ.data]);
+  const saveProfile = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ full_name: name })
+        .eq("id", userId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Đã cập nhật tên!");
+      qc.invalidateQueries({ queryKey: ["profile", "mine"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const savePassword = useMutation({
+    mutationFn: async () => {
+      if (password.length < 6) throw new Error("Mật khẩu quá ngắn");
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Đã cập nhật mật khẩu!");
+      setPassword("");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  return (
+    <section className="space-y-8">
+      {" "}
+      <div>
+        {" "}
+        <h2 className="font-hand text-3xl text-terra-deep">Tài khoản</h2>{" "}
+        <p className="mt-2 text-ink-soft">Quản lý thông tin đăng nhập và hồ sơ cá nhân.</p>{" "}
+      </div>{" "}
+      <div className="grid gap-8 sm:grid-cols-2">
+        {" "}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            saveProfile.mutate();
+          }}
+          className="space-y-4 rounded-3xl bg-sand-deep/30 p-6 ring-1 ring-border"
+        >
+          {" "}
+          <h3 className="font-semibold">Hồ sơ cá nhân</h3>
           <label className="block">
             <span className="text-sm font-medium">Email đăng nhập</span>
             <input className={inputCls} value={user?.email || ""} disabled />
-          </label> <label className="block"> <span className="text-sm font-medium">Họ và tên</span> <input className={inputCls} value={name} onChange={e => setName(e.target.value)} /> </label> <button disabled={saveProfile.isPending} className="rounded-full bg-terra px-5 py-2 text-sm font-semibold text-white disabled:opacity-60"> Lưu thay đổi </button> </form> <form onSubmit={e => { e.preventDefault(); savePassword.mutate(); }} className="space-y-4 rounded-3xl bg-sand-deep/30 p-6 ring-1 ring-border"> <h3 className="font-semibold">Đổi mật khẩu</h3> <label className="block"> <span className="text-sm font-medium">Mật khẩu mới</span> <input type="password" className={inputCls} value={password} onChange={e => setPassword(e.target.value)} placeholder="Tối thiểu 6 ký tự" /> </label> <button disabled={savePassword.isPending} className="rounded-full bg-ink px-5 py-2 text-sm font-semibold text-white disabled:opacity-60"> Cập nhật mật khẩu </button> </form> </div> </section> ); }
+          </label>{" "}
+          <label className="block">
+            {" "}
+            <span className="text-sm font-medium">Họ và tên</span>{" "}
+            <input
+              className={inputCls}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />{" "}
+          </label>{" "}
+          <button
+            disabled={saveProfile.isPending}
+            className="rounded-full bg-terra px-5 py-2 text-sm font-semibold text-white disabled:opacity-60"
+          >
+            {" "}
+            Lưu thay đổi{" "}
+          </button>{" "}
+        </form>{" "}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            savePassword.mutate();
+          }}
+          className="space-y-4 rounded-3xl bg-sand-deep/30 p-6 ring-1 ring-border"
+        >
+          {" "}
+          <h3 className="font-semibold">Đổi mật khẩu</h3>{" "}
+          <label className="block">
+            {" "}
+            <span className="text-sm font-medium">Mật khẩu mới</span>{" "}
+            <input
+              type="password"
+              className={inputCls}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Tối thiểu 6 ký tự"
+            />{" "}
+          </label>{" "}
+          <button
+            disabled={savePassword.isPending}
+            className="rounded-full bg-ink px-5 py-2 text-sm font-semibold text-white disabled:opacity-60"
+          >
+            {" "}
+            Cập nhật mật khẩu{" "}
+          </button>{" "}
+        </form>{" "}
+      </div>{" "}
+    </section>
+  );
+}

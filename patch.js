@@ -1,9 +1,15 @@
-const fs = require('fs');
-let code = fs.readFileSync('src/routes/admin.tsx', 'utf8');
+const fs = require("fs");
+let code = fs.readFileSync("src/routes/admin.tsx", "utf8");
 
-code = code.replace('{ id: "users", label: "Phân quyền & User", show: isAdmin },', '{ id: "users", label: "Phân quyền & User", show: isAdmin },\n    { id: "promo_codes", label: "Mã quà tặng", show: isAdmin },');
+code = code.replace(
+  '{ id: "users", label: "Phân quyền & User", show: isAdmin },',
+  '{ id: "users", label: "Phân quyền & User", show: isAdmin },\n    { id: "promo_codes", label: "Mã quà tặng", show: isAdmin },',
+);
 
-code = code.replace('<UserManager />\n            </div>\n          )}\n        </div>\n      </main>', '<UserManager />\n            </div>\n          )}\n          {activeTab === "promo_codes" && isAdmin && (\n            <div>\n              <h1 className="mb-6 text-3xl sm:text-4xl">Quản lý mã quà tặng</h1>\n              <AdminPromoCodes />\n            </div>\n          )}\n        </div>\n      </main>');
+code = code.replace(
+  "<UserManager />\n            </div>\n          )}\n        </div>\n      </main>",
+  '<UserManager />\n            </div>\n          )}\n          {activeTab === "promo_codes" && isAdmin && (\n            <div>\n              <h1 className="mb-6 text-3xl sm:text-4xl">Quản lý mã quà tặng</h1>\n              <AdminPromoCodes />\n            </div>\n          )}\n        </div>\n      </main>',
+);
 
 const componentCode = `
 // ─── Admin Promo Codes ────────────────────────────────────────────────────────
@@ -105,5 +111,5 @@ function AdminPromoCodes() {
 }
 `;
 
-code = code + '\n' + componentCode;
-fs.writeFileSync('src/routes/admin.tsx', code);
+code = code + "\n" + componentCode;
+fs.writeFileSync("src/routes/admin.tsx", code);

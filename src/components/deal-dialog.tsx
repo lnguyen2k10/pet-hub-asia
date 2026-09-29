@@ -28,7 +28,8 @@ export function DealDialog({ deal, index, shopName, shopSlug }: Props) {
         onClick={() => setOpen(true)}
         className="block w-full cursor-pointer rounded-2xl bg-card p-5 text-left ring-1 ring-border transition-transform duration-300 hover:-translate-y-1.5"
       >
-        <img decoding="async"
+        <img
+          decoding="async"
           src={dealImage(index, deal.image_url)}
           alt={deal.title}
           loading="lazy"
@@ -50,7 +51,8 @@ export function DealDialog({ deal, index, shopName, shopSlug }: Props) {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg overflow-hidden p-0">
-          <img decoding="async"
+          <img
+            decoding="async"
             src={dealImage(index, deal.image_url)}
             alt={deal.title}
             className="aspect-[16/9] w-full object-cover"
@@ -63,17 +65,14 @@ export function DealDialog({ deal, index, shopName, shopSlug }: Props) {
                 </span>
               ) : null}
               <DialogTitle className="font-display text-2xl">{deal.title}</DialogTitle>
-              {shopName ? (
-                <p className="text-sm font-medium text-terra-deep">{shopName}</p>
-              ) : null}
+              {shopName ? <p className="text-sm font-medium text-terra-deep">{shopName}</p> : null}
               <DialogDescription className="whitespace-pre-line pt-2 text-base leading-relaxed">
                 {deal.description ?? "Liên hệ shop để biết thêm chi tiết về ưu đãi này."}
               </DialogDescription>
             </DialogHeader>
             {deal.ends_at ? (
               <p className="mt-4 text-sm text-ink-soft">
-                Hạn áp dụng: đến hết ngày{" "}
-                {new Date(deal.ends_at).toLocaleDateString("vi-VN")}
+                Hạn áp dụng: đến hết ngày {new Date(deal.ends_at).toLocaleDateString("vi-VN")}
               </p>
             ) : null}
             {shopSlug ? (

@@ -1,6 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-import { createClient } from '@supabase/supabase-js';
+import fs from "fs";
+import path from "path";
+import { createClient } from "@supabase/supabase-js";
 
 // Setup Supabase (Service Role to bypass RLS)
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
@@ -13,7 +13,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Utility: Slugify Vietnamese text
 function createSlug(str) {
-  if (!str) return '';
+  if (!str) return "";
   str = str.toLowerCase();
   str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
   str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
@@ -30,32 +30,53 @@ function createSlug(str) {
 
 // 1. Identify dataset file
 const files = fs.readdirSync(process.cwd());
-const datasetFile = files.find(f => f.startsWith('dataset_') && f.endsWith('.json'));
+const datasetFile = files.find((f) => f.startsWith("dataset_") && f.endsWith(".json"));
 if (!datasetFile) {
   console.error("No dataset_...json file found in root directory.");
   process.exit(1);
 }
 
-const rawData = JSON.parse(fs.readFileSync(datasetFile, 'utf-8'));
+const rawData = JSON.parse(fs.readFileSync(datasetFile, "utf-8"));
 console.log(`Found ${rawData.length} items in ${datasetFile}`);
 
 // 2. Strict Filtering
-const corePetKeywords = ['pet', 'thú cưng', 'chó', 'mèo', 'thú y', 'vet', 'grooming', 'thức ăn'];
-const excludeKeywords = ['nhà hàng', 'khách sạn', 'quán ăn', 'cafe', 'cà phê', 'trà sữa', 'massage', 'yoga', 'nails', 'gội đầu', 'beauty', 'phòng khám đa khoa', 'nha khoa', 'thẩm mỹ viện', 'phẫu thuật thẩm mỹ', 'bệnh viện đa khoa'];
+const corePetKeywords = ["pet", "thú cưng", "chó", "mèo", "thú y", "vet", "grooming", "thức ăn"];
+const excludeKeywords = [
+  "nhà hàng",
+  "khách sạn",
+  "quán ăn",
+  "cafe",
+  "cà phê",
+  "trà sữa",
+  "massage",
+  "yoga",
+  "nails",
+  "gội đầu",
+  "beauty",
+  "phòng khám đa khoa",
+  "nha khoa",
+  "thẩm mỹ viện",
+  "phẫu thuật thẩm mỹ",
+  "bệnh viện đa khoa",
+];
 
 const validShops = [];
 for (const item of rawData) {
-  const title = (item.title || '').toLowerCase();
-  const categories = (item.categories ? item.categories.join(' ') : '').toLowerCase();
-  const categoryName = (item.categoryName || '').toLowerCase();
-  const fullText = title + ' ' + categories + ' ' + categoryName;
-  
+  const title = (item.title || "").toLowerCase();
+  const categories = (item.categories ? item.categories.join(" ") : "").toLowerCase();
+  const categoryName = (item.categoryName || "").toLowerCase();
+  const fullText = title + " " + categories + " " + categoryName;
+
   // A place is valid if it contains a core pet keyword (spa is too generic so it's not a core keyword)
   // OR if its category explicitly says "Cửa hàng vật nuôi" or "Bệnh viện thú y" or "Dịch vụ chăm sóc thú nuôi"
-  const hasCoreKeyword = corePetKeywords.some(kw => fullText.includes(kw));
-  const hasExplicitCategory = categories.includes('vật nuôi') || categories.includes('thú y') || categories.includes('thú cưng') || categories.includes('pet');
-  
-  const hasExclude = excludeKeywords.some(kw => fullText.includes(kw));
+  const hasCoreKeyword = corePetKeywords.some((kw) => fullText.includes(kw));
+  const hasExplicitCategory =
+    categories.includes("vật nuôi") ||
+    categories.includes("thú y") ||
+    categories.includes("thú cưng") ||
+    categories.includes("pet");
+
+  const hasExclude = excludeKeywords.some((kw) => fullText.includes(kw));
 
   if ((hasCoreKeyword || hasExplicitCategory) && !hasExclude) {
     validShops.push(item);
@@ -67,29 +88,43 @@ console.log(`After filtering, ${validShops.length} valid Pet-related shops remai
 async function processShops() {
   for (let i = 0; i < validShops.length; i++) {
     const item = validShops[i];
-    
+
     // Determine exact category and cover image
-    let category = 'Pet Shop';
-    let cover_url = '/images/cover_pet_shop.png'; // Make sure this matches your deployed static path
-    
-    const textToCategorize = ((item.title || '') + ' ' + (item.categories ? item.categories.join(' ') : '')).toLowerCase();
-    
-    if (textToCategorize.includes('thú y') || textToCategorize.includes('vet') || textToCategorize.includes('bệnh viện') || textToCategorize.includes('trạm')) {
-      category = 'Phòng khám thú y';
-      cover_url = '/images/cover_vet.png';
-    } else if (textToCategorize.includes('spa') || textToCategorize.includes('grooming') || textToCategorize.includes('tỉa') || textToCategorize.includes('tắm')) {
-      category = 'Spa & Grooming';
-      cover_url = '/images/cover_spa.png';
+    let category = "Pet Shop";
+    let cover_url = "/images/cover_pet_shop.png"; // Make sure this matches your deployed static path
+
+    const textToCategorize = (
+      (item.title || "") +
+      " " +
+      (item.categories ? item.categories.join(" ") : "")
+    ).toLowerCase();
+
+    if (
+      textToCategorize.includes("thú y") ||
+      textToCategorize.includes("vet") ||
+      textToCategorize.includes("bệnh viện") ||
+      textToCategorize.includes("trạm")
+    ) {
+      category = "Phòng khám thú y";
+      cover_url = "/images/cover_vet.png";
+    } else if (
+      textToCategorize.includes("spa") ||
+      textToCategorize.includes("grooming") ||
+      textToCategorize.includes("tỉa") ||
+      textToCategorize.includes("tắm")
+    ) {
+      category = "Spa & Grooming";
+      cover_url = "/images/cover_spa.png";
     }
 
     // Determine city
-    let city = 'Hồ Chí Minh';
+    let city = "Hồ Chí Minh";
     if (item.city) city = item.city;
-    else if (item.address && item.address.includes('Hà Nội')) city = 'Hà Nội';
-    else if (item.address && item.address.includes('Đà Nẵng')) city = 'Đà Nẵng';
+    else if (item.address && item.address.includes("Hà Nội")) city = "Hà Nội";
+    else if (item.address && item.address.includes("Đà Nẵng")) city = "Đà Nẵng";
 
     const baseSlug = createSlug(item.title);
-    const uniqueSlug = baseSlug + '-' + Math.floor(1000 + Math.random() * 9000);
+    const uniqueSlug = baseSlug + "-" + Math.floor(1000 + Math.random() * 9000);
 
     const shopData = {
       name: item.title,
@@ -110,11 +145,11 @@ async function processShops() {
     };
 
     // Insert into DB
-    const { error } = await supabase.from('shops').insert([shopData]);
+    const { error } = await supabase.from("shops").insert([shopData]);
     if (error) {
       console.error(`Error inserting ${item.title}:`, error.message);
     } else {
-      console.log(`[${i+1}/${validShops.length}] Inserted: ${item.title} -> ${category}`);
+      console.log(`[${i + 1}/${validShops.length}] Inserted: ${item.title} -> ${category}`);
     }
   }
   console.log("Done inserting all shops!");

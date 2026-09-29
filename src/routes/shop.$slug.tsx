@@ -20,7 +20,6 @@ function groupProducts(products: Product[]) {
   return [...map.entries()];
 }
 
-
 export const Route = createFileRoute("/shop/$slug")({
   loader: async ({ params, context }) => {
     const shop = await context.queryClient.ensureQueryData(shopBySlugQuery(params.slug));
@@ -39,28 +38,26 @@ export const Route = createFileRoute("/shop/$slug")({
       `Thông tin, sản phẩm, dịch vụ và ưu đãi của ${name}${loaderData?.city ? ` tại ${loaderData.city}` : ""} trên 1Pet.Asia.`
     ).slice(0, 155);
     const cover = loaderData?.cover;
-    
+
     const url = `https://www.1pet.asia/shop/${params.slug}`;
-    
+
     // JSON-LD Schema
     const schema = {
       "@context": "https://schema.org",
       "@type": "PetStore",
-      "name": name,
-      "image": cover ? [cover] : [],
-      "description": desc,
-      "url": url,
-      "address": {
+      name: name,
+      image: cover ? [cover] : [],
+      description: desc,
+      url: url,
+      address: {
         "@type": "PostalAddress",
-        "addressLocality": loaderData?.city || "Vietnam",
-        "addressCountry": "VN"
-      }
+        addressLocality: loaderData?.city || "Vietnam",
+        addressCountry: "VN",
+      },
     };
-    
+
     return {
-      links: [
-        { rel: "canonical", href: url }
-      ],
+      links: [{ rel: "canonical", href: url }],
       meta: [
         { title },
         { name: "description", content: desc },
@@ -79,9 +76,9 @@ export const Route = createFileRoute("/shop/$slug")({
       scripts: [
         {
           type: "application/ld+json",
-          children: JSON.stringify(schema)
-        }
-      ]
+          children: JSON.stringify(schema),
+        },
+      ],
     };
   },
 
@@ -98,7 +95,6 @@ export const Route = createFileRoute("/shop/$slug")({
   ),
   component: ShopLanding,
 });
-
 
 function ShopLanding() {
   const { slug } = Route.useParams();
@@ -128,16 +124,18 @@ function ShopLanding() {
           <>
             {/* Trial expired overlay */}
             {(() => {
-              const trialEnded =
-                shop.trial_ends_at && new Date(shop.trial_ends_at) < new Date();
+              const trialEnded = shop.trial_ends_at && new Date(shop.trial_ends_at) < new Date();
               if (!trialEnded) return null;
               return (
                 <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm px-6 text-center">
                   <div className="max-w-sm rounded-3xl bg-background p-8 shadow-2xl ring-1 ring-border">
                     <div className="text-5xl mb-4">⏰</div>
-                    <h2 className="text-xl font-bold font-display mb-2">Thời gian dùng thử đã kết thúc</h2>
+                    <h2 className="text-xl font-bold font-display mb-2">
+                      Thời gian dùng thử đã kết thúc
+                    </h2>
                     <p className="text-sm text-ink-soft mb-6 leading-relaxed">
-                      Trang shop của bạn hiện đang tạm ẩn. Hãy đăng ký gói Premium để tiếp tục hiển thị và tiếp cận khách hàng yêu thú cưng trên 1Pet.Asia.
+                      Trang shop của bạn hiện đang tạm ẩn. Hãy đăng ký gói Premium để tiếp tục hiển
+                      thị và tiếp cận khách hàng yêu thú cưng trên 1Pet.Asia.
                     </p>
                     <a
                       href="/membership"
@@ -145,10 +143,7 @@ function ShopLanding() {
                     >
                       🚀 Đăng ký Premium ngay
                     </a>
-                    <a
-                      href="/lien-he"
-                      className="mt-3 block text-xs text-ink-soft hover:underline"
-                    >
+                    <a href="/lien-he" className="mt-3 block text-xs text-ink-soft hover:underline">
                       Liên hệ tư vấn
                     </a>
                   </div>
@@ -166,7 +161,8 @@ function ShopLanding() {
                 <div>
                   <div className="flex items-center gap-4">
                     {shop.logo_url ? (
-                      <img decoding="async"
+                      <img
+                        decoding="async"
                         src={shop.logo_url}
                         alt={shop.name}
                         className="size-16 rounded-full object-cover ring-1 ring-border"
@@ -217,7 +213,6 @@ function ShopLanding() {
                   ) : (
                     <p className="mt-4 text-sm text-ink-soft">Shop chưa đăng sản phẩm nào.</p>
                   )}
-
                 </div>
 
                 <aside className="h-fit rounded-2xl bg-sand-deep/50 p-6 ring-1 ring-border">
@@ -239,7 +234,12 @@ function ShopLanding() {
                       <div>
                         <dt className="text-ink-soft">Email</dt>
                         <dd className="font-medium">
-                          <a href={`mailto:${shop.email}`} className="text-terra-deep hover:underline">{shop.email}</a>
+                          <a
+                            href={`mailto:${shop.email}`}
+                            className="text-terra-deep hover:underline"
+                          >
+                            {shop.email}
+                          </a>
                         </dd>
                       </div>
                     )}
@@ -247,8 +247,17 @@ function ShopLanding() {
                       <div>
                         <dt className="text-ink-soft">Website</dt>
                         <dd className="font-medium">
-                          <a href={shop.website.startsWith('http') ? shop.website : `https://${shop.website}`} target="_blank" rel="noopener noreferrer" className="text-terra-deep hover:underline">
-                            {shop.website.replace(/^https?:\/\//, '')}
+                          <a
+                            href={
+                              shop.website.startsWith("http")
+                                ? shop.website
+                                : `https://${shop.website}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-terra-deep hover:underline"
+                          >
+                            {shop.website.replace(/^https?:\/\//, "")}
                           </a>
                         </dd>
                       </div>
@@ -257,7 +266,16 @@ function ShopLanding() {
                       <div>
                         <dt className="text-ink-soft">Fanpage</dt>
                         <dd className="font-medium">
-                          <a href={shop.fanpage.startsWith('http') ? shop.fanpage : `https://${shop.fanpage}`} target="_blank" rel="noopener noreferrer" className="text-terra-deep hover:underline">
+                          <a
+                            href={
+                              shop.fanpage.startsWith("http")
+                                ? shop.fanpage
+                                : `https://${shop.fanpage}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-terra-deep hover:underline"
+                          >
                             Xem Fanpage
                           </a>
                         </dd>

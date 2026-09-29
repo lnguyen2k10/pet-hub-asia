@@ -1,7 +1,8 @@
-const fs = require('fs');
-let content = fs.readFileSync('src/routes/admin.tsx', 'utf8');
+const fs = require("fs");
+let content = fs.readFileSync("src/routes/admin.tsx", "utf8");
 
-const userManagerRegex = /function UserManager\(\) \{[\s\S]*?\}\n\n\n\/\/ ─── Category & Location Manager/m;
+const userManagerRegex =
+  /function UserManager\(\) \{[\s\S]*?\}\n\n\n\/\/ ─── Category & Location Manager/m;
 const match = content.match(userManagerRegex);
 
 if (!match) {
@@ -285,4 +286,4 @@ const newUserManager = `function UserManager() {
 // ─── Category & Location Manager`;
 
 content = content.replace(userManagerRegex, newUserManager);
-fs.writeFileSync('src/routes/admin.tsx', content);
+fs.writeFileSync("src/routes/admin.tsx", content);

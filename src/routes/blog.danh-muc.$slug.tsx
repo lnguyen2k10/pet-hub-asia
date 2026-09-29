@@ -61,7 +61,9 @@ function BlogCategoryPage() {
               to="/blog/danh-muc/$slug"
               params={{ slug: c.slug }}
               className={`rounded-full px-4 py-2 text-sm font-medium text-ink ${
-                c.slug === slug ? "bg-terra text-primary-foreground" : "bg-sand-deep/70 hover:bg-secondary"
+                c.slug === slug
+                  ? "bg-terra text-primary-foreground"
+                  : "bg-sand-deep/70 hover:bg-secondary"
               }`}
             >
               {c.name}

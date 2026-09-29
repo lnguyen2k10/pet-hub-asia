@@ -21,7 +21,7 @@ const scrapingTasks = [
     urls: [
       "https://toplist.vn/top-list/phong-kham-thu-y-uy-tin-nhat-tai-tp-hcm-10023.htm",
       "https://toplist.vn/top-list/phong-kham-thu-y-uy-tin-nhat-ha-noi-10021.htm",
-    ]
+    ],
   },
   {
     category: "beauty",
@@ -29,8 +29,8 @@ const scrapingTasks = [
     urls: [
       "https://toplist.vn/top-list/spa-lam-dep-uy-tin-nhat-ha-noi-2035.htm",
       "https://toplist.vn/top-list/spa-lam-dep-uy-tin-nhat-tp-hcm-2036.htm",
-    ]
-  }
+    ],
+  },
 ];
 
 // -------------------------------------------------------------
@@ -50,11 +50,11 @@ const schema = {
           website: { type: "string", description: "URL Website hoặc Fanpage (nếu có)" },
           email: { type: "string", description: "Địa chỉ Email (nếu có)" },
         },
-        required: ["name", "address"]
-      }
-    }
+        required: ["name", "address"],
+      },
+    },
   },
-  required: ["shops"]
+  required: ["shops"],
 };
 
 // -------------------------------------------------------------
@@ -63,7 +63,7 @@ const schema = {
 const sleep = (min, max) => {
   const ms = Math.floor(Math.random() * (max - min + 1) + min);
   console.log(`⏳ Tạm nghỉ ${ms / 1000}s...`);
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
 // -------------------------------------------------------------
@@ -79,16 +79,16 @@ async function extractData(url, categoryName, retryCount = 0) {
         formats: ["extract"],
         extract: {
           schema: schema,
-          prompt: `Trích xuất chính xác các địa điểm/cửa hàng nằm trong BÀI VIẾT XẾP HẠNG CHÍNH (ví dụ: Top 10, Top 5). TUYỆT ĐỐI BỎ QUA các banner quảng cáo, quảng cáo công ty, hoặc các link bài viết liên quan ở cuối trang. Chỉ lấy các ${categoryName === 'pets' ? 'phòng khám thú y, cửa hàng thú cưng' : 'spa, thẩm mỹ viện'} thực sự. Bắt buộc có Tên và Số điện thoại hoặc Địa chỉ.`
-        }
+          prompt: `Trích xuất chính xác các địa điểm/cửa hàng nằm trong BÀI VIẾT XẾP HẠNG CHÍNH (ví dụ: Top 10, Top 5). TUYỆT ĐỐI BỎ QUA các banner quảng cáo, quảng cáo công ty, hoặc các link bài viết liên quan ở cuối trang. Chỉ lấy các ${categoryName === "pets" ? "phòng khám thú y, cửa hàng thú cưng" : "spa, thẩm mỹ viện"} thực sự. Bắt buộc có Tên và Số điện thoại hoặc Địa chỉ.`,
+        },
       },
       {
         headers: {
           Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        timeout: 90000 
-      }
+        timeout: 90000,
+      },
     );
 
     if (response.data && response.data.success && response.data.data.extract) {
@@ -98,16 +98,16 @@ async function extractData(url, categoryName, retryCount = 0) {
     } else {
       console.log("Debug full response:", JSON.stringify(response.data, null, 2));
     }
-    
+
     console.warn("⚠️ Không lấy được mảng shops nào từ Firecrawl.");
     return [];
   } catch (error) {
     const status = error.response?.status;
     console.error(`❌ Lỗi (Status ${status}):`, error.response?.data?.error || error.message);
-    
+
     if ((status === 429 || status >= 500) && retryCount < 3) {
       console.log(`♻️ Đang thử lại lần ${retryCount + 1}...`);
-      await sleep(10000, 15000); 
+      await sleep(10000, 15000);
       return extractData(url, categoryName, retryCount + 1);
     }
     return [];
@@ -122,7 +122,7 @@ async function run() {
     console.log(`\n=============================================================`);
     console.log(`📦 BẮT ĐẦU CÀO LĨNH VỰC: ${task.category.toUpperCase()}`);
     console.log(`=============================================================`);
-    
+
     let allShops = [];
     if (fs.existsSync(task.outputFile)) {
       try {
@@ -136,7 +136,7 @@ async function run() {
     for (let i = 0; i < task.urls.length; i++) {
       const url = task.urls[i];
       const shops = await extractData(url, task.category);
-      
+
       if (shops && shops.length > 0) {
         allShops = allShops.concat(shops);
         console.log(`✅ Lấy thành công ${shops.length} records.`);
@@ -150,7 +150,9 @@ async function run() {
         await sleep(4000, 8000);
       }
     }
-    console.log(`🎉 HOÀN THÀNH LĨNH VỰC ${task.category.toUpperCase()}! Tổng cộng: ${allShops.length} records.\n`);
+    console.log(
+      `🎉 HOÀN THÀNH LĨNH VỰC ${task.category.toUpperCase()}! Tổng cộng: ${allShops.length} records.\n`,
+    );
   }
 }
 

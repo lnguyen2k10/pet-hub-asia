@@ -113,10 +113,7 @@ export function SiteHeader() {
 
       {/* Mobile menu drawer */}
       {menuOpen && (
-        <div
-          className="fixed inset-0 z-40 md:hidden"
-          onClick={() => setMenuOpen(false)}
-        >
+        <div className="fixed inset-0 z-40 md:hidden" onClick={() => setMenuOpen(false)}>
           {/* Backdrop */}
           <div className="absolute inset-0 bg-ink/20 backdrop-blur-sm" />
 

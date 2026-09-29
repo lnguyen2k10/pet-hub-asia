@@ -55,7 +55,9 @@ function ShopsPage() {
           </div>
         ) : shops.isError ? (
           <div className="mt-10 rounded-3xl bg-rose-50 p-10 text-center ring-1 ring-rose-200">
-            <p className="font-display text-xl font-semibold text-rose-700">Không thể tải dữ liệu</p>
+            <p className="font-display text-xl font-semibold text-rose-700">
+              Không thể tải dữ liệu
+            </p>
             <p className="mt-2 text-sm text-rose-600">Vui lòng kiểm tra kết nối và thử lại.</p>
             <button
               onClick={() => shops.refetch()}

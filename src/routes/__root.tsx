@@ -13,7 +13,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { BackToTop } from "@/components/back-to-top";
 import appCss from "../styles.css?url";
 
-
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">

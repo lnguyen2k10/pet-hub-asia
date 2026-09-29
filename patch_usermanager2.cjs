@@ -1,8 +1,8 @@
-const fs = require('fs');
-let content = fs.readFileSync('src/routes/admin.tsx', 'utf8');
+const fs = require("fs");
+let content = fs.readFileSync("src/routes/admin.tsx", "utf8");
 
-const startIdx = content.indexOf('function UserManager() {');
-const endIdx = content.indexOf('// ─── Category & Location Manager');
+const startIdx = content.indexOf("function UserManager() {");
+const endIdx = content.indexOf("// ─── Category & Location Manager");
 
 if (startIdx === -1 || endIdx === -1) {
   console.error("UserManager not found");
@@ -287,4 +287,4 @@ const newUserManager = `function UserManager() {
 `;
 
 content = content.substring(0, startIdx) + newUserManager + content.substring(endIdx);
-fs.writeFileSync('src/routes/admin.tsx', content);
+fs.writeFileSync("src/routes/admin.tsx", content);

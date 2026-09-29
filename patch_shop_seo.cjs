@@ -1,9 +1,11 @@
-const fs = require('fs');
-let code = fs.readFileSync('src/routes/shop.$slug.tsx', 'utf8');
+const fs = require("fs");
+let code = fs.readFileSync("src/routes/shop.$slug.tsx", "utf8");
 
 // Update head function for SEO
-code = code.replace(/head:\s*\(\{\s*params,\s*loaderData\s*\}\)\s*=>\s*\{([\s\S]*?)return\s*\{([\s\S]*?)\};\s*\}/, (match, body, retBody) => {
-  return `head: ({ params, loaderData }) => {${body}
+code = code.replace(
+  /head:\s*\(\{\s*params,\s*loaderData\s*\}\)\s*=>\s*\{([\s\S]*?)return\s*\{([\s\S]*?)\};\s*\}/,
+  (match, body, retBody) => {
+    return `head: ({ params, loaderData }) => {${body}
     const url = \`https://www.1pet.asia/shop/\${params.slug}\`;
     
     // JSON-LD Schema
@@ -48,9 +50,13 @@ code = code.replace(/head:\s*\(\{\s*params,\s*loaderData\s*\}\)\s*=>\s*\{([\s\S]
       ]
     };
   }`;
-});
+  },
+);
 
 // Replace h2 with h1 for shop name
-code = code.replace('<h2 className="font-display text-2xl font-semibold">{shop.name}</h2>', '<h1 className="font-display text-2xl font-semibold">{shop.name}</h1>');
+code = code.replace(
+  '<h2 className="font-display text-2xl font-semibold">{shop.name}</h2>',
+  '<h1 className="font-display text-2xl font-semibold">{shop.name}</h1>',
+);
 
-fs.writeFileSync('src/routes/shop.$slug.tsx', code);
+fs.writeFileSync("src/routes/shop.$slug.tsx", code);

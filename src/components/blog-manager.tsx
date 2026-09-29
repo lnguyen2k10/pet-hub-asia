@@ -47,7 +47,8 @@ function CategoryManager() {
       const name = form.name.trim();
       if (name.length < 2) throw new Error("Tên danh mục cần ít nhất 2 ký tự.");
       const slug = (form.slug.trim() || slugify(name)).toLowerCase();
-      if (!/^[a-z0-9-]{2,}$/.test(slug)) throw new Error("Đường dẫn chỉ gồm chữ thường, số và dấu gạch ngang.");
+      if (!/^[a-z0-9-]{2,}$/.test(slug))
+        throw new Error("Đường dẫn chỉ gồm chữ thường, số và dấu gạch ngang.");
       const payload = {
         name,
         slug,
@@ -84,7 +85,13 @@ function CategoryManager() {
   });
 
   function editCat(c: BlogCategory) {
-    setForm({ id: c.id, name: c.name, slug: c.slug, description: c.description ?? "", sort_order: String(c.sort_order) });
+    setForm({
+      id: c.id,
+      name: c.name,
+      slug: c.slug,
+      description: c.description ?? "",
+      sort_order: String(c.sort_order),
+    });
     setShowForm(true);
   }
 
@@ -94,7 +101,10 @@ function CategoryManager() {
         <h3 className="font-semibold text-lg">Danh mục blog</h3>
         <button
           type="button"
-          onClick={() => { setForm(emptyCatForm); setShowForm((v) => !v); }}
+          onClick={() => {
+            setForm(emptyCatForm);
+            setShowForm((v) => !v);
+          }}
           className="rounded-full bg-terra/10 px-3 py-1.5 text-sm font-semibold text-terra hover:bg-terra/20"
         >
           {showForm && !form.id ? "Đóng" : "+ Thêm danh mục"}
@@ -106,19 +116,38 @@ function CategoryManager() {
         <div className="mt-4 grid gap-3 sm:grid-cols-2 rounded-xl bg-background p-4 ring-1 ring-border">
           <label className="block">
             <span className="text-sm font-medium">Tên danh mục *</span>
-            <input className={inputCls} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="VD: Sức khỏe thú cưng" />
+            <input
+              className={inputCls}
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="VD: Sức khỏe thú cưng"
+            />
           </label>
           <label className="block">
             <span className="text-sm font-medium">Đường dẫn (slug)</span>
-            <input className={inputCls} value={form.slug} placeholder={slugify(form.name) || "tu-dong-tao"} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
+            <input
+              className={inputCls}
+              value={form.slug}
+              placeholder={slugify(form.name) || "tu-dong-tao"}
+              onChange={(e) => setForm({ ...form, slug: e.target.value })}
+            />
           </label>
           <label className="block sm:col-span-2">
             <span className="text-sm font-medium">Mô tả</span>
-            <input className={inputCls} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            <input
+              className={inputCls}
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
           </label>
           <label className="block">
             <span className="text-sm font-medium">Thứ tự hiển thị</span>
-            <input className={inputCls} type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: e.target.value })} />
+            <input
+              className={inputCls}
+              type="number"
+              value={form.sort_order}
+              onChange={(e) => setForm({ ...form, sort_order: e.target.value })}
+            />
           </label>
           <div className="flex items-end gap-2">
             <button
@@ -130,7 +159,14 @@ function CategoryManager() {
               {save.isPending ? "Đang lưu..." : form.id ? "Cập nhật" : "Tạo danh mục"}
             </button>
             {form.id && (
-              <button type="button" onClick={() => { setForm(emptyCatForm); setShowForm(false); }} className="rounded-full bg-secondary px-4 py-2.5 text-sm font-semibold text-ink">
+              <button
+                type="button"
+                onClick={() => {
+                  setForm(emptyCatForm);
+                  setShowForm(false);
+                }}
+                className="rounded-full bg-secondary px-4 py-2.5 text-sm font-semibold text-ink"
+              >
                 Huỷ
               </button>
             )}
@@ -144,17 +180,28 @@ function CategoryManager() {
       ) : (
         <ul className="mt-3 space-y-2">
           {cats.data?.map((c) => (
-            <li key={c.id} className="flex items-center justify-between gap-3 rounded-xl bg-background px-4 py-2.5 ring-1 ring-border">
+            <li
+              key={c.id}
+              className="flex items-center justify-between gap-3 rounded-xl bg-background px-4 py-2.5 ring-1 ring-border"
+            >
               <div>
                 <span className="font-medium">{c.name}</span>
                 <span className="ml-2 text-xs text-ink-soft">/{c.slug}</span>
                 {c.description && <p className="text-xs text-ink-soft mt-0.5">{c.description}</p>}
               </div>
               <div className="flex gap-2 shrink-0">
-                <button type="button" onClick={() => editCat(c)} className="rounded-lg border border-border px-2.5 py-1 text-xs font-medium hover:bg-sand-deep/40">Sửa</button>
                 <button
                   type="button"
-                  onClick={() => { if (confirm(`Xóa danh mục "${c.name}"?`)) remove.mutate(c.id); }}
+                  onClick={() => editCat(c)}
+                  className="rounded-lg border border-border px-2.5 py-1 text-xs font-medium hover:bg-sand-deep/40"
+                >
+                  Sửa
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirm(`Xóa danh mục "${c.name}"?`)) remove.mutate(c.id);
+                  }}
                   className="rounded-lg border border-rose-200 px-2.5 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50"
                 >
                   Xóa
@@ -181,7 +228,8 @@ export function BlogManager({ authorName, userId }: { authorName: string; userId
       const title = form.title.trim();
       if (title.length < 5) throw new Error("Tiêu đề cần ít nhất 5 ký tự.");
       const slug = (form.slug.trim() || slugify(title)).toLowerCase();
-      if (!/^[a-z0-9-]{3,}$/.test(slug)) throw new Error("Đường dẫn chỉ gồm chữ thường, số và dấu gạch ngang.");
+      if (!/^[a-z0-9-]{3,}$/.test(slug))
+        throw new Error("Đường dẫn chỉ gồm chữ thường, số và dấu gạch ngang.");
       if (form.content.trim().length < 20) throw new Error("Nội dung còn quá ngắn.");
 
       const payload = {
@@ -265,7 +313,8 @@ export function BlogManager({ authorName, userId }: { authorName: string; userId
           <div className="mt-5 rounded-2xl bg-sand-deep/20 p-5 ring-1 ring-border">
             <h3 className="font-semibold">{form.id ? "Chỉnh sửa bài viết" : "Viết bài mới"}</h3>
             <p className="mt-0.5 text-xs text-ink-soft">
-              Định dạng: dòng bắt đầu <code>## </code> = tiêu đề mục, <code>- </code> = gạch đầu dòng.
+              Định dạng: dòng bắt đầu <code>## </code> = tiêu đề mục, <code>- </code> = gạch đầu
+              dòng.
             </p>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <label className="text-sm font-medium">
@@ -324,7 +373,9 @@ export function BlogManager({ authorName, userId }: { authorName: string; userId
                   className={`${inputCls} min-h-56 font-mono text-xs`}
                   value={form.content}
                   onChange={(e) => setForm({ ...form, content: e.target.value })}
-                  placeholder={"## Giới thiệu\n\nViết nội dung của bạn ở đây...\n\n## Mục tiếp theo\n\n- Điểm 1\n- Điểm 2"}
+                  placeholder={
+                    "## Giới thiệu\n\nViết nội dung của bạn ở đây...\n\n## Mục tiếp theo\n\n- Điểm 1\n- Điểm 2"
+                  }
                 />
               </label>
               <div className="sm:col-span-2">
@@ -370,7 +421,9 @@ export function BlogManager({ authorName, userId }: { authorName: string; userId
 
           {/* Post list */}
           <div className="mt-6 space-y-3">
-            <h3 className="font-semibold text-sm text-ink-soft uppercase tracking-wider">Danh sách bài viết ({allPosts.length})</h3>
+            <h3 className="font-semibold text-sm text-ink-soft uppercase tracking-wider">
+              Danh sách bài viết ({allPosts.length})
+            </h3>
             {posts.isLoading ? (
               <div className="h-24 animate-pulse rounded-2xl bg-sand-deep/60" />
             ) : allPosts.length === 0 ? (
@@ -384,12 +437,15 @@ export function BlogManager({ authorName, userId }: { authorName: string; userId
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="truncate font-semibold">{p.title}</p>
-                      <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${p.is_published ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                      <span
+                        className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${p.is_published ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
+                      >
                         {p.is_published ? "Đã đăng" : "Bản nháp"}
                       </span>
                     </div>
                     <p className="mt-0.5 text-xs text-ink-soft">
-                      {p.blog_categories?.name ?? "Chưa phân loại"} · {new Date(p.created_at).toLocaleDateString("vi-VN")}
+                      {p.blog_categories?.name ?? "Chưa phân loại"} ·{" "}
+                      {new Date(p.created_at).toLocaleDateString("vi-VN")}
                       {p.excerpt ? ` · ${p.excerpt.slice(0, 60)}...` : ""}
                     </p>
                   </div>
@@ -423,7 +479,9 @@ export function BlogManager({ authorName, userId }: { authorName: string; userId
                     </button>
                     <button
                       type="button"
-                      onClick={() => { if (confirm(`Xóa bài "${p.title}"?`)) remove.mutate(p.id); }}
+                      onClick={() => {
+                        if (confirm(`Xóa bài "${p.title}"?`)) remove.mutate(p.id);
+                      }}
                       className="rounded-full border border-rose-200 px-3 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50"
                     >
                       Xóa

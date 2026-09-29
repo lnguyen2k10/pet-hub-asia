@@ -1,5 +1,5 @@
-const fs = require('fs');
-let c = fs.readFileSync('src/routes/admin.tsx', 'utf8');
+const fs = require("fs");
+let c = fs.readFileSync("src/routes/admin.tsx", "utf8");
 
 c = c.replace(
   /durationDays,[\s\S]*?}: {[\s\S]*?req: MembershipRequest;[\s\S]*?status: "approved" \| "rejected";[\s\S]*?durationDays: number;[\s\S]*?}\) => {/,
@@ -10,7 +10,7 @@ c = c.replace(
       status: "approved" | "rejected";
       durationDays: number;
       plan?: MembershipPlan | null;
-    }) => {`
+    }) => {`,
 );
 
 c = c.replace(
@@ -30,7 +30,7 @@ c = c.replace(
             membership_until: expires.toISOString(),
           }).eq("id", req.user_id);
         }
-      }`
+      }`,
 );
 
-fs.writeFileSync('src/routes/admin.tsx', c);
+fs.writeFileSync("src/routes/admin.tsx", c);

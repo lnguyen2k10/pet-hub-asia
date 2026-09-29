@@ -54,7 +54,9 @@ function PartnersPage() {
             to="/co-hoi-kinh-doanh"
             search={{}}
             className={`rounded-full px-4 py-2 text-sm font-medium ring-1 ring-border ${
-              search.listing_type ? "bg-sand-deep hover:bg-terra/15" : "bg-terra text-primary-foreground"
+              search.listing_type
+                ? "bg-sand-deep hover:bg-terra/15"
+                : "bg-terra text-primary-foreground"
             }`}
           >
             Tất cả
@@ -63,7 +65,9 @@ function PartnersPage() {
             <Link
               key={value}
               to="/co-hoi-kinh-doanh"
-              search={search.city ? { listing_type: value, city: search.city } : { listing_type: value }}
+              search={
+                search.city ? { listing_type: value, city: search.city } : { listing_type: value }
+              }
               className={`rounded-full px-4 py-2 text-sm font-medium ring-1 ring-border ${
                 search.listing_type === value
                   ? "bg-terra text-primary-foreground"
@@ -106,7 +110,9 @@ function PartnersPage() {
           </div>
         ) : listings.isError ? (
           <div className="mt-12 rounded-3xl bg-rose-50 p-10 text-center ring-1 ring-rose-200">
-            <p className="font-display text-xl font-semibold text-rose-700">Không thể tải dữ liệu</p>
+            <p className="font-display text-xl font-semibold text-rose-700">
+              Không thể tải dữ liệu
+            </p>
             <p className="mt-2 text-sm text-rose-600">Vui lòng kiểm tra kết nối và thử lại.</p>
             <button
               onClick={() => listings.refetch()}

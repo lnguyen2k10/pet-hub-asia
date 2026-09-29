@@ -8,11 +8,6 @@ type Props = {
 
 export function DealCard({ deal, index }: Props) {
   return (
-    <DealDialog
-      deal={deal}
-      index={index}
-      shopName={deal.shops?.name}
-      shopSlug={deal.shops?.slug}
-    />
+    <DealDialog deal={deal} index={index} shopName={deal.shops?.name} shopSlug={deal.shops?.slug} />
   );
 }

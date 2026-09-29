@@ -122,7 +122,9 @@ function AuthPage() {
             onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
             className="mt-5 w-full text-sm text-ink-soft hover:text-ink"
           >
-            {mode === "signin" ? "Chưa có tài khoản? Đăng ký shop mới" : "Đã có tài khoản? Đăng nhập"}
+            {mode === "signin"
+              ? "Chưa có tài khoản? Đăng ký shop mới"
+              : "Đã có tài khoản? Đăng nhập"}
           </button>
         </div>
       </main>

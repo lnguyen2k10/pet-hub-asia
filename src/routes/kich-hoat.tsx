@@ -50,7 +50,9 @@ function StatusPill({ status }: { status: string }) {
         ? "bg-rose-100 text-rose-800"
         : "bg-amber-100 text-amber-800";
   return (
-    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${tone}`}>{statusLabel(status)}</span>
+    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${tone}`}>
+      {statusLabel(status)}
+    </span>
   );
 }
 
@@ -87,9 +89,7 @@ function PlanCard({
         </span>
       )}
       <h3 className="text-lg font-bold text-terra-deep">{plan.name}</h3>
-      {plan.description && (
-        <p className="mt-1 text-sm text-ink-soft">{plan.description}</p>
-      )}
+      {plan.description && <p className="mt-1 text-sm text-ink-soft">{plan.description}</p>}
       <div className="mt-3 flex items-baseline gap-1.5">
         {plan.price_amount === 0 ? (
           <>
@@ -130,9 +130,13 @@ function MembershipPage() {
 
   const plans = plansQ.data ?? [];
   const requests = requestsQ.data ?? [];
-  const displayPlans = plans.filter((p) => p.price_amount > 0 || !requests.some((r) => r.plan_id === p.id));
+  const displayPlans = plans.filter(
+    (p) => p.price_amount > 0 || !requests.some((r) => r.plan_id === p.id),
+  );
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
-  const selectedPlan = displayPlans.find((p) => p.id === selectedPlanId) ?? (displayPlans.length === 1 ? displayPlans[0] : null);
+  const selectedPlan =
+    displayPlans.find((p) => p.id === selectedPlanId) ??
+    (displayPlans.length === 1 ? displayPlans[0] : null);
 
   return (
     <div className="min-h-screen">
@@ -186,7 +190,9 @@ function MembershipPage() {
               <div className="mt-8 h-40 animate-pulse rounded-3xl bg-sand-deep/60" />
             ) : !user ? (
               <div className="mt-8 rounded-3xl bg-background p-6 text-center ring-1 ring-border">
-                <p>Đăng nhập để tiếp tục đăng ký gói <strong>{selectedPlan.name}</strong>.</p>
+                <p>
+                  Đăng nhập để tiếp tục đăng ký gói <strong>{selectedPlan.name}</strong>.
+                </p>
                 <Link
                   to="/dang-nhap"
                   className="mt-4 inline-block rounded-full bg-terra px-5 py-2.5 text-sm font-semibold text-primary-foreground"
@@ -201,7 +207,9 @@ function MembershipPage() {
                 plan={selectedPlan}
                 requests={requests}
                 loading={requestsQ.isLoading}
-                onRefreshRequests={() => qc.invalidateQueries({ queryKey: ["membership_requests"] })}
+                onRefreshRequests={() =>
+                  qc.invalidateQueries({ queryKey: ["membership_requests"] })
+                }
               />
             )}
           </>
@@ -239,13 +247,18 @@ function RequestSection({
 
   // Kiểm tra đơn active cho đúng gói này
   const activePlanRequest = requests.find(
-    (r) => r.status === "approved" && r.plan_id === plan.id && r.expires_at && new Date(r.expires_at) > new Date()
+    (r) =>
+      r.status === "approved" &&
+      r.plan_id === plan.id &&
+      r.expires_at &&
+      new Date(r.expires_at) > new Date(),
   );
   // Đơn đang chờ của đúng gói này
   const pendingForThisPlan = requests.find((r) => r.status === "pending" && r.plan_id === plan.id);
 
   // Kiểm tra xem đã từng nhận gói Free này bao giờ chưa (bất kể trạng thái)
-  const hasClaimedFreePlanEver = plan.price_amount === 0 && requests.some((r) => r.plan_id === plan.id);
+  const hasClaimedFreePlanEver =
+    plan.price_amount === 0 && requests.some((r) => r.plan_id === plan.id);
 
   // Dừng polling nếu đã approved hoặc component unmount
   useEffect(() => {
@@ -270,9 +283,7 @@ function RequestSection({
 
       // Kiểm tra trong cache ngay sau refetch
       const cached = qc.getQueryData<MembershipRequest[]>(["membership_requests", "mine"]);
-      const approved = cached?.find(
-        (r) => r.status === "approved" && r.plan_id === plan.id
-      );
+      const approved = cached?.find((r) => r.status === "approved" && r.plan_id === plan.id);
       if (approved) {
         stopPolling();
         return;
@@ -280,7 +291,9 @@ function RequestSection({
 
       if (pollCountRef.current >= MAX_POLL_COUNT) {
         stopPolling();
-        toast.info("Hệ thống đã ngừng kiểm tra tự động. Vui lòng tải lại trang để cập nhật trạng thái.");
+        toast.info(
+          "Hệ thống đã ngừng kiểm tra tự động. Vui lòng tải lại trang để cập nhật trạng thái.",
+        );
       }
     }, POLL_INTERVAL);
   }
@@ -359,8 +372,9 @@ function RequestSection({
               {plan.price_amount > 0 ? (
                 <>
                   Sau khi bạn chuyển khoản với nội dung{" "}
-                  <strong className="font-mono text-terra">PET{paymentCode}</strong>, hệ thống sẽ tự động kích hoạt gói{" "}
-                  <strong>{plan.name}</strong> trong vòng <strong>1–3 phút</strong>.
+                  <strong className="font-mono text-terra">PET{paymentCode}</strong>, hệ thống sẽ tự
+                  động kích hoạt gói <strong>{plan.name}</strong> trong vòng{" "}
+                  <strong>1–3 phút</strong>.
                   {isPolling && (
                     <span className="mt-1 block text-xs text-amber-600">
                       🔄 Hệ thống đang tự động kiểm tra mỗi 5 giây...
@@ -392,12 +406,28 @@ function RequestSection({
                 />
               </div>
               <div className="text-sm space-y-2.5">
-                <p>Ngân hàng: <strong className="text-base">TPBank</strong></p>
-                <p>Số TK: <strong className="text-base">00003554020</strong></p>
-                <p>Chủ TK: <strong className="text-base">1PET ASIA</strong></p>
-                <p>Số tiền: <strong className="text-terra text-xl">{formatPrice(plan.price_amount)}</strong></p>
-                <p>Nội dung CK: <strong className="font-mono text-terra text-xl bg-terra/10 px-2 py-1 rounded">PET{paymentCode}</strong></p>
-                <p className="text-xs text-ink-soft pt-2">⚡ Hãy chuyển đúng nội dung để được duyệt tự động ngay lập tức.</p>
+                <p>
+                  Ngân hàng: <strong className="text-base">TPBank</strong>
+                </p>
+                <p>
+                  Số TK: <strong className="text-base">00003554020</strong>
+                </p>
+                <p>
+                  Chủ TK: <strong className="text-base">1PET ASIA</strong>
+                </p>
+                <p>
+                  Số tiền:{" "}
+                  <strong className="text-terra text-xl">{formatPrice(plan.price_amount)}</strong>
+                </p>
+                <p>
+                  Nội dung CK:{" "}
+                  <strong className="font-mono text-terra text-xl bg-terra/10 px-2 py-1 rounded">
+                    PET{paymentCode}
+                  </strong>
+                </p>
+                <p className="text-xs text-ink-soft pt-2">
+                  ⚡ Hãy chuyển đúng nội dung để được duyệt tự động ngay lập tức.
+                </p>
               </div>
             </div>
           </div>
@@ -420,9 +450,7 @@ function RequestSection({
     return (
       <div className="mt-8 rounded-3xl bg-sand-deep/40 p-6 ring-1 ring-border text-center">
         <span className="text-3xl">🎁</span>
-        <h2 className="mt-3 text-lg font-semibold text-ink">
-          Bạn đã sử dụng đặc quyền này
-        </h2>
+        <h2 className="mt-3 text-lg font-semibold text-ink">Bạn đã sử dụng đặc quyền này</h2>
         <p className="mt-1 text-sm text-ink-soft">
           Gói ưu đãi miễn phí này chỉ được áp dụng 1 lần duy nhất cho mỗi tài khoản.
         </p>
@@ -453,14 +481,18 @@ function RequestSection({
           // Gói có phí: Hiện thông tin ngắn gọn và nút tạo đơn
           <div className="flex flex-col gap-6 items-center max-w-lg mx-auto text-center">
             <div className="rounded-2xl bg-blue-50 p-5 ring-1 ring-blue-200 text-left w-full">
-              <p className="text-base text-blue-800 font-semibold mb-3">📋 Hướng dẫn thanh toán tự động:</p>
+              <p className="text-base text-blue-800 font-semibold mb-3">
+                📋 Hướng dẫn thanh toán tự động:
+              </p>
               <ol className="space-y-2 text-sm text-blue-800 list-decimal list-inside">
-                <li>Bấm <strong>Tạo đơn & Mã QR thanh toán</strong>.</li>
+                <li>
+                  Bấm <strong>Tạo đơn & Mã QR thanh toán</strong>.
+                </li>
                 <li>Quét mã QR bằng ứng dụng ngân hàng.</li>
                 <li>Hệ thống sẽ ghi nhận và kích hoạt gói ngay lập tức.</li>
               </ol>
             </div>
-            
+
             <button
               type="button"
               disabled={submit.isPending}
@@ -469,18 +501,18 @@ function RequestSection({
             >
               {submit.isPending ? "Đang tạo mã QR..." : "Tạo đơn & Mã QR thanh toán"}
             </button>
-            <p className="text-xs text-ink-soft -mt-2">
-              Hoàn toàn bảo mật và tự động.
-            </p>
+            <p className="text-xs text-ink-soft -mt-2">Hoàn toàn bảo mật và tự động.</p>
           </div>
-
         ) : (
           // Gói miễn phí
           <div className="space-y-4">
             <div className="rounded-3xl bg-emerald-50 p-6 ring-1 ring-emerald-200">
-              <h3 className="text-lg font-semibold text-emerald-900 mb-2">🎁 Quà tặng dành riêng cho bạn!</h3>
+              <h3 className="text-lg font-semibold text-emerald-900 mb-2">
+                🎁 Quà tặng dành riêng cho bạn!
+              </h3>
               <p className="text-sm text-emerald-800">
-                Nhấn nút bên dưới để nhận ngay đặc quyền 1 bài đăng trên blog hệ thống của 1Pet.Asia hoàn toàn miễn phí.
+                Nhấn nút bên dưới để nhận ngay đặc quyền 1 bài đăng trên blog hệ thống của 1Pet.Asia
+                hoàn toàn miễn phí.
               </p>
             </div>
             <button
@@ -537,4 +569,3 @@ function HistorySection({
     </section>
   );
 }
-

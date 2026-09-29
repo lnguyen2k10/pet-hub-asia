@@ -10,7 +10,8 @@ export function AdminShopClaims() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("shop_claims" as any)
-        .select(`
+        .select(
+          `
           id,
           status,
           contact_phone,
@@ -19,31 +20,33 @@ export function AdminShopClaims() {
           created_at,
           user_id,
           shops ( name, slug )
-        `)
+        `,
+        )
         .order("created_at", { ascending: false });
       if (error) throw error;
-      
+
       if (!data || data.length === 0) return [];
-      
+
       // Fetch profiles manually to bypass missing foreign key issue
       const userIds = [...new Set(data.map((c: any) => c.user_id))];
       const { data: profilesData } = await supabase
         .from("profiles")
         .select("id, full_name")
         .in("id", userIds);
-        
-      const profileMap = new Map((profilesData || []).map(p => [p.id, p]));
-      
+
+      const profileMap = new Map((profilesData || []).map((p) => [p.id, p]));
+
       return data.map((c: any) => ({
         ...c,
-        profiles: profileMap.get(c.user_id) || { full_name: "Không rõ", email: "" }
+        profiles: profileMap.get(c.user_id) || { full_name: "Không rõ", email: "" },
       }));
     },
   });
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await supabase.from("shop_claims" as any)
+      const { error } = await supabase
+        .from("shop_claims" as any)
         .update({ status })
         .eq("id", id);
       if (error) throw error;
@@ -77,7 +80,11 @@ export function AdminShopClaims() {
           {claims?.map((claim: any) => (
             <tr key={claim.id} className="transition-colors hover:bg-sand-deep/10">
               <td className="px-6 py-4 font-medium text-ink">
-                <a href={`/shop/${claim.shops?.slug}`} target="_blank" className="hover:underline hover:text-terra-deep">
+                <a
+                  href={`/shop/${claim.shops?.slug}`}
+                  target="_blank"
+                  className="hover:underline hover:text-terra-deep"
+                >
                   {claim.shops?.name}
                 </a>
               </td>

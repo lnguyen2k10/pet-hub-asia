@@ -1,791 +1,779 @@
-﻿export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+﻿export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
-  }
+    PostgrestVersion: "14.5";
+  };
   public: {
     Tables: {
       blog_categories: {
         Row: {
-          created_at: string
-          description: string | null
-          id: string
-          name: string
-          slug: string
-          sort_order: number
-          updated_at: string
-        }
+          created_at: string;
+          description: string | null;
+          id: string;
+          name: string;
+          slug: string;
+          sort_order: number;
+          updated_at: string;
+        };
         Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          name: string
-          slug: string
-          sort_order?: number
-          updated_at?: string
-        }
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          name: string;
+          slug: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
         Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string
-          slug?: string
-          sort_order?: number
-          updated_at?: string
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          name?: string;
+          slug?: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       blog_posts: {
         Row: {
-          author_id: string | null
-          author_name: string | null
-          category_id: string | null
-          content: string
-          cover_url: string | null
-          created_at: string
-          excerpt: string | null
-          id: string
-          is_published: boolean
-          published_at: string | null
-          read_minutes: number
-          slug: string
-          title: string
-          updated_at: string
-        }
+          author_id: string | null;
+          author_name: string | null;
+          category_id: string | null;
+          content: string;
+          cover_url: string | null;
+          created_at: string;
+          excerpt: string | null;
+          id: string;
+          is_published: boolean;
+          published_at: string | null;
+          read_minutes: number;
+          slug: string;
+          title: string;
+          updated_at: string;
+        };
         Insert: {
-          author_id?: string | null
-          author_name?: string | null
-          category_id?: string | null
-          content?: string
-          cover_url?: string | null
-          created_at?: string
-          excerpt?: string | null
-          id?: string
-          is_published?: boolean
-          published_at?: string | null
-          read_minutes?: number
-          slug: string
-          title: string
-          updated_at?: string
-        }
+          author_id?: string | null;
+          author_name?: string | null;
+          category_id?: string | null;
+          content?: string;
+          cover_url?: string | null;
+          created_at?: string;
+          excerpt?: string | null;
+          id?: string;
+          is_published?: boolean;
+          published_at?: string | null;
+          read_minutes?: number;
+          slug: string;
+          title: string;
+          updated_at?: string;
+        };
         Update: {
-          author_id?: string | null
-          author_name?: string | null
-          category_id?: string | null
-          content?: string
-          cover_url?: string | null
-          created_at?: string
-          excerpt?: string | null
-          id?: string
-          is_published?: boolean
-          published_at?: string | null
-          read_minutes?: number
-          slug?: string
-          title?: string
-          updated_at?: string
-        }
+          author_id?: string | null;
+          author_name?: string | null;
+          category_id?: string | null;
+          content?: string;
+          cover_url?: string | null;
+          created_at?: string;
+          excerpt?: string | null;
+          id?: string;
+          is_published?: boolean;
+          published_at?: string | null;
+          read_minutes?: number;
+          slug?: string;
+          title?: string;
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "blog_posts_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "blog_categories"
-            referencedColumns: ["id"]
+            foreignKeyName: "blog_posts_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "blog_categories";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       deals: {
         Row: {
-          created_at: string
-          description: string | null
-          discount_label: string | null
-          ends_at: string | null
-          id: string
-          image_url: string | null
-          is_featured: boolean
-          shop_id: string
-          title: string
-          updated_at: string
-        }
+          created_at: string;
+          description: string | null;
+          discount_label: string | null;
+          ends_at: string | null;
+          id: string;
+          image_url: string | null;
+          is_featured: boolean;
+          shop_id: string;
+          title: string;
+          updated_at: string;
+        };
         Insert: {
-          created_at?: string
-          description?: string | null
-          discount_label?: string | null
-          ends_at?: string | null
-          id?: string
-          image_url?: string | null
-          is_featured?: boolean
-          shop_id: string
-          title: string
-          updated_at?: string
-        }
+          created_at?: string;
+          description?: string | null;
+          discount_label?: string | null;
+          ends_at?: string | null;
+          id?: string;
+          image_url?: string | null;
+          is_featured?: boolean;
+          shop_id: string;
+          title: string;
+          updated_at?: string;
+        };
         Update: {
-          created_at?: string
-          description?: string | null
-          discount_label?: string | null
-          ends_at?: string | null
-          id?: string
-          image_url?: string | null
-          is_featured?: boolean
-          shop_id?: string
-          title?: string
-          updated_at?: string
-        }
+          created_at?: string;
+          description?: string | null;
+          discount_label?: string | null;
+          ends_at?: string | null;
+          id?: string;
+          image_url?: string | null;
+          is_featured?: boolean;
+          shop_id?: string;
+          title?: string;
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "deals_shop_id_fkey"
-            columns: ["shop_id"]
-            isOneToOne: false
-            referencedRelation: "shops"
-            referencedColumns: ["id"]
+            foreignKeyName: "deals_shop_id_fkey";
+            columns: ["shop_id"];
+            isOneToOne: false;
+            referencedRelation: "shops";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
 
       promo_codes: {
         Row: {
-          id: string
-          code: string
-          description: string | null
-          quota_deals: number
-          quota_products: number
-          quota_featured_slots: number
-          quota_partner_posts: number
-          quota_blog_posts: number
-          max_uses: number
-          uses_count: number
-          expires_at: string | null
-          created_at: string
-        }
+          id: string;
+          code: string;
+          description: string | null;
+          quota_deals: number;
+          quota_products: number;
+          quota_featured_slots: number;
+          quota_partner_posts: number;
+          quota_blog_posts: number;
+          max_uses: number;
+          uses_count: number;
+          expires_at: string | null;
+          created_at: string;
+        };
         Insert: {
-          id?: string
-          code: string
-          description?: string | null
-          quota_deals?: number
-          quota_products?: number
-          quota_featured_slots?: number
-          quota_partner_posts?: number
-          quota_blog_posts?: number
-          max_uses?: number
-          uses_count?: number
-          expires_at?: string | null
-          created_at?: string
-        }
+          id?: string;
+          code: string;
+          description?: string | null;
+          quota_deals?: number;
+          quota_products?: number;
+          quota_featured_slots?: number;
+          quota_partner_posts?: number;
+          quota_blog_posts?: number;
+          max_uses?: number;
+          uses_count?: number;
+          expires_at?: string | null;
+          created_at?: string;
+        };
         Update: {
-          id?: string
-          code?: string
-          description?: string | null
-          quota_deals?: number
-          quota_products?: number
-          quota_featured_slots?: number
-          quota_partner_posts?: number
-          quota_blog_posts?: number
-          max_uses?: number
-          uses_count?: number
-          expires_at?: string | null
-          created_at?: string
-        }
-        Relationships: []
-      }
+          id?: string;
+          code?: string;
+          description?: string | null;
+          quota_deals?: number;
+          quota_products?: number;
+          quota_featured_slots?: number;
+          quota_partner_posts?: number;
+          quota_blog_posts?: number;
+          max_uses?: number;
+          uses_count?: number;
+          expires_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       membership_plans: {
         Row: {
-          id: string
-          name: string
-          description: string | null
-          price_amount: number
-          currency: string
-          duration_days: number
-          period_label: string
-          features: string[]
-          is_active: boolean
-          is_featured: boolean
-          sort_order: number
-          max_deals: number
-          max_products: number
-          featured_slots: number
-          max_partner_posts: number
-          max_blog_posts: number
-          created_at: string
-          updated_at: string
-        }
+          id: string;
+          name: string;
+          description: string | null;
+          price_amount: number;
+          currency: string;
+          duration_days: number;
+          period_label: string;
+          features: string[];
+          is_active: boolean;
+          is_featured: boolean;
+          sort_order: number;
+          max_deals: number;
+          max_products: number;
+          featured_slots: number;
+          max_partner_posts: number;
+          max_blog_posts: number;
+          created_at: string;
+          updated_at: string;
+        };
         Insert: {
-          id?: string
-          name: string
-          description?: string | null
-          price_amount?: number
-          currency?: string
-          duration_days?: number
-          period_label?: string
-          features?: string[]
-          is_active?: boolean
-          is_featured?: boolean
-          sort_order?: number
-          max_deals?: number
-          max_products?: number
-          featured_slots?: number
-          max_partner_posts?: number
-          max_blog_posts?: number
-          created_at?: string
-          updated_at?: string
-        }
+          id?: string;
+          name: string;
+          description?: string | null;
+          price_amount?: number;
+          currency?: string;
+          duration_days?: number;
+          period_label?: string;
+          features?: string[];
+          is_active?: boolean;
+          is_featured?: boolean;
+          sort_order?: number;
+          max_deals?: number;
+          max_products?: number;
+          featured_slots?: number;
+          max_partner_posts?: number;
+          max_blog_posts?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
         Update: {
-          id?: string
-          name?: string
-          description?: string | null
-          price_amount?: number
-          currency?: string
-          duration_days?: number
-          period_label?: string
-          features?: string[]
-          is_active?: boolean
-          is_featured?: boolean
-          sort_order?: number
-          max_deals?: number
-          max_products?: number
-          featured_slots?: number
-          max_partner_posts?: number
-          max_blog_posts?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
+          id?: string;
+          name?: string;
+          description?: string | null;
+          price_amount?: number;
+          currency?: string;
+          duration_days?: number;
+          period_label?: string;
+          features?: string[];
+          is_active?: boolean;
+          is_featured?: boolean;
+          sort_order?: number;
+          max_deals?: number;
+          max_products?: number;
+          featured_slots?: number;
+          max_partner_posts?: number;
+          max_blog_posts?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       membership_requests: {
         Row: {
-          admin_note: string | null
-          amount: number
-          contact_name: string | null
-          contact_phone: string | null
-          created_at: string
-          expires_at: string | null
-          id: string
-          note: string | null
-          plan_id: string | null
-          proof_url: string | null
-          reviewed_at: string | null
-          reviewed_by: string | null
-          shop_id: string | null
-          starts_at: string | null
-          status: string
-          updated_at: string
-          user_id: string
-        }
+          admin_note: string | null;
+          amount: number;
+          contact_name: string | null;
+          contact_phone: string | null;
+          created_at: string;
+          expires_at: string | null;
+          id: string;
+          note: string | null;
+          plan_id: string | null;
+          proof_url: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          shop_id: string | null;
+          starts_at: string | null;
+          status: string;
+          updated_at: string;
+          user_id: string;
+        };
         Insert: {
-          admin_note?: string | null
-          amount?: number
-          contact_name?: string | null
-          contact_phone?: string | null
-          created_at?: string
-          expires_at?: string | null
-          id?: string
-          note?: string | null
-          plan_id?: string | null
-          proof_url?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          shop_id?: string | null
-          starts_at?: string | null
-          status?: string
-          updated_at?: string
-          user_id: string
-        }
+          admin_note?: string | null;
+          amount?: number;
+          contact_name?: string | null;
+          contact_phone?: string | null;
+          created_at?: string;
+          expires_at?: string | null;
+          id?: string;
+          note?: string | null;
+          plan_id?: string | null;
+          proof_url?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          shop_id?: string | null;
+          starts_at?: string | null;
+          status?: string;
+          updated_at?: string;
+          user_id: string;
+        };
         Update: {
-          admin_note?: string | null
-          amount?: number
-          contact_name?: string | null
-          contact_phone?: string | null
-          created_at?: string
-          expires_at?: string | null
-          id?: string
-          note?: string | null
-          plan_id?: string | null
-          proof_url?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          shop_id?: string | null
-          starts_at?: string | null
-          status?: string
-          updated_at?: string
-          user_id?: string
-        }
+          admin_note?: string | null;
+          amount?: number;
+          contact_name?: string | null;
+          contact_phone?: string | null;
+          created_at?: string;
+          expires_at?: string | null;
+          id?: string;
+          note?: string | null;
+          plan_id?: string | null;
+          proof_url?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          shop_id?: string | null;
+          starts_at?: string | null;
+          status?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "membership_requests_shop_id_fkey"
-            columns: ["shop_id"]
-            isOneToOne: false
-            referencedRelation: "shops"
-            referencedColumns: ["id"]
+            foreignKeyName: "membership_requests_shop_id_fkey";
+            columns: ["shop_id"];
+            isOneToOne: false;
+            referencedRelation: "shops";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "membership_requests_plan_id_fkey"
-            columns: ["plan_id"]
-            isOneToOne: false
-            referencedRelation: "membership_plans"
-            referencedColumns: ["id"]
+            foreignKeyName: "membership_requests_plan_id_fkey";
+            columns: ["plan_id"];
+            isOneToOne: false;
+            referencedRelation: "membership_plans";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       membership_settings: {
         Row: {
-          bank_info: string | null
-          created_at: string
-          currency: string
-          id: string
-          instructions: string | null
-          period_label: string
-          price_amount: number
-          qr_image_url: string | null
-          refund_note: string
-          updated_at: string
-        }
+          bank_info: string | null;
+          created_at: string;
+          currency: string;
+          id: string;
+          instructions: string | null;
+          period_label: string;
+          price_amount: number;
+          qr_image_url: string | null;
+          refund_note: string;
+          updated_at: string;
+        };
         Insert: {
-          bank_info?: string | null
-          created_at?: string
-          currency?: string
-          id?: string
-          instructions?: string | null
-          period_label?: string
-          price_amount?: number
-          qr_image_url?: string | null
-          refund_note?: string
-          updated_at?: string
-        }
+          bank_info?: string | null;
+          created_at?: string;
+          currency?: string;
+          id?: string;
+          instructions?: string | null;
+          period_label?: string;
+          price_amount?: number;
+          qr_image_url?: string | null;
+          refund_note?: string;
+          updated_at?: string;
+        };
         Update: {
-          bank_info?: string | null
-          created_at?: string
-          currency?: string
-          id?: string
-          instructions?: string | null
-          period_label?: string
-          price_amount?: number
-          qr_image_url?: string | null
-          refund_note?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
+          bank_info?: string | null;
+          created_at?: string;
+          currency?: string;
+          id?: string;
+          instructions?: string | null;
+          period_label?: string;
+          price_amount?: number;
+          qr_image_url?: string | null;
+          refund_note?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       partner_listings: {
         Row: {
-          category: string | null
-          city: string | null
-          company_name: string
-          contact_email: string | null
-          contact_name: string | null
-          contact_phone: string | null
-          cover_url: string | null
-          created_at: string
-          description: string | null
-          id: string
-          investment_note: string | null
-          is_featured: boolean
-          is_published: boolean
-          listing_type: string
-          logo_url: string | null
-          owner_id: string | null
-          summary: string | null
-          title: string
-          updated_at: string
-          website: string | null
-        }
+          category: string | null;
+          city: string | null;
+          company_name: string;
+          contact_email: string | null;
+          contact_name: string | null;
+          contact_phone: string | null;
+          cover_url: string | null;
+          created_at: string;
+          description: string | null;
+          id: string;
+          investment_note: string | null;
+          is_featured: boolean;
+          is_published: boolean;
+          listing_type: string;
+          logo_url: string | null;
+          owner_id: string | null;
+          summary: string | null;
+          title: string;
+          updated_at: string;
+          website: string | null;
+        };
         Insert: {
-          category?: string | null
-          city?: string | null
-          company_name: string
-          contact_email?: string | null
-          contact_name?: string | null
-          contact_phone?: string | null
-          cover_url?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          investment_note?: string | null
-          is_featured?: boolean
-          is_published?: boolean
-          listing_type?: string
-          logo_url?: string | null
-          owner_id?: string | null
-          summary?: string | null
-          title: string
-          updated_at?: string
-          website?: string | null
-        }
+          category?: string | null;
+          city?: string | null;
+          company_name: string;
+          contact_email?: string | null;
+          contact_name?: string | null;
+          contact_phone?: string | null;
+          cover_url?: string | null;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          investment_note?: string | null;
+          is_featured?: boolean;
+          is_published?: boolean;
+          listing_type?: string;
+          logo_url?: string | null;
+          owner_id?: string | null;
+          summary?: string | null;
+          title: string;
+          updated_at?: string;
+          website?: string | null;
+        };
         Update: {
-          category?: string | null
-          city?: string | null
-          company_name?: string
-          contact_email?: string | null
-          contact_name?: string | null
-          contact_phone?: string | null
-          cover_url?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          investment_note?: string | null
-          is_featured?: boolean
-          is_published?: boolean
-          listing_type?: string
-          logo_url?: string | null
-          owner_id?: string | null
-          summary?: string | null
-          title?: string
-          updated_at?: string
-          website?: string | null
-        }
-        Relationships: []
-      }
+          category?: string | null;
+          city?: string | null;
+          company_name?: string;
+          contact_email?: string | null;
+          contact_name?: string | null;
+          contact_phone?: string | null;
+          cover_url?: string | null;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          investment_note?: string | null;
+          is_featured?: boolean;
+          is_published?: boolean;
+          listing_type?: string;
+          logo_url?: string | null;
+          owner_id?: string | null;
+          summary?: string | null;
+          title?: string;
+          updated_at?: string;
+          website?: string | null;
+        };
+        Relationships: [];
+      };
       products: {
         Row: {
-          category: string | null
-          created_at: string
-          currency: string
-          description: string | null
-          id: string
-          image_url: string | null
-          in_stock: boolean
-          is_featured: boolean
-          name: string
-          price: number | null
-          shop_id: string
-          sort_order: number
-          updated_at: string
-        }
+          category: string | null;
+          created_at: string;
+          currency: string;
+          description: string | null;
+          id: string;
+          image_url: string | null;
+          in_stock: boolean;
+          is_featured: boolean;
+          name: string;
+          price: number | null;
+          shop_id: string;
+          sort_order: number;
+          updated_at: string;
+        };
         Insert: {
-          category?: string | null
-          created_at?: string
-          currency?: string
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          in_stock?: boolean
-          is_featured?: boolean
-          name: string
-          price?: number | null
-          shop_id: string
-          sort_order?: number
-          updated_at?: string
-        }
+          category?: string | null;
+          created_at?: string;
+          currency?: string;
+          description?: string | null;
+          id?: string;
+          image_url?: string | null;
+          in_stock?: boolean;
+          is_featured?: boolean;
+          name: string;
+          price?: number | null;
+          shop_id: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
         Update: {
-          category?: string | null
-          created_at?: string
-          currency?: string
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          in_stock?: boolean
-          is_featured?: boolean
-          name?: string
-          price?: number | null
-          shop_id?: string
-          sort_order?: number
-          updated_at?: string
-        }
+          category?: string | null;
+          created_at?: string;
+          currency?: string;
+          description?: string | null;
+          id?: string;
+          image_url?: string | null;
+          in_stock?: boolean;
+          is_featured?: boolean;
+          name?: string;
+          price?: number | null;
+          shop_id?: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "products_shop_id_fkey"
-            columns: ["shop_id"]
-            isOneToOne: false
-            referencedRelation: "shops"
-            referencedColumns: ["id"]
+            foreignKeyName: "products_shop_id_fkey";
+            columns: ["shop_id"];
+            isOneToOne: false;
+            referencedRelation: "shops";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       profiles: {
         Row: {
-          created_at: string
-          full_name: string | null
-            quota_deals?: number
-            quota_products?: number
-            quota_featured_slots?: number
-            quota_partner_posts?: number
-            quota_blog_posts?: number
-            has_claimed_free_blog?: boolean
-          id: string
-          updated_at: string
-          membership_until?: string | null
-        }
+          created_at: string;
+          full_name: string | null;
+          quota_deals?: number;
+          quota_products?: number;
+          quota_featured_slots?: number;
+          quota_partner_posts?: number;
+          quota_blog_posts?: number;
+          has_claimed_free_blog?: boolean;
+          id: string;
+          updated_at: string;
+          membership_until?: string | null;
+        };
         Insert: {
-          created_at?: string
-          full_name?: string | null
-          id: string
-          updated_at?: string
-          quota_deals?: number
-          quota_products?: number
-          quota_featured_slots?: number
-          quota_partner_posts?: number
-          quota_blog_posts?: number
-          has_claimed_free_blog?: boolean
-          membership_until?: string | null
-        }
+          created_at?: string;
+          full_name?: string | null;
+          id: string;
+          updated_at?: string;
+          quota_deals?: number;
+          quota_products?: number;
+          quota_featured_slots?: number;
+          quota_partner_posts?: number;
+          quota_blog_posts?: number;
+          has_claimed_free_blog?: boolean;
+          membership_until?: string | null;
+        };
         Update: {
-          created_at?: string
-          full_name?: string | null
-          id?: string
-          updated_at?: string
-          quota_deals?: number
-          quota_products?: number
-          quota_featured_slots?: number
-          quota_partner_posts?: number
-          quota_blog_posts?: number
-          has_claimed_free_blog?: boolean
-          membership_until?: string | null
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          full_name?: string | null;
+          id?: string;
+          updated_at?: string;
+          quota_deals?: number;
+          quota_products?: number;
+          quota_featured_slots?: number;
+          quota_partner_posts?: number;
+          quota_blog_posts?: number;
+          has_claimed_free_blog?: boolean;
+          membership_until?: string | null;
+        };
+        Relationships: [];
+      };
       shops: {
         Row: {
-          address: string | null
-          category: string
-          city: string
-          cover_url: string | null
-          created_at: string
-          description: string | null
-          hero_subtitle: string | null
-          hero_title: string | null
-          id: string
-          is_featured: boolean
-          is_published: boolean
-          logo_url: string | null
-          name: string
-          email: string | null
-            website: string | null
-            fanpage: string | null
-            owner_id: string | null
-            phone: string | null
-          rating: number
-          review_count: number
-          slug: string
-          updated_at: string
-          cover_url_2: string | null
-          cover_url_3: string | null
-        }
+          address: string | null;
+          category: string;
+          city: string;
+          cover_url: string | null;
+          created_at: string;
+          description: string | null;
+          hero_subtitle: string | null;
+          hero_title: string | null;
+          id: string;
+          is_featured: boolean;
+          is_published: boolean;
+          logo_url: string | null;
+          name: string;
+          email: string | null;
+          website: string | null;
+          fanpage: string | null;
+          owner_id: string | null;
+          phone: string | null;
+          rating: number;
+          review_count: number;
+          slug: string;
+          updated_at: string;
+          cover_url_2: string | null;
+          cover_url_3: string | null;
+        };
         Insert: {
-          address?: string | null
-          category?: string
-          city?: string
-          cover_url?: string | null
-          created_at?: string
-          description?: string | null
-          hero_subtitle?: string | null
-          hero_title?: string | null
-          id?: string
-          is_featured?: boolean
-          is_published?: boolean
-          logo_url?: string | null
-          name: string
-          email?: string | null
-            website?: string | null
-            fanpage?: string | null
-            owner_id?: string | null
-            phone?: string | null
-          rating?: number
-          review_count?: number
-          slug: string
-          updated_at?: string
-          cover_url_2?: string | null
-          cover_url_3?: string | null
-        }
+          address?: string | null;
+          category?: string;
+          city?: string;
+          cover_url?: string | null;
+          created_at?: string;
+          description?: string | null;
+          hero_subtitle?: string | null;
+          hero_title?: string | null;
+          id?: string;
+          is_featured?: boolean;
+          is_published?: boolean;
+          logo_url?: string | null;
+          name: string;
+          email?: string | null;
+          website?: string | null;
+          fanpage?: string | null;
+          owner_id?: string | null;
+          phone?: string | null;
+          rating?: number;
+          review_count?: number;
+          slug: string;
+          updated_at?: string;
+          cover_url_2?: string | null;
+          cover_url_3?: string | null;
+        };
         Update: {
-          address?: string | null
-          category?: string
-          city?: string
-          cover_url?: string | null
-          created_at?: string
-          description?: string | null
-          hero_subtitle?: string | null
-          hero_title?: string | null
-          id?: string
-          is_featured?: boolean
-          is_published?: boolean
-          logo_url?: string | null
-          name?: string
-          email?: string | null
-            website?: string | null
-            fanpage?: string | null
-            owner_id?: string | null
-            phone?: string | null
-          rating?: number
-          review_count?: number
-          slug?: string
-          updated_at?: string
-          cover_url_2?: string | null
-          cover_url_3?: string | null
-        }
-        Relationships: []
-      }
+          address?: string | null;
+          category?: string;
+          city?: string;
+          cover_url?: string | null;
+          created_at?: string;
+          description?: string | null;
+          hero_subtitle?: string | null;
+          hero_title?: string | null;
+          id?: string;
+          is_featured?: boolean;
+          is_published?: boolean;
+          logo_url?: string | null;
+          name?: string;
+          email?: string | null;
+          website?: string | null;
+          fanpage?: string | null;
+          owner_id?: string | null;
+          phone?: string | null;
+          rating?: number;
+          review_count?: number;
+          slug?: string;
+          updated_at?: string;
+          cover_url_2?: string | null;
+          cover_url_3?: string | null;
+        };
+        Relationships: [];
+      };
       user_roles: {
         Row: {
-          created_at: string
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
+          created_at: string;
+          id: string;
+          role: Database["public"]["Enums"]["app_role"];
+          user_id: string;
+        };
         Insert: {
-          created_at?: string
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
+          created_at?: string;
+          id?: string;
+          role: Database["public"]["Enums"]["app_role"];
+          user_id: string;
+        };
         Update: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
-    }
+          created_at?: string;
+          id?: string;
+          role?: Database["public"]["Enums"]["app_role"];
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+    };
     Views: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     Functions: {
       has_role: {
         Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+          _role: Database["public"]["Enums"]["app_role"];
+          _user_id: string;
+        };
+        Returns: boolean;
+      };
       redeem_promo_code: {
         Args: {
-          p_code: string
-        }
-        Returns: Json
-      }
-    }
+          p_code: string;
+        };
+        Returns: Json;
+      };
+    };
     Enums: {
-      app_role: "admin" | "moderator" | "user"
-    }
+      app_role: "admin" | "moderator" | "user";
+    };
     CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-}
+      [_ in never]: never;
+    };
+  };
+};
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
+      Row: infer R;
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R;
       }
       ? R
       : never
-    : never
+    : never;
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
+      Insert: infer I;
     }
     ? I
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
+        Insert: infer I;
       }
       ? I
       : never
-    : never
+    : never;
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
+      Update: infer U;
     }
     ? U
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
+        Update: infer U;
       }
       ? U
       : never
-    : never
+    : never;
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
+    keyof DefaultSchema["Enums"] | { schema: keyof DatabaseWithoutInternals },
   EnumName extends (DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
+    : never;
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof DatabaseWithoutInternals },
+    keyof DefaultSchema["CompositeTypes"] | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
+    : never;
 
 export const Constants = {
   public: {
@@ -793,4 +781,4 @@ export const Constants = {
       app_role: ["admin", "moderator", "user"],
     },
   },
-} as const
+} as const;

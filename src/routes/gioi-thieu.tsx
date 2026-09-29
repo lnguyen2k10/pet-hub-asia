@@ -29,60 +29,114 @@ function AboutPage() {
         <div className="text-center">
           <p className="font-hand text-2xl text-terra-deep">Dành cho chủ doanh nghiệp</p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-5xl text-ink">
-            Đưa thương hiệu thú cưng của bạn <br className="hidden sm:block" /> vươn xa cùng 1Pet.Asia
+            Đưa thương hiệu thú cưng của bạn <br className="hidden sm:block" /> vươn xa cùng
+            1Pet.Asia
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-ink-soft leading-relaxed">
-            1Pet.Asia không chỉ là một danh bạ, mà là cầu nối trực tiếp giữa doanh nghiệp của bạn và hàng ngàn người nuôi thú cưng đang tìm kiếm dịch vụ uy tín mỗi ngày. 
-            Hãy để chúng tôi giúp bạn xây dựng hình ảnh chuyên nghiệp và tăng doanh thu.
+            1Pet.Asia không chỉ là một danh bạ, mà là cầu nối trực tiếp giữa doanh nghiệp của bạn và
+            hàng ngàn người nuôi thú cưng đang tìm kiếm dịch vụ uy tín mỗi ngày. Hãy để chúng tôi
+            giúp bạn xây dựng hình ảnh chuyên nghiệp và tăng doanh thu.
           </p>
         </div>
 
         <div className="mt-12 grid gap-8 sm:grid-cols-2">
           <div className="rounded-3xl bg-sand p-8 ring-1 ring-border transition-shadow hover:shadow-md bg-gradient-to-br from-sand to-white">
             <div className="mb-4 inline-flex size-12 items-center justify-center rounded-2xl bg-terra-deep/10 text-terra-deep">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+                />
               </svg>
             </div>
             <h3 className="text-xl font-bold">Landing Page Chuyên Nghiệp</h3>
             <p className="mt-2 text-ink-soft">
-              Sở hữu ngay một trang hiển thị riêng biệt mang đậm dấu ấn thương hiệu. Tự do cập nhật ảnh bìa, logo, thông tin dịch vụ và địa chỉ mà không cần biết lập trình.
+              Sở hữu ngay một trang hiển thị riêng biệt mang đậm dấu ấn thương hiệu. Tự do cập nhật
+              ảnh bìa, logo, thông tin dịch vụ và địa chỉ mà không cần biết lập trình.
             </p>
           </div>
 
           <div className="rounded-3xl bg-sand p-8 ring-1 ring-border transition-shadow hover:shadow-md bg-gradient-to-br from-sand to-white">
             <div className="mb-4 inline-flex size-12 items-center justify-center rounded-2xl bg-terra-deep/10 text-terra-deep">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"
+                />
               </svg>
             </div>
             <h3 className="text-xl font-bold">Tiếp Cận Đúng Khách Hàng</h3>
             <p className="mt-2 text-ink-soft">
-              Hệ thống tìm kiếm thông minh theo khu vực và danh mục giúp người nuôi chó mèo xung quanh dễ dàng tìm thấy Spa, Phòng khám hay Pet Shop của bạn.
+              Hệ thống tìm kiếm thông minh theo khu vực và danh mục giúp người nuôi chó mèo xung
+              quanh dễ dàng tìm thấy Spa, Phòng khám hay Pet Shop của bạn.
             </p>
           </div>
 
           <div className="rounded-3xl bg-sand p-8 ring-1 ring-border transition-shadow hover:shadow-md bg-gradient-to-br from-sand to-white">
             <div className="mb-4 inline-flex size-12 items-center justify-center rounded-2xl bg-terra-deep/10 text-terra-deep">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             </div>
             <h3 className="text-xl font-bold">Thúc Đẩy Doanh Số Dễ Dàng</h3>
             <p className="mt-2 text-ink-soft">
-              Tạo và quản lý các chương trình Ưu đãi (Deals) hấp dẫn. Thu hút khách hàng mới và giữ chân khách hàng cũ chỉ với vài cú click chuột.
+              Tạo và quản lý các chương trình Ưu đãi (Deals) hấp dẫn. Thu hút khách hàng mới và giữ
+              chân khách hàng cũ chỉ với vài cú click chuột.
             </p>
           </div>
 
           <div className="rounded-3xl bg-sand p-8 ring-1 ring-border transition-shadow hover:shadow-md bg-gradient-to-br from-sand to-white">
             <div className="mb-4 inline-flex size-12 items-center justify-center rounded-2xl bg-terra-deep/10 text-terra-deep">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                />
               </svg>
             </div>
             <h3 className="text-xl font-bold">Chủ Động Quản Trị Mọi Thứ</h3>
             <p className="mt-2 text-ink-soft">
-              Hệ thống bảng điều khiển (Admin Dashboard) mạnh mẽ giúp bạn theo dõi thông tin, duyệt yêu cầu quyền sở hữu và nắm bắt hiệu quả kinh doanh nhanh chóng.
+              Hệ thống bảng điều khiển (Admin Dashboard) mạnh mẽ giúp bạn theo dõi thông tin, duyệt
+              yêu cầu quyền sở hữu và nắm bắt hiệu quả kinh doanh nhanh chóng.
             </p>
           </div>
         </div>
@@ -101,13 +155,14 @@ function AboutPage() {
             Tham quan danh bạ
           </Link>
         </div>
-        
+
         {/* Contact Form Section */}
         <section className="mt-16 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-border sm:p-8">
           <div className="mb-6">
             <h2 className="text-2xl font-bold">Liên hệ với chúng tôi</h2>
             <p className="mt-2 text-sm text-ink-soft">
-              Bạn có câu hỏi hoặc cần hỗ trợ? Hãy gửi tin nhắn cho đội ngũ quản trị, chúng tôi sẽ phản hồi sớm nhất.
+              Bạn có câu hỏi hoặc cần hỗ trợ? Hãy gửi tin nhắn cho đội ngũ quản trị, chúng tôi sẽ
+              phản hồi sớm nhất.
             </p>
           </div>
           <ContactForm />

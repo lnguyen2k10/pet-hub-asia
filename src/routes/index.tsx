@@ -8,9 +8,14 @@ import { SearchBar } from "@/components/search-bar";
 import { ShopCard } from "@/components/shop-card";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { blogPostsQuery, featuredDealsQuery, featuredShopsQuery, partnerListingsQuery, shopCategoriesQuery } from "@/lib/queries";
+import {
+  blogPostsQuery,
+  featuredDealsQuery,
+  featuredShopsQuery,
+  partnerListingsQuery,
+  shopCategoriesQuery,
+} from "@/lib/queries";
 import { BlogCard } from "@/components/blog-card";
-
 
 const TITLE = "1Pet.Asia — Danh bạ shop chó mèo & dịch vụ thú cưng";
 const DESC =
@@ -168,9 +173,7 @@ function Home() {
               ? Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="h-80 animate-pulse rounded-3xl bg-sand-deep/60" />
                 ))
-              : latestPosts.data?.slice(0, 3).map((post) => (
-                  <BlogCard key={post.id} post={post} />
-                ))}
+              : latestPosts.data?.slice(0, 3).map((post) => <BlogCard key={post.id} post={post} />)}
           </div>
 
           {!latestPosts.isLoading && (latestPosts.data?.length ?? 0) === 0 && (

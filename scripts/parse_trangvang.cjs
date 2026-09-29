@@ -1,15 +1,15 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
-const inputDir = path.resolve(__dirname, '../trang vàng');
-const outputFile = path.resolve(__dirname, '../parsed_trangvang_shops.json');
+const inputDir = path.resolve(__dirname, "../trang vàng");
+const outputFile = path.resolve(__dirname, "../parsed_trangvang_shops.json");
 
 if (!fs.existsSync(inputDir)) {
   console.error("❌ Không tìm thấy thư mục:", inputDir);
   process.exit(1);
 }
 
-const files = fs.readdirSync(inputDir).filter(f => f.endsWith('.json'));
+const files = fs.readdirSync(inputDir).filter((f) => f.endsWith(".json"));
 
 if (files.length === 0) {
   console.error("❌ Không tìm thấy file JSON nào trong thư mục 'trang vàng'.");
@@ -21,8 +21,8 @@ const results = [];
 for (const file of files) {
   const inputFile = path.join(inputDir, file);
   console.log(`Đang phân tích file: ${file}...`);
-  const rawData = JSON.parse(fs.readFileSync(inputFile, 'utf-8'));
-  const markdown = rawData.data?.markdown || '';
+  const rawData = JSON.parse(fs.readFileSync(inputFile, "utf-8"));
+  const markdown = rawData.data?.markdown || "";
 
   if (!markdown) {
     console.error(`❌ Không tìm thấy markdown data trong file: ${file}`);
@@ -32,20 +32,23 @@ for (const file of files) {
   // Hàm chia các block cửa hàng
   const blocks = markdown.split(/\n##\s+/).slice(1);
 
-  blocks.forEach(block => {
+  blocks.forEach((block) => {
     const shop = {
-      name: '',
-      address: '',
-      phone: '',
-      website: '',
-      email: '',
-      fanpage: '',
-      description: '',
-      logo: '',
-      images: []
+      name: "",
+      address: "",
+      phone: "",
+      website: "",
+      email: "",
+      fanpage: "",
+      description: "",
+      logo: "",
+      images: [],
     };
 
-    const lines = block.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const lines = block
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0);
     if (lines.length === 0) return;
 
     // Xử lý dòng tiêu đề
@@ -54,7 +57,7 @@ for (const file of files) {
     if (titleMatch) {
       shop.name = titleMatch[1];
     } else {
-      shop.name = titleLine.replace(/^#+\s*/, '').trim();
+      shop.name = titleLine.replace(/^#+\s*/, "").trim();
     }
 
     // Phân tích các dòng còn lại
@@ -66,13 +69,13 @@ for (const file of files) {
       // Lọc Logo (hình ảnh đầu tiên thường là logo)
       const imgMatch = line.match(/!\[(.*?)\]\((.*?)\)/g);
       if (imgMatch) {
-        imgMatch.forEach(imgStr => {
+        imgMatch.forEach((imgStr) => {
           const urlMatch = imgStr.match(/!\[.*?\]\((.*?)\)/);
           if (urlMatch && urlMatch[1]) {
             const url = urlMatch[1];
-            if (url.includes('zalo') || url.includes('icon') || url.includes('banner')) {
+            if (url.includes("zalo") || url.includes("icon") || url.includes("banner")) {
               // Ignore generic icons
-            } else if (url.includes('logo.')) {
+            } else if (url.includes("logo.")) {
               shop.logo = url;
             } else {
               shop.images.push(url);
@@ -83,24 +86,33 @@ for (const file of files) {
       }
 
       // Bỏ qua các dòng không cần thiết
-      if (line.includes('Tài trợ Xác thực') || line.includes('NGÀNH:Thú Cưng') || line.includes('Cập nhật gần nhất')) {
+      if (
+        line.includes("Tài trợ Xác thực") ||
+        line.includes("NGÀNH:Thú Cưng") ||
+        line.includes("Cập nhật gần nhất")
+      ) {
         continue;
       }
 
       // Tìm Email
-      if (line.includes('mailto:')) {
+      if (line.includes("mailto:")) {
         const emailMatch = line.match(/mailto:([^\s"]+)/);
-        if (emailMatch) shop.email = emailMatch[1].replace(/"/g, '').replace('Địa', ''); 
+        if (emailMatch) shop.email = emailMatch[1].replace(/"/g, "").replace("Địa", "");
       }
-      
+
       // Tìm Website & Fanpage
       const webMatch = line.match(/\[(.*?)\]\((http.*?)\)/g);
       if (webMatch) {
-        webMatch.forEach(w => {
+        webMatch.forEach((w) => {
           const urlMatch = w.match(/\[.*?\]\((http.*?)\)/);
-          if (urlMatch && urlMatch[1] && !urlMatch[1].includes('trangvang') && !urlMatch[1].includes('mailto:')) {
+          if (
+            urlMatch &&
+            urlMatch[1] &&
+            !urlMatch[1].includes("trangvang") &&
+            !urlMatch[1].includes("mailto:")
+          ) {
             const url = urlMatch[1];
-            if (url.includes('facebook.com') || url.includes('fb.com')) {
+            if (url.includes("facebook.com") || url.includes("fb.com")) {
               shop.fanpage = url;
             } else {
               shop.website = url;
@@ -110,40 +122,51 @@ for (const file of files) {
       }
 
       // Tìm Số điện thoại (dựa vào tel:)
-      if (line.includes('tel:')) {
+      if (line.includes("tel:")) {
         const phoneMatches = [...line.matchAll(/tel:([\d]+)/g)];
         if (phoneMatches.length > 0) {
-          shop.phone = phoneMatches.map(m => m[1]).join(' - ');
+          shop.phone = phoneMatches.map((m) => m[1]).join(" - ");
         }
-        continue; 
+        continue;
       }
 
       // Dòng chứa địa chỉ
       if (
-        (line.includes('Phường') || line.includes('Quận') || line.includes('TP.') || line.includes('Hà Nội') || line.includes('Việt Nam') || line.includes('Xã') || line.includes('Thôn') || line.includes('Đường'))
-        && !line.includes('http') && !shop.address
+        (line.includes("Phường") ||
+          line.includes("Quận") ||
+          line.includes("TP.") ||
+          line.includes("Hà Nội") ||
+          line.includes("Việt Nam") ||
+          line.includes("Xã") ||
+          line.includes("Thôn") ||
+          line.includes("Đường")) &&
+        !line.includes("http") &&
+        !shop.address
       ) {
-        shop.address = line.replace(/\*\*/g, '').trim();
+        shop.address = line.replace(/\*\*/g, "").trim();
         continue;
       }
 
       // Mô tả
-      if (!line.includes('http') && !line.includes('mailto:') && !line.includes('Gửi Email') && !line.includes('Chi tiết...')) {
-        descriptionLines.push(line.replace(/\*\*/g, '').replace(/_/g, '').trim());
+      if (
+        !line.includes("http") &&
+        !line.includes("mailto:") &&
+        !line.includes("Gửi Email") &&
+        !line.includes("Chi tiết...")
+      ) {
+        descriptionLines.push(line.replace(/\*\*/g, "").replace(/_/g, "").trim());
       }
     }
 
-    shop.description = descriptionLines.join(' | ');
+    shop.description = descriptionLines.join(" | ");
 
     // Sạch sẽ dữ liệu
-    if (shop.name && shop.name !== 'Quảng cáo nổi bật' && shop.name !== 'Đăng ký doanh nghiệp') {
+    if (shop.name && shop.name !== "Quảng cáo nổi bật" && shop.name !== "Đăng ký doanh nghiệp") {
       results.push(shop);
     }
   });
 }
 
-fs.writeFileSync(outputFile, JSON.stringify(results, null, 2), 'utf-8');
+fs.writeFileSync(outputFile, JSON.stringify(results, null, 2), "utf-8");
 console.log(`✅ Đã phân tích thành công ${results.length} cửa hàng từ ${files.length} file!`);
 console.log(`📁 File kết quả: ${outputFile}`);
-
-

@@ -145,7 +145,8 @@ function BlogPostPage() {
         </p>
 
         {post.cover_url ? (
-          <img decoding="async"
+          <img
+            decoding="async"
             src={post.cover_url}
             alt={post.title}
             className="mt-6 aspect-[16/9] w-full rounded-3xl object-cover"

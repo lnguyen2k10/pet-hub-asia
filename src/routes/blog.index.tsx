@@ -63,7 +63,8 @@ function BlogIndexPage() {
                 <Link to="/blog/$slug" params={{ slug: featured.slug }} className="block">
                   <div className="aspect-[16/10] bg-sand-deep/60">
                     {featured.cover_url ? (
-                      <img decoding="async"
+                      <img
+                        decoding="async"
                         src={featured.cover_url}
                         alt={featured.title}
                         className="size-full object-cover"

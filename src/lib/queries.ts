@@ -59,11 +59,10 @@ export type SearchFilters = {
   city?: string;
 };
 
-
 export const featuredShopsQuery = queryOptions({
   queryKey: ["shops", "featured"],
   staleTime: 5 * 60 * 1000,
-    queryFn: async (): Promise<Shop[]> => {
+  queryFn: async (): Promise<Shop[]> => {
     const { data, error } = await supabase
       .from("shops")
       .select("*")
@@ -71,23 +70,23 @@ export const featuredShopsQuery = queryOptions({
       .eq("is_featured", true)
       .order("rating", { ascending: false })
       .limit(6);
-    if (error) console.error('Supabase query error:', error.message || error);
-    return ((data ?? []) as unknown) as Shop[];
+    if (error) console.error("Supabase query error:", error.message || error);
+    return (data ?? []) as unknown as Shop[];
   },
 });
 
 export const featuredDealsQuery = queryOptions({
   queryKey: ["deals", "featured"],
   staleTime: 5 * 60 * 1000,
-    queryFn: async (): Promise<(Deal & { shops: { name: string; slug: string } | null })[]> => {
-    const today = new Date().toISOString().split('T')[0];
+  queryFn: async (): Promise<(Deal & { shops: { name: string; slug: string } | null })[]> => {
+    const today = new Date().toISOString().split("T")[0];
     const { data, error } = await supabase
       .from("deals")
       .select("*, shops(name, slug)")
       .eq("is_featured", true)
       .or(`ends_at.is.null,ends_at.gte.${today}`)
       .limit(6);
-    if (error) console.error('Supabase query error:', error.message || error);
+    if (error) console.error("Supabase query error:", error.message || error);
     return (data ?? []) as (Deal & { shops: { name: string; slug: string } | null })[];
   },
 });
@@ -105,8 +104,8 @@ export function searchShopsQuery(filters: SearchFilters) {
       if (filters.category) query = query.eq("category", filters.category);
       if (filters.city) query = query.eq("city", filters.city);
       const { data, error } = await query.order("rating", { ascending: false }).limit(60);
-      if (error) console.error('Supabase query error:', error.message || error);
-      return ((data ?? []) as unknown) as Shop[];
+      if (error) console.error("Supabase query error:", error.message || error);
+      return (data ?? []) as unknown as Shop[];
     },
   });
 }
@@ -121,7 +120,7 @@ export function shopBySlugQuery(slug: string) {
         .select("*, deals(*), products(*)")
         .eq("slug", slug)
         .maybeSingle();
-      if (error) console.error('Supabase query error:', error.message || error);
+      if (error) console.error("Supabase query error:", error.message || error);
       return data as (Shop & { deals: Deal[]; products: Product[] }) | null;
     },
   });
@@ -130,7 +129,7 @@ export function shopBySlugQuery(slug: string) {
 export const myShopQuery = queryOptions({
   queryKey: ["shop", "mine"],
   staleTime: 5 * 60 * 1000,
-    queryFn: async () => {
+  queryFn: async () => {
     const { data: userData } = await supabase.auth.getUser();
     const user = userData.user;
     if (!user) return null;
@@ -139,7 +138,7 @@ export const myShopQuery = queryOptions({
       .select("*, deals(*), products(*)")
       .eq("owner_id", user.id)
       .maybeSingle();
-    if (error) console.error('Supabase query error:', error.message || error);
+    if (error) console.error("Supabase query error:", error.message || error);
     return data as (Shop & { deals: Deal[]; products: Product[] }) | null;
   },
 });
@@ -170,7 +169,7 @@ const PARTNER_CONTACT_COLUMNS = `${PARTNER_PUBLIC_COLUMNS},contact_name,contact_
 export const partnerListingsQuery = queryOptions({
   queryKey: ["partner_listings", "published"],
   staleTime: 5 * 60 * 1000,
-    queryFn: async (): Promise<PartnerListing[]> => {
+  queryFn: async (): Promise<PartnerListing[]> => {
     const columns = PARTNER_PUBLIC_COLUMNS;
     const { data, error } = await supabase
       .from("partner_listings")
@@ -179,7 +178,7 @@ export const partnerListingsQuery = queryOptions({
       .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(12);
-    if (error) console.error('Supabase query error:', error.message || error);
+    if (error) console.error("Supabase query error:", error.message || error);
     return (data ?? []) as unknown as PartnerListing[];
   },
 });
@@ -189,7 +188,7 @@ export type MyPartnerListing = PartnerListing & { is_published: boolean };
 export const myPartnerListingsQuery = queryOptions({
   queryKey: ["partner_listings", "mine"],
   staleTime: 5 * 60 * 1000,
-    queryFn: async (): Promise<MyPartnerListing[]> => {
+  queryFn: async (): Promise<MyPartnerListing[]> => {
     const { data: userData } = await supabase.auth.getUser();
     const user = userData.user;
     if (!user) return [];
@@ -198,18 +197,16 @@ export const myPartnerListingsQuery = queryOptions({
       .select("*")
       .eq("owner_id", user.id)
       .order("created_at", { ascending: false });
-    if (error) console.error('Supabase query error:', error.message || error);
+    if (error) console.error("Supabase query error:", error.message || error);
     return (data ?? []) as unknown as MyPartnerListing[];
   },
 });
 
-
-
 export const allDealsQuery = queryOptions({
   queryKey: ["deals", "all"],
   staleTime: 5 * 60 * 1000,
-    queryFn: async (): Promise<(Deal & { shops: { name: string; slug: string } | null })[]> => {
-    const today = new Date().toISOString().split('T')[0];
+  queryFn: async (): Promise<(Deal & { shops: { name: string; slug: string } | null })[]> => {
+    const today = new Date().toISOString().split("T")[0];
     const { data, error } = await supabase
       .from("deals")
       .select("*, shops(name, slug)")
@@ -217,7 +214,7 @@ export const allDealsQuery = queryOptions({
       .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(60);
-    if (error) console.error('Supabase query error:', error.message || error);
+    if (error) console.error("Supabase query error:", error.message || error);
     return (data ?? []) as (Deal & { shops: { name: string; slug: string } | null })[];
   },
 });
@@ -238,7 +235,7 @@ export function partnerListingsSearchQuery(filters: PartnerFilters) {
         .order("is_featured", { ascending: false })
         .order("created_at", { ascending: false })
         .limit(60);
-      if (error) console.error('Supabase query error:', error.message || error);
+      if (error) console.error("Supabase query error:", error.message || error);
       return (data ?? []) as unknown as PartnerListing[];
     },
   });
@@ -280,13 +277,13 @@ export type MembershipPlan = {
 export const membershipPlansQuery = queryOptions({
   queryKey: ["membership_plans" as any],
   staleTime: 5 * 60 * 1000,
-    queryFn: async (): Promise<MembershipPlan[]> => {
+  queryFn: async (): Promise<MembershipPlan[]> => {
     const { data, error } = await supabase
       .from("membership_plans" as any)
       .select("*")
       .eq("is_active", true)
       .order("sort_order", { ascending: true });
-    if (error) console.error('Supabase query error:', error.message || error);
+    if (error) console.error("Supabase query error:", error.message || error);
     return (data ?? []) as unknown as MembershipPlan[];
   },
 });
@@ -294,12 +291,12 @@ export const membershipPlansQuery = queryOptions({
 export const allMembershipPlansQuery = queryOptions({
   queryKey: ["membership_plans" as any, "all"],
   staleTime: 5 * 60 * 1000,
-    queryFn: async (): Promise<MembershipPlan[]> => {
+  queryFn: async (): Promise<MembershipPlan[]> => {
     const { data, error } = await supabase
       .from("membership_plans" as any)
       .select("*")
       .order("sort_order", { ascending: true });
-    if (error) console.error('Supabase query error:', error.message || error);
+    if (error) console.error("Supabase query error:", error.message || error);
     return (data ?? []) as unknown as MembershipPlan[];
   },
 });
@@ -307,14 +304,14 @@ export const allMembershipPlansQuery = queryOptions({
 export const membershipSettingsQuery = queryOptions({
   queryKey: ["membership_settings"],
   staleTime: 5 * 60 * 1000,
-    queryFn: async (): Promise<MembershipSettings | null> => {
+  queryFn: async (): Promise<MembershipSettings | null> => {
     const { data, error } = await supabase
       .from("membership_settings")
       .select("*")
       .order("created_at", { ascending: true })
       .limit(1)
       .maybeSingle();
-    if (error) console.error('Supabase query error:', error.message || error);
+    if (error) console.error("Supabase query error:", error.message || error);
     return (data ?? null) as MembershipSettings | null;
   },
 });
@@ -339,7 +336,7 @@ export type MembershipRequest = {
 export const myMembershipRequestsQuery = queryOptions({
   queryKey: ["membership_requests", "mine"],
   staleTime: 5 * 60 * 1000,
-    queryFn: async (): Promise<MembershipRequest[]> => {
+  queryFn: async (): Promise<MembershipRequest[]> => {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) return [];
     const { data, error } = await supabase
@@ -347,7 +344,7 @@ export const myMembershipRequestsQuery = queryOptions({
       .select("*")
       .eq("user_id", userData.user.id)
       .order("created_at", { ascending: false });
-    if (error) console.error('Supabase query error:', error.message || error);
+    if (error) console.error("Supabase query error:", error.message || error);
     return (data ?? []) as unknown as MembershipRequest[];
   },
 });
@@ -355,13 +352,13 @@ export const myMembershipRequestsQuery = queryOptions({
 export const allMembershipRequestsQuery = queryOptions({
   queryKey: ["membership_requests", "all"],
   staleTime: 5 * 60 * 1000,
-    queryFn: async (): Promise<MembershipRequest[]> => {
+  queryFn: async (): Promise<MembershipRequest[]> => {
     const { data, error } = await supabase
       .from("membership_requests")
       .select("*")
       .order("created_at", { ascending: false })
       .limit(200);
-    if (error) console.error('Supabase query error:', error.message || error);
+    if (error) console.error("Supabase query error:", error.message || error);
     return (data ?? []) as unknown as MembershipRequest[];
   },
 });
@@ -369,7 +366,7 @@ export const allMembershipRequestsQuery = queryOptions({
 export const isAdminQuery = queryOptions({
   queryKey: ["is_admin"],
   staleTime: 5 * 60 * 1000,
-    queryFn: async (): Promise<boolean> => {
+  queryFn: async (): Promise<boolean> => {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) return false;
     const { data, error } = await supabase
@@ -413,12 +410,12 @@ export type BlogPostWithCategory = BlogPost & {
 export const blogCategoriesQuery = queryOptions({
   queryKey: ["blog_categories"],
   staleTime: 5 * 60 * 1000,
-    queryFn: async (): Promise<BlogCategory[]> => {
+  queryFn: async (): Promise<BlogCategory[]> => {
     const { data, error } = await supabase
       .from("blog_categories")
       .select("id,slug,name,description,sort_order")
       .order("sort_order", { ascending: true });
-    if (error) console.error('Supabase query error:', error.message || error);
+    if (error) console.error("Supabase query error:", error.message || error);
     return (data ?? []) as BlogCategory[];
   },
 });
@@ -433,10 +430,8 @@ export function blogPostsQuery(categorySlug?: string) {
         .select("*, blog_categories(name, slug)")
         .eq("is_published", true);
       if (categorySlug) query = query.eq("blog_categories.slug", categorySlug);
-      const { data, error } = await query
-        .order("published_at", { ascending: false })
-        .limit(60);
-      if (error) console.error('Supabase query error:', error.message || error);
+      const { data, error } = await query.order("published_at", { ascending: false }).limit(60);
+      if (error) console.error("Supabase query error:", error.message || error);
       const rows = (data ?? []) as unknown as BlogPostWithCategory[];
       return categorySlug ? rows.filter((r) => r.blog_categories?.slug === categorySlug) : rows;
     },
@@ -454,7 +449,7 @@ export function blogPostBySlugQuery(slug: string) {
         .eq("slug", slug)
         .eq("is_published", true)
         .maybeSingle();
-      if (error) console.error('Supabase query error:', error.message || error);
+      if (error) console.error("Supabase query error:", error.message || error);
       return (data ?? null) as unknown as BlogPostWithCategory | null;
     },
   });
@@ -463,13 +458,13 @@ export function blogPostBySlugQuery(slug: string) {
 export const allBlogPostsAdminQuery = queryOptions({
   queryKey: ["blog_posts", "admin"],
   staleTime: 5 * 60 * 1000,
-    queryFn: async (): Promise<BlogPostWithCategory[]> => {
+  queryFn: async (): Promise<BlogPostWithCategory[]> => {
     const { data, error } = await supabase
       .from("blog_posts")
       .select("*, blog_categories(name, slug)")
       .order("created_at", { ascending: false })
       .limit(200);
-    if (error) console.error('Supabase query error:', error.message || error);
+    if (error) console.error("Supabase query error:", error.message || error);
     return (data ?? []) as unknown as BlogPostWithCategory[];
   },
 });
@@ -477,9 +472,12 @@ export const allBlogPostsAdminQuery = queryOptions({
 export const allProfilesAdminQuery = queryOptions({
   queryKey: ["admin", "profiles"],
   staleTime: 5 * 60 * 1000,
-    queryFn: async () => {
-    const { data, error } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
-    if (error) console.error('Supabase query error:', error.message || error);
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) console.error("Supabase query error:", error.message || error);
     return data ?? [];
   },
 });
@@ -487,9 +485,9 @@ export const allProfilesAdminQuery = queryOptions({
 export const allUserRolesAdminQuery = queryOptions({
   queryKey: ["admin", "user_roles"],
   staleTime: 5 * 60 * 1000,
-    queryFn: async () => {
+  queryFn: async () => {
     const { data, error } = await supabase.from("user_roles").select("*");
-    if (error) console.error('Supabase query error:', error.message || error);
+    if (error) console.error("Supabase query error:", error.message || error);
     return data ?? [];
   },
 });
@@ -497,7 +495,7 @@ export const allUserRolesAdminQuery = queryOptions({
 export const userRoleQuery = queryOptions({
   queryKey: ["user_role"],
   staleTime: 5 * 60 * 1000,
-    queryFn: async (): Promise<"admin" | "moderator" | null> => {
+  queryFn: async (): Promise<"admin" | "moderator" | null> => {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) return null;
     const { data, error } = await supabase
@@ -512,12 +510,10 @@ export const userRoleQuery = queryOptions({
   },
 });
 
-
-
 export const myProfileQuery = queryOptions({
   queryKey: ["profile", "mine"],
   staleTime: 5 * 60 * 1000,
-    queryFn: async () => {
+  queryFn: async () => {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) return null;
     const { data, error } = await supabase
@@ -525,7 +521,7 @@ export const myProfileQuery = queryOptions({
       .select("*")
       .eq("id", userData.user.id)
       .maybeSingle();
-    if (error) console.error('Supabase query error:', error.message || error);
+    if (error) console.error("Supabase query error:", error.message || error);
     return data;
   },
 });
@@ -539,7 +535,7 @@ export const shopCategoriesQuery = queryOptions({
       .select("*")
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: false });
-    if (error) console.error('Supabase query error:', error.message || error);
+    if (error) console.error("Supabase query error:", error.message || error);
     return data as unknown as { id: string; name: string; slug: string; sort_order: number }[];
   },
 });
@@ -553,7 +549,7 @@ export const shopLocationsQuery = queryOptions({
       .select("*")
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: false });
-    if (error) console.error('Supabase query error:', error.message || error);
+    if (error) console.error("Supabase query error:", error.message || error);
     return data as unknown as { id: string; name: string; slug: string; sort_order: number }[];
   },
 });

@@ -14,7 +14,6 @@ import { formatPrice } from "@/lib/pet";
 import {
   allMembershipPlansQuery,
   allMembershipRequestsQuery,
-
   membershipSettingsQuery,
   allProfilesAdminQuery,
   allUserRolesAdminQuery,
@@ -28,7 +27,8 @@ import {
 import React from "react";
 
 const TITLE = "Quản trị thành viên — 1Pet.Asia";
-const DESC = "Khu vực quản trị 1Pet.Asia: tạo gói thành viên, cấu hình thanh toán và duyệt đơn đăng ký.";
+const DESC =
+  "Khu vực quản trị 1Pet.Asia: tạo gói thành viên, cấu hình thanh toán và duyệt đơn đăng ký.";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -50,7 +50,7 @@ function AdminPage() {
   const { user, loading } = useAuth();
   const roleQ = useQuery({ ...userRoleQuery, enabled: !!user });
   const [activeTab, setActiveTab] = useState("requests");
-  
+
   const role = roleQ.data;
   const isAdmin = role === "admin";
 
@@ -72,7 +72,9 @@ function AdminPage() {
         <main className="mx-auto max-w-md px-5 py-24 text-center">
           <h1 className="text-3xl">Khu vực quản trị</h1>
           <p className="mt-2 text-ink-soft">
-            {user ? "Tài khoản của bạn không có quyền truy cập khu vực này." : "Vui lòng đăng nhập bằng tài khoản quản trị/nhân sự."}
+            {user
+              ? "Tài khoản của bạn không có quyền truy cập khu vực này."
+              : "Vui lòng đăng nhập bằng tài khoản quản trị/nhân sự."}
           </p>
           <Link
             to={user ? "/quan-ly" : "/dang-nhap"}
@@ -95,10 +97,10 @@ function AdminPage() {
     { id: "settings", label: "Cài đặt thanh toán", show: isAdmin },
     { id: "locations", label: "Địa điểm & Danh mục", show: isAdmin },
     { id: "users", label: "Phân quyền & User", show: isAdmin },
-  ].filter(t => t.show);
+  ].filter((t) => t.show);
 
   // If activeTab is hidden from this role, fallback
-  if (!TABS.find(t => t.id === activeTab)) {
+  if (!TABS.find((t) => t.id === activeTab)) {
     setActiveTab(TABS[0]?.id || "requests");
   }
 
@@ -110,7 +112,9 @@ function AdminPage() {
         <aside className="w-full shrink-0 space-y-1 md:w-64">
           <div className="mb-4 px-3">
             <p className="font-hand text-2xl text-terra-deep">quản trị</p>
-            <p className="text-xs text-ink-soft font-medium uppercase tracking-wider">{isAdmin ? "Super Admin" : "Moderator"}</p>
+            <p className="text-xs text-ink-soft font-medium uppercase tracking-wider">
+              {isAdmin ? "Super Admin" : "Moderator"}
+            </p>
           </div>
           {TABS.map((tab) => (
             <button
@@ -222,7 +226,10 @@ function PlansManager({ userId: _userId }: { userId: string }) {
         <h2 className="text-xl">Quản lý gói thành viên</h2>
         <button
           type="button"
-          onClick={() => { setEditingPlan(null); setShowForm(true); }}
+          onClick={() => {
+            setEditingPlan(null);
+            setShowForm(true);
+          }}
           className="rounded-full bg-terra px-4 py-2 text-sm font-semibold text-primary-foreground"
         >
           + Tạo gói mới
@@ -232,7 +239,10 @@ function PlansManager({ userId: _userId }: { userId: string }) {
       {(showForm || editingPlan) && (
         <PlanForm
           plan={editingPlan}
-          onClose={() => { setShowForm(false); setEditingPlan(null); }}
+          onClose={() => {
+            setShowForm(false);
+            setEditingPlan(null);
+          }}
           onSaved={() => {
             void qc.invalidateQueries({ queryKey: ["membership_plans"] });
             setShowForm(false);
@@ -244,7 +254,9 @@ function PlansManager({ userId: _userId }: { userId: string }) {
       {plansQ.isLoading ? (
         <div className="mt-4 h-24 animate-pulse rounded-3xl bg-sand-deep/60" />
       ) : plans.length === 0 ? (
-        <p className="mt-4 text-sm text-ink-soft">Chưa có gói nào. Bấm "+ Tạo gói mới" để bắt đầu.</p>
+        <p className="mt-4 text-sm text-ink-soft">
+          Chưa có gói nào. Bấm "+ Tạo gói mới" để bắt đầu.
+        </p>
       ) : (
         <div className="mt-4 space-y-3">
           {plans.map((plan) => (
@@ -261,15 +273,21 @@ function PlansManager({ userId: _userId }: { userId: string }) {
                         Nổi bật
                       </span>
                     )}
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${plan.is_active ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${plan.is_active ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}
+                    >
                       {plan.is_active ? "Đang bán" : "Tạm dừng"}
                     </span>
                   </div>
                   <p className="text-sm text-ink-soft mt-0.5">
-                    {formatPrice(plan.price_amount)} / {plan.period_label} • {plan.duration_days} ngày
+                    {formatPrice(plan.price_amount)} / {plan.period_label} • {plan.duration_days}{" "}
+                    ngày
                   </p>
                   {plan.features.length > 0 && (
-                    <p className="text-xs text-ink-soft mt-1">{plan.features.slice(0, 3).join(" • ")}{plan.features.length > 3 ? " ..." : ""}</p>
+                    <p className="text-xs text-ink-soft mt-1">
+                      {plan.features.slice(0, 3).join(" • ")}
+                      {plan.features.length > 3 ? " ..." : ""}
+                    </p>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
@@ -345,7 +363,10 @@ function PlanForm({
         price_amount: price,
         duration_days: Number(form.duration_days) || 365,
         period_label: form.period_label.trim() || "năm",
-        features: form.features.split("\n").map((f) => f.trim()).filter(Boolean),
+        features: form.features
+          .split("\n")
+          .map((f) => f.trim())
+          .filter(Boolean),
         is_featured: form.is_featured,
         is_active: form.is_active,
         sort_order: Number(form.sort_order) || 0,
@@ -376,69 +397,142 @@ function PlanForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block sm:col-span-2">
           <span className="text-sm font-medium">Tên gói *</span>
-          <input className={inputCls} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="VD: Gói Tiêu Chuẩn" />
+          <input
+            className={inputCls}
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            placeholder="VD: Gói Tiêu Chuẩn"
+          />
         </label>
         <label className="block sm:col-span-2">
           <span className="text-sm font-medium">Mô tả</span>
-          <input className={inputCls} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Mô tả ngắn về gói" />
+          <input
+            className={inputCls}
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            placeholder="Mô tả ngắn về gói"
+          />
         </label>
         <label className="block">
           <span className="text-sm font-medium">Giá (VND) *</span>
-          <input className={inputCls} inputMode="numeric" value={form.price_amount} onChange={(e) => setForm({ ...form, price_amount: e.target.value })} />
+          <input
+            className={inputCls}
+            inputMode="numeric"
+            value={form.price_amount}
+            onChange={(e) => setForm({ ...form, price_amount: e.target.value })}
+          />
         </label>
         <label className="block">
           <span className="text-sm font-medium">Thời hạn (ngày)</span>
-          <input className={inputCls} inputMode="numeric" value={form.duration_days} onChange={(e) => setForm({ ...form, duration_days: e.target.value })} />
+          <input
+            className={inputCls}
+            inputMode="numeric"
+            value={form.duration_days}
+            onChange={(e) => setForm({ ...form, duration_days: e.target.value })}
+          />
         </label>
         <label className="block">
           <span className="text-sm font-medium">Nhãn chu kỳ</span>
-          <input className={inputCls} value={form.period_label} onChange={(e) => setForm({ ...form, period_label: e.target.value })} placeholder="VD: năm / tháng / 6 tháng" />
+          <input
+            className={inputCls}
+            value={form.period_label}
+            onChange={(e) => setForm({ ...form, period_label: e.target.value })}
+            placeholder="VD: năm / tháng / 6 tháng"
+          />
         </label>
         <label className="block">
           <span className="text-sm font-medium">Thứ tự hiển thị</span>
-          <input className={inputCls} inputMode="numeric" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: e.target.value })} />
+          <input
+            className={inputCls}
+            inputMode="numeric"
+            value={form.sort_order}
+            onChange={(e) => setForm({ ...form, sort_order: e.target.value })}
+          />
         </label>
 
         {/* Cấu hình Quota */}
         <div className="col-span-1 sm:col-span-2 mt-2 rounded-xl bg-black/5 p-4 ring-1 ring-border">
           <div className="mb-4">
             <h4 className="font-semibold">Cấu hình Quota (Quyền lợi kích hoạt)</h4>
-            <p className="text-xs text-ink-soft">Lưu ý: Nhập -1 nếu không giới hạn (áp dụng cho Quota Sản phẩm).</p>
+            <p className="text-xs text-ink-soft">
+              Lưu ý: Nhập -1 nếu không giới hạn (áp dụng cho Quota Sản phẩm).
+            </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
             <label className="block">
               <span className="text-sm font-medium">Quota Ưu đãi</span>
-              <input className={inputCls} inputMode="numeric" value={form.max_deals} onChange={(e) => setForm({ ...form, max_deals: e.target.value })} />
+              <input
+                className={inputCls}
+                inputMode="numeric"
+                value={form.max_deals}
+                onChange={(e) => setForm({ ...form, max_deals: e.target.value })}
+              />
             </label>
             <label className="block">
               <span className="text-sm font-medium">Quota Sản phẩm</span>
-              <input className={inputCls} inputMode="numeric" value={form.max_products} onChange={(e) => setForm({ ...form, max_products: e.target.value })} />
+              <input
+                className={inputCls}
+                inputMode="numeric"
+                value={form.max_products}
+                onChange={(e) => setForm({ ...form, max_products: e.target.value })}
+              />
             </label>
             <label className="block">
               <span className="text-sm font-medium">Đẩy Nổi bật (số lần)</span>
-              <input className={inputCls} inputMode="numeric" value={form.featured_slots} onChange={(e) => setForm({ ...form, featured_slots: e.target.value })} />
+              <input
+                className={inputCls}
+                inputMode="numeric"
+                value={form.featured_slots}
+                onChange={(e) => setForm({ ...form, featured_slots: e.target.value })}
+              />
             </label>
             <label className="block">
               <span className="text-sm font-medium">Quota Hợp tác kinh doanh</span>
-              <input className={inputCls} inputMode="numeric" value={form.max_partner_posts} onChange={(e) => setForm({ ...form, max_partner_posts: e.target.value })} />
+              <input
+                className={inputCls}
+                inputMode="numeric"
+                value={form.max_partner_posts}
+                onChange={(e) => setForm({ ...form, max_partner_posts: e.target.value })}
+              />
             </label>
             <label className="block">
               <span className="text-sm font-medium">Quota Bài Blog</span>
-              <input className={inputCls} inputMode="numeric" value={form.max_blog_posts} onChange={(e) => setForm({ ...form, max_blog_posts: e.target.value })} />
+              <input
+                className={inputCls}
+                inputMode="numeric"
+                value={form.max_blog_posts}
+                onChange={(e) => setForm({ ...form, max_blog_posts: e.target.value })}
+              />
             </label>
           </div>
         </div>
 
         <label className="block sm:col-span-2">
           <span className="text-sm font-medium">Tính năng (mỗi dòng một tính năng)</span>
-          <textarea rows={4} className={inputCls} value={form.features} onChange={(e) => setForm({ ...form, features: e.target.value })} placeholder={"Landing page shop\nHiển thị danh sách\nHuy hiệu xác minh"} />
+          <textarea
+            rows={4}
+            className={inputCls}
+            value={form.features}
+            onChange={(e) => setForm({ ...form, features: e.target.value })}
+            placeholder={"Landing page shop\nHiển thị danh sách\nHuy hiệu xác minh"}
+          />
         </label>
         <label className="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" checked={form.is_featured} onChange={(e) => setForm({ ...form, is_featured: e.target.checked })} className="size-4 accent-terra" />
+          <input
+            type="checkbox"
+            checked={form.is_featured}
+            onChange={(e) => setForm({ ...form, is_featured: e.target.checked })}
+            className="size-4 accent-terra"
+          />
           <span className="text-sm font-medium">Gói nổi bật (highlight)</span>
         </label>
         <label className="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} className="size-4 accent-terra" />
+          <input
+            type="checkbox"
+            checked={form.is_active}
+            onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
+            className="size-4 accent-terra"
+          />
           <span className="text-sm font-medium">Đang bán (active)</span>
         </label>
       </div>
@@ -451,7 +545,11 @@ function PlanForm({
         >
           {save.isPending ? "Đang lưu..." : plan ? "Cập nhật gói" : "Tạo gói"}
         </button>
-        <button type="button" onClick={onClose} className="rounded-full bg-secondary px-5 py-2.5 text-sm font-semibold text-ink">
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-full bg-secondary px-5 py-2.5 text-sm font-semibold text-ink"
+        >
           Huỷ
         </button>
       </div>
@@ -483,13 +581,17 @@ function BankSettingsForm({ userId }: { userId: string }) {
     mutationFn: async () => {
       const payload = {
         bank_info: form.bank_info.trim() || null,
-        refund_note: form.refund_note.trim() || "Cam kết hoàn phí 100% trong vòng 1 năm nếu bạn không hài lòng.",
+        refund_note:
+          form.refund_note.trim() ||
+          "Cam kết hoàn phí 100% trong vòng 1 năm nếu bạn không hài lòng.",
         instructions: form.instructions.trim() || null,
       };
       const existing = settingsQ.data;
       const { error } = existing
         ? await supabase.from("membership_settings").update(payload).eq("id", existing.id)
-        : await supabase.from("membership_settings").insert({ ...payload, price_amount: 0, currency: "VND", period_label: "năm" });
+        : await supabase
+            .from("membership_settings")
+            .insert({ ...payload, price_amount: 0, currency: "VND", period_label: "năm" });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -502,19 +604,37 @@ function BankSettingsForm({ userId }: { userId: string }) {
   return (
     <section className="mt-6 rounded-3xl bg-background p-6 ring-1 ring-border">
       <h2 className="text-xl">Cài đặt chung</h2>
-      <p className="text-sm text-ink-soft mt-1">Thông tin ngân hàng và cam kết hoàn phí hiển thị trên trang kích hoạt.</p>
+      <p className="text-sm text-ink-soft mt-1">
+        Thông tin ngân hàng và cam kết hoàn phí hiển thị trên trang kích hoạt.
+      </p>
       <div className="mt-4 grid gap-4">
         <label className="block">
           <span className="text-sm font-medium">Thông tin ngân hàng</span>
-          <textarea rows={3} className={inputCls} value={form.bank_info} onChange={(e) => setForm({ ...form, bank_info: e.target.value })} placeholder="Tên TK: ...\nSố TK: ...\nNgân hàng: TPBank" />
+          <textarea
+            rows={3}
+            className={inputCls}
+            value={form.bank_info}
+            onChange={(e) => setForm({ ...form, bank_info: e.target.value })}
+            placeholder="Tên TK: ...\nSố TK: ...\nNgân hàng: TPBank"
+          />
         </label>
         <label className="block">
           <span className="text-sm font-medium">Cam kết hoàn phí</span>
-          <textarea rows={2} className={inputCls} value={form.refund_note} onChange={(e) => setForm({ ...form, refund_note: e.target.value })} />
+          <textarea
+            rows={2}
+            className={inputCls}
+            value={form.refund_note}
+            onChange={(e) => setForm({ ...form, refund_note: e.target.value })}
+          />
         </label>
         <label className="block">
           <span className="text-sm font-medium">Hướng dẫn thêm</span>
-          <textarea rows={2} className={inputCls} value={form.instructions} onChange={(e) => setForm({ ...form, instructions: e.target.value })} />
+          <textarea
+            rows={2}
+            className={inputCls}
+            value={form.instructions}
+            onChange={(e) => setForm({ ...form, instructions: e.target.value })}
+          />
         </label>
       </div>
       <button
@@ -536,7 +656,9 @@ function RequestsTable() {
   const requestsQ = useQuery(allMembershipRequestsQuery);
   const plansQ = useQuery(allMembershipPlansQuery);
   const [notes, setNotes] = useState<Record<string, string>>({});
-  const [filterStatus, setFilterStatus] = useState<"all" | "pending" | "approved" | "rejected">("all");
+  const [filterStatus, setFilterStatus] = useState<"all" | "pending" | "approved" | "rejected">(
+    "all",
+  );
 
   const review = useMutation({
     mutationFn: async ({
@@ -566,9 +688,12 @@ function RequestsTable() {
         .eq("id", req.id);
       if (error) throw error;
       if (status === "approved" && req.user_id) {
-        await supabase.from("profiles").update({
-          membership_until: expires.toISOString(),
-        } as any).eq("id", req.user_id);
+        await supabase
+          .from("profiles")
+          .update({
+            membership_until: expires.toISOString(),
+          } as any)
+          .eq("id", req.user_id);
       }
     },
     onSuccess: () => {
@@ -579,9 +704,8 @@ function RequestsTable() {
   });
 
   const allRequests = requestsQ.data ?? [];
-  const requests = filterStatus === "all"
-    ? allRequests
-    : allRequests.filter((r) => r.status === filterStatus);
+  const requests =
+    filterStatus === "all" ? allRequests : allRequests.filter((r) => r.status === filterStatus);
 
   const planMap = Object.fromEntries((plansQ.data ?? []).map((p) => [p.id, p]));
 
@@ -597,9 +721,17 @@ function RequestsTable() {
               onClick={() => setFilterStatus(s)}
               className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${filterStatus === s ? "bg-background shadow" : "hover:bg-background/60"}`}
             >
-              {s === "all" ? "Tất cả" : s === "pending" ? "Chờ duyệt" : s === "approved" ? "Đã duyệt" : "Từ chối"}
+              {s === "all"
+                ? "Tất cả"
+                : s === "pending"
+                  ? "Chờ duyệt"
+                  : s === "approved"
+                    ? "Đã duyệt"
+                    : "Từ chối"}
               {s !== "all" && (
-                <span className="ml-1 opacity-60">({allRequests.filter((r) => r.status === s).length})</span>
+                <span className="ml-1 opacity-60">
+                  ({allRequests.filter((r) => r.status === s).length})
+                </span>
               )}
             </button>
           ))}
@@ -631,7 +763,11 @@ function RequestsTable() {
                     </div>
                     <p className="text-xs text-ink-soft">
                       {formatPrice(r.amount)} • {new Date(r.created_at).toLocaleString("vi-VN")} •{" "}
-                      {r.status === "approved" ? "✅ Đã duyệt" : r.status === "rejected" ? "❌ Từ chối" : "⏳ Chờ duyệt"}
+                      {r.status === "approved"
+                        ? "✅ Đã duyệt"
+                        : r.status === "rejected"
+                          ? "❌ Từ chối"
+                          : "⏳ Chờ duyệt"}
                     </p>
                     {r.note ? <p className="mt-2 text-sm">{r.note}</p> : null}
                   </div>
@@ -647,7 +783,14 @@ function RequestsTable() {
                     <button
                       type="button"
                       disabled={review.isPending}
-                      onClick={() => review.mutate({ req: r, status: "approved", durationDays, plan: plan || null })}
+                      onClick={() =>
+                        review.mutate({
+                          req: r,
+                          status: "approved",
+                          durationDays,
+                          plan: plan || null,
+                        })
+                      }
                       className="rounded-full bg-terra px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
                     >
                       Duyệt ({plan ? `${plan.period_label}` : "1 năm"})
@@ -655,7 +798,14 @@ function RequestsTable() {
                     <button
                       type="button"
                       disabled={review.isPending}
-                      onClick={() => review.mutate({ req: r, status: "rejected", durationDays: 0, plan: plan || null })}
+                      onClick={() =>
+                        review.mutate({
+                          req: r,
+                          status: "rejected",
+                          durationDays: 0,
+                          plan: plan || null,
+                        })
+                      }
                       className="rounded-full bg-secondary px-4 py-2 text-sm font-semibold text-ink disabled:opacity-60"
                     >
                       Từ chối
@@ -664,7 +814,9 @@ function RequestsTable() {
                 ) : (
                   <p className="mt-3 text-xs text-ink-soft">
                     {r.admin_note ? `Ghi chú: ${r.admin_note}` : null}
-                    {r.expires_at ? ` • Hiệu lực đến ${new Date(r.expires_at).toLocaleDateString("vi-VN")}` : ""}
+                    {r.expires_at
+                      ? ` • Hiệu lực đến ${new Date(r.expires_at).toLocaleDateString("vi-VN")}`
+                      : ""}
                   </p>
                 )}
               </li>
@@ -683,15 +835,21 @@ function UserManager() {
 
   // Fetch ALL shops with owner_id to support multi-shop per user
   const shopsQ = useQuery({
-    queryKey: ['admin', 'all-shops-owners'],
+    queryKey: ["admin", "all-shops-owners"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('shops')
-        .select('owner_id, id, name, slug, is_published')
-        .not('owner_id', 'is', null);
+        .from("shops")
+        .select("owner_id, id, name, slug, is_published")
+        .not("owner_id", "is", null);
       if (error) throw error;
-      return data as { owner_id: string; id: string; name: string; slug: string; is_published: boolean }[];
-    }
+      return data as {
+        owner_id: string;
+        id: string;
+        name: string;
+        slug: string;
+        is_published: boolean;
+      }[];
+    },
   });
 
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
@@ -699,13 +857,27 @@ function UserManager() {
   const [search, setSearch] = useState("");
 
   const setRole = useMutation({
-    mutationFn: async ({ userId, newRole, oldRole }: { userId: string; newRole: string | null; oldRole: string | null }) => {
+    mutationFn: async ({
+      userId,
+      newRole,
+      oldRole,
+    }: {
+      userId: string;
+      newRole: string | null;
+      oldRole: string | null;
+    }) => {
       if (newRole) {
-        const { error } = await supabase.from("user_roles").upsert({ user_id: userId, role: newRole as any }, { onConflict: "user_id, role" });
+        const { error } = await supabase
+          .from("user_roles")
+          .upsert({ user_id: userId, role: newRole as any }, { onConflict: "user_id, role" });
         if (error) throw error;
       }
       if (oldRole && oldRole !== newRole) {
-        const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", oldRole as any);
+        const { error } = await supabase
+          .from("user_roles")
+          .delete()
+          .eq("user_id", userId)
+          .eq("role", oldRole as any);
         if (error) throw error;
       }
     },
@@ -718,11 +890,18 @@ function UserManager() {
 
   const consumeBlogQuota = useMutation({
     mutationFn: async (userId: string) => {
-      const { data, error: fetchErr } = await supabase.from("profiles").select("quota_blog_posts").eq("id", userId).single();
+      const { data, error: fetchErr } = await supabase
+        .from("profiles")
+        .select("quota_blog_posts")
+        .eq("id", userId)
+        .single();
       if (fetchErr) throw fetchErr;
       const current = (data as any).quota_blog_posts || 0;
       if (current <= 0) throw new Error("Thành viên không còn quota blog.");
-      const { error } = await supabase.from("profiles").update({ quota_blog_posts: current - 1 } as any).eq("id", userId);
+      const { error } = await supabase
+        .from("profiles")
+        .update({ quota_blog_posts: current - 1 } as any)
+        .eq("id", userId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -762,17 +941,24 @@ function UserManager() {
   const rolesMap = new Map((rolesQ.data ?? []).map((r) => [r.user_id, r.role]));
 
   // Build map userId -> shops[]
-  const shopsMap = new Map<string, { id: string; name: string; slug: string; is_published: boolean }[]>();
-  (shopsQ.data ?? []).forEach(s => {
+  const shopsMap = new Map<
+    string,
+    { id: string; name: string; slug: string; is_published: boolean }[]
+  >();
+  (shopsQ.data ?? []).forEach((s) => {
     if (!s.owner_id) return;
     const existing = shopsMap.get(s.owner_id) ?? [];
-    shopsMap.set(s.owner_id, [...existing, { id: s.id, name: s.name, slug: s.slug, is_published: s.is_published }]);
+    shopsMap.set(s.owner_id, [
+      ...existing,
+      { id: s.id, name: s.name, slug: s.slug, is_published: s.is_published },
+    ]);
   });
 
   const filtered = search
-    ? profiles.filter(p =>
-        ((p as any).full_name ?? "").toLowerCase().includes(search.toLowerCase()) ||
-        p.id.includes(search)
+    ? profiles.filter(
+        (p) =>
+          ((p as any).full_name ?? "").toLowerCase().includes(search.toLowerCase()) ||
+          p.id.includes(search),
       )
     : profiles;
 
@@ -784,7 +970,7 @@ function UserManager() {
           className="min-w-0 w-60 rounded-xl border border-border bg-sand-deep/30 px-4 py-2 text-sm outline-none focus:border-terra"
           placeholder="Tìm theo tên, ID..."
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
         />
       </div>
       {profilesQ.isLoading ? (
@@ -817,7 +1003,11 @@ function UserManager() {
                   <React.Fragment key={p.id}>
                     <tr className="border-b border-border/50 hover:bg-sand-deep/10 transition-colors">
                       <td className="py-3 pr-4">
-                        <p className="font-semibold">{profile.full_name || <span className="italic text-ink-soft">Chưa có tên</span>}</p>
+                        <p className="font-semibold">
+                          {profile.full_name || (
+                            <span className="italic text-ink-soft">Chưa có tên</span>
+                          )}
+                        </p>
                         <p className="text-xs font-mono text-ink-soft">{p.id.slice(0, 14)}…</p>
                         <p className="text-xs text-ink-soft">
                           Tham gia: {new Date(p.created_at).toLocaleDateString("vi-VN")}
@@ -826,7 +1016,7 @@ function UserManager() {
                       <td className="py-3 pr-4">
                         {userShops.length > 0 ? (
                           <div className="flex flex-col gap-1">
-                            {userShops.map(s => (
+                            {userShops.map((s) => (
                               <a
                                 key={s.id}
                                 href={`/shop/${s.slug}`}
@@ -836,7 +1026,9 @@ function UserManager() {
                               >
                                 {s.name}
                                 {!s.is_published && (
-                                  <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-amber-700">ẩn</span>
+                                  <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-amber-700">
+                                    ẩn
+                                  </span>
                                 )}
                               </a>
                             ))}
@@ -847,7 +1039,9 @@ function UserManager() {
                       </td>
                       <td className="py-3 pr-4">
                         {profile.membership_until ? (
-                          <span className={`text-xs font-semibold ${new Date(profile.membership_until) > new Date() ? "text-emerald-700" : "text-rose-600"}`}>
+                          <span
+                            className={`text-xs font-semibold ${new Date(profile.membership_until) > new Date() ? "text-emerald-700" : "text-rose-600"}`}
+                          >
                             {new Date(profile.membership_until).toLocaleDateString("vi-VN")}
                             {new Date(profile.membership_until) < new Date() ? " (hết hạn)" : ""}
                           </span>
@@ -858,12 +1052,18 @@ function UserManager() {
                       <td className="py-3 pr-4">
                         {(profile.quota_blog_posts ?? 0) > 0 ? (
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold text-terra">{profile.quota_blog_posts} bài</span>
+                            <span className="font-semibold text-terra">
+                              {profile.quota_blog_posts} bài
+                            </span>
                             <button
                               type="button"
                               disabled={consumeBlogQuota.isPending}
                               onClick={() => {
-                                if (confirm(`Xác nhận đã đăng bài cho ${profile.full_name || "thành viên này"} và trừ 1 quota?`)) {
+                                if (
+                                  confirm(
+                                    `Xác nhận đã đăng bài cho ${profile.full_name || "thành viên này"} và trừ 1 quota?`,
+                                  )
+                                ) {
                                   consumeBlogQuota.mutate(p.id);
                                 }
                               }}
@@ -878,9 +1078,13 @@ function UserManager() {
                       </td>
                       <td className="py-3 pr-4">
                         {isAdminRole ? (
-                          <span className="rounded-full bg-terra/10 px-2.5 py-1 text-xs font-semibold text-terra">Admin</span>
+                          <span className="rounded-full bg-terra/10 px-2.5 py-1 text-xs font-semibold text-terra">
+                            Admin
+                          </span>
                         ) : isMod ? (
-                          <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">Moderator</span>
+                          <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                            Moderator
+                          </span>
                         ) : (
                           <span className="text-xs text-ink-soft">Thành viên</span>
                         )}
@@ -892,7 +1096,11 @@ function UserManager() {
                             value={currentRole || ""}
                             onChange={(e) => {
                               const val = e.target.value;
-                              setRole.mutate({ userId: p.id, newRole: val || null, oldRole: currentRole });
+                              setRole.mutate({
+                                userId: p.id,
+                                newRole: val || null,
+                                oldRole: currentRole,
+                              });
                             }}
                           >
                             <option value="">Thành viên</option>
@@ -911,7 +1119,9 @@ function UserManager() {
                                   quota_featured_slots: profile.quota_featured_slots || 0,
                                   quota_partner_posts: profile.quota_partner_posts || 0,
                                   quota_blog_posts: profile.quota_blog_posts || 0,
-                                  membership_until: profile.membership_until ? profile.membership_until.slice(0, 10) : "",
+                                  membership_until: profile.membership_until
+                                    ? profile.membership_until.slice(0, 10)
+                                    : "",
                                 });
                               }
                             }}
@@ -934,49 +1144,110 @@ function UserManager() {
                     </tr>
                     {isEditing && (
                       <tr>
-                        <td colSpan={6} className="bg-sand-deep/10 px-4 py-4 border-b border-border">
+                        <td
+                          colSpan={6}
+                          className="bg-sand-deep/10 px-4 py-4 border-b border-border"
+                        >
                           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                             <label className="block">
                               <span className="text-xs font-medium text-ink-soft">Họ và tên</span>
                               <input
                                 className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra"
                                 value={editForm.full_name}
-                                onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
+                                onChange={(e) =>
+                                  setEditForm({ ...editForm, full_name: e.target.value })
+                                }
                               />
                             </label>
                             <label className="block">
-                              <span className="text-xs font-medium text-ink-soft">Hạn thành viên</span>
+                              <span className="text-xs font-medium text-ink-soft">
+                                Hạn thành viên
+                              </span>
                               <input
                                 type="date"
                                 className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra"
                                 value={editForm.membership_until}
-                                onChange={(e) => setEditForm({ ...editForm, membership_until: e.target.value })}
+                                onChange={(e) =>
+                                  setEditForm({ ...editForm, membership_until: e.target.value })
+                                }
                               />
                             </label>
                             <label className="block">
-                              <span className="text-xs font-medium text-ink-soft">Quota Ưu đãi</span>
-                              <input type="number" className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra"
-                                value={editForm.quota_deals} onChange={(e) => setEditForm({ ...editForm, quota_deals: Number(e.target.value) })} />
+                              <span className="text-xs font-medium text-ink-soft">
+                                Quota Ưu đãi
+                              </span>
+                              <input
+                                type="number"
+                                className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra"
+                                value={editForm.quota_deals}
+                                onChange={(e) =>
+                                  setEditForm({ ...editForm, quota_deals: Number(e.target.value) })
+                                }
+                              />
                             </label>
                             <label className="block">
-                              <span className="text-xs font-medium text-ink-soft">Quota Sản phẩm</span>
-                              <input type="number" className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra"
-                                value={editForm.quota_products} onChange={(e) => setEditForm({ ...editForm, quota_products: Number(e.target.value) })} />
+                              <span className="text-xs font-medium text-ink-soft">
+                                Quota Sản phẩm
+                              </span>
+                              <input
+                                type="number"
+                                className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra"
+                                value={editForm.quota_products}
+                                onChange={(e) =>
+                                  setEditForm({
+                                    ...editForm,
+                                    quota_products: Number(e.target.value),
+                                  })
+                                }
+                              />
                             </label>
                             <label className="block">
-                              <span className="text-xs font-medium text-ink-soft">Quota Đẩy nổi bật</span>
-                              <input type="number" className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra"
-                                value={editForm.quota_featured_slots} onChange={(e) => setEditForm({ ...editForm, quota_featured_slots: Number(e.target.value) })} />
+                              <span className="text-xs font-medium text-ink-soft">
+                                Quota Đẩy nổi bật
+                              </span>
+                              <input
+                                type="number"
+                                className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra"
+                                value={editForm.quota_featured_slots}
+                                onChange={(e) =>
+                                  setEditForm({
+                                    ...editForm,
+                                    quota_featured_slots: Number(e.target.value),
+                                  })
+                                }
+                              />
                             </label>
                             <label className="block">
-                              <span className="text-xs font-medium text-ink-soft">Quota Cơ hội KD</span>
-                              <input type="number" className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra"
-                                value={editForm.quota_partner_posts} onChange={(e) => setEditForm({ ...editForm, quota_partner_posts: Number(e.target.value) })} />
+                              <span className="text-xs font-medium text-ink-soft">
+                                Quota Cơ hội KD
+                              </span>
+                              <input
+                                type="number"
+                                className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra"
+                                value={editForm.quota_partner_posts}
+                                onChange={(e) =>
+                                  setEditForm({
+                                    ...editForm,
+                                    quota_partner_posts: Number(e.target.value),
+                                  })
+                                }
+                              />
                             </label>
                             <label className="block">
-                              <span className="text-xs font-medium text-ink-soft">Quota Bài Blog</span>
-                              <input type="number" className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra"
-                                value={editForm.quota_blog_posts} onChange={(e) => setEditForm({ ...editForm, quota_blog_posts: Number(e.target.value) })} />
+                              <span className="text-xs font-medium text-ink-soft">
+                                Quota Bài Blog
+                              </span>
+                              <input
+                                type="number"
+                                className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-terra"
+                                value={editForm.quota_blog_posts}
+                                onChange={(e) =>
+                                  setEditForm({
+                                    ...editForm,
+                                    quota_blog_posts: Number(e.target.value),
+                                  })
+                                }
+                              />
                             </label>
                             <div className="flex items-end pb-1">
                               <button
@@ -1018,12 +1289,16 @@ function CategoryLocationManager() {
 
   const addCategory = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("shop_categories" as any).insert({ name: catName, slug: catSlug, sort_order: catSort });
+      const { error } = await supabase
+        .from("shop_categories" as any)
+        .insert({ name: catName, slug: catSlug, sort_order: catSort });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Thêm danh mục thành công");
-      setCatName(""); setCatSlug(""); setCatSort(0);
+      setCatName("");
+      setCatSlug("");
+      setCatSort(0);
       void qc.invalidateQueries({ queryKey: ["shop_categories"] });
     },
     onError: (e) => toast.error(e.message),
@@ -1031,23 +1306,30 @@ function CategoryLocationManager() {
 
   const deleteCategory = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("shop_categories" as any).delete().eq("id", id);
+      const { error } = await supabase
+        .from("shop_categories" as any)
+        .delete()
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Đã xóa danh mục");
       void qc.invalidateQueries({ queryKey: ["shop_categories"] });
-    }
+    },
   });
 
   const addLocation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("shop_locations" as any).insert({ name: locName, slug: locSlug, sort_order: locSort });
+      const { error } = await supabase
+        .from("shop_locations" as any)
+        .insert({ name: locName, slug: locSlug, sort_order: locSort });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Thêm địa điểm thành công");
-      setLocName(""); setLocSlug(""); setLocSort(0);
+      setLocName("");
+      setLocSlug("");
+      setLocSort(0);
       void qc.invalidateQueries({ queryKey: ["shop_locations"] });
     },
     onError: (e) => toast.error(e.message),
@@ -1055,13 +1337,16 @@ function CategoryLocationManager() {
 
   const deleteLocation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("shop_locations" as any).delete().eq("id", id);
+      const { error } = await supabase
+        .from("shop_locations" as any)
+        .delete()
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Đã xóa địa điểm");
       void qc.invalidateQueries({ queryKey: ["shop_locations"] });
-    }
+    },
   });
 
   return (
@@ -1071,28 +1356,56 @@ function CategoryLocationManager() {
         <div className="mb-6 grid gap-3 sm:grid-cols-4 items-end">
           <div>
             <label className="text-xs font-medium text-ink-soft">Tên danh mục</label>
-            <input value={catName} onChange={e => setCatName(e.target.value)} className={inputCls} placeholder="VD: Pet shop" />
+            <input
+              value={catName}
+              onChange={(e) => setCatName(e.target.value)}
+              className={inputCls}
+              placeholder="VD: Pet shop"
+            />
           </div>
           <div>
             <label className="text-xs font-medium text-ink-soft">Slug (URL)</label>
-            <input value={catSlug} onChange={e => setCatSlug(e.target.value)} className={inputCls} placeholder="VD: pet-shop" />
+            <input
+              value={catSlug}
+              onChange={(e) => setCatSlug(e.target.value)}
+              className={inputCls}
+              placeholder="VD: pet-shop"
+            />
           </div>
           <div>
             <label className="text-xs font-medium text-ink-soft">Thứ tự hiển thị</label>
-            <input type="number" value={catSort} onChange={e => setCatSort(Number(e.target.value))} className={inputCls} />
+            <input
+              type="number"
+              value={catSort}
+              onChange={(e) => setCatSort(Number(e.target.value))}
+              className={inputCls}
+            />
           </div>
-          <button disabled={!catName || !catSlug || addCategory.isPending} onClick={() => addCategory.mutate()} className="rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-background transition-transform hover:-translate-y-0.5 disabled:opacity-50">
+          <button
+            disabled={!catName || !catSlug || addCategory.isPending}
+            onClick={() => addCategory.mutate()}
+            className="rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-background transition-transform hover:-translate-y-0.5 disabled:opacity-50"
+          >
             Thêm mới
           </button>
         </div>
         <ul className="divide-y divide-border border-t border-border">
-          {categoriesQ.data?.map(c => (
+          {categoriesQ.data?.map((c) => (
             <li key={c.id} className="flex items-center justify-between py-3">
               <div>
-                <p className="font-semibold">{c.name} <span className="text-xs text-ink-soft">({c.slug})</span></p>
+                <p className="font-semibold">
+                  {c.name} <span className="text-xs text-ink-soft">({c.slug})</span>
+                </p>
                 <p className="text-xs text-ink-soft">Thứ tự: {c.sort_order}</p>
               </div>
-              <button onClick={() => { if(confirm("Xóa danh mục?")) deleteCategory.mutate(c.id); }} className="text-sm font-semibold text-red-600">Xóa</button>
+              <button
+                onClick={() => {
+                  if (confirm("Xóa danh mục?")) deleteCategory.mutate(c.id);
+                }}
+                className="text-sm font-semibold text-red-600"
+              >
+                Xóa
+              </button>
             </li>
           ))}
         </ul>
@@ -1103,28 +1416,56 @@ function CategoryLocationManager() {
         <div className="mb-6 grid gap-3 sm:grid-cols-4 items-end">
           <div>
             <label className="text-xs font-medium text-ink-soft">Tên địa điểm</label>
-            <input value={locName} onChange={e => setLocName(e.target.value)} className={inputCls} placeholder="VD: TP.HCM" />
+            <input
+              value={locName}
+              onChange={(e) => setLocName(e.target.value)}
+              className={inputCls}
+              placeholder="VD: TP.HCM"
+            />
           </div>
           <div>
             <label className="text-xs font-medium text-ink-soft">Slug (URL)</label>
-            <input value={locSlug} onChange={e => setLocSlug(e.target.value)} className={inputCls} placeholder="VD: tp-hcm" />
+            <input
+              value={locSlug}
+              onChange={(e) => setLocSlug(e.target.value)}
+              className={inputCls}
+              placeholder="VD: tp-hcm"
+            />
           </div>
           <div>
             <label className="text-xs font-medium text-ink-soft">Thứ tự hiển thị</label>
-            <input type="number" value={locSort} onChange={e => setLocSort(Number(e.target.value))} className={inputCls} />
+            <input
+              type="number"
+              value={locSort}
+              onChange={(e) => setLocSort(Number(e.target.value))}
+              className={inputCls}
+            />
           </div>
-          <button disabled={!locName || !locSlug || addLocation.isPending} onClick={() => addLocation.mutate()} className="rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-background transition-transform hover:-translate-y-0.5 disabled:opacity-50">
+          <button
+            disabled={!locName || !locSlug || addLocation.isPending}
+            onClick={() => addLocation.mutate()}
+            className="rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-background transition-transform hover:-translate-y-0.5 disabled:opacity-50"
+          >
             Thêm mới
           </button>
         </div>
         <ul className="divide-y divide-border border-t border-border">
-          {locationsQ.data?.map(l => (
+          {locationsQ.data?.map((l) => (
             <li key={l.id} className="flex items-center justify-between py-3">
               <div>
-                <p className="font-semibold">{l.name} <span className="text-xs text-ink-soft">({l.slug})</span></p>
+                <p className="font-semibold">
+                  {l.name} <span className="text-xs text-ink-soft">({l.slug})</span>
+                </p>
                 <p className="text-xs text-ink-soft">Thứ tự: {l.sort_order}</p>
               </div>
-              <button onClick={() => { if(confirm("Xóa địa điểm?")) deleteLocation.mutate(l.id); }} className="text-sm font-semibold text-red-600">Xóa</button>
+              <button
+                onClick={() => {
+                  if (confirm("Xóa địa điểm?")) deleteLocation.mutate(l.id);
+                }}
+                className="text-sm font-semibold text-red-600"
+              >
+                Xóa
+              </button>
             </li>
           ))}
         </ul>
