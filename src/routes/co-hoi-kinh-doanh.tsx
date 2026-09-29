@@ -104,6 +104,17 @@ function PartnersPage() {
               <div key={i} className="h-80 animate-pulse rounded-2xl bg-sand-deep/60" />
             ))}
           </div>
+        ) : listings.isError ? (
+          <div className="mt-12 rounded-3xl bg-rose-50 p-10 text-center ring-1 ring-rose-200">
+            <p className="font-display text-xl font-semibold text-rose-700">Không thể tải dữ liệu</p>
+            <p className="mt-2 text-sm text-rose-600">Vui lòng kiểm tra kết nối và thử lại.</p>
+            <button
+              onClick={() => listings.refetch()}
+              className="mt-4 rounded-full bg-rose-600 px-5 py-2 text-sm font-semibold text-white hover:bg-rose-700"
+            >
+              Thử lại
+            </button>
+          </div>
         ) : listings.data && listings.data.length > 0 ? (
           <>
             <p className="mt-8 text-sm text-ink-soft">Tìm thấy {listings.data.length} cơ hội</p>

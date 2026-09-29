@@ -79,10 +79,12 @@ export const featuredDealsQuery = queryOptions({
   queryKey: ["deals", "featured"],
   staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<(Deal & { shops: { name: string; slug: string } | null })[]> => {
+    const today = new Date().toISOString().split('T')[0];
     const { data, error } = await supabase
       .from("deals")
       .select("*, shops(name, slug)")
       .eq("is_featured", true)
+      .or(`ends_at.is.null,ends_at.gte.${today}`)
       .limit(6);
     if (error) console.error('Supabase query error:', error.message || error);
     return (data ?? []) as (Deal & { shops: { name: string; slug: string } | null })[];
@@ -207,9 +209,11 @@ export const allDealsQuery = queryOptions({
   queryKey: ["deals", "all"],
   staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<(Deal & { shops: { name: string; slug: string } | null })[]> => {
+    const today = new Date().toISOString().split('T')[0];
     const { data, error } = await supabase
       .from("deals")
       .select("*, shops(name, slug)")
+      .or(`ends_at.is.null,ends_at.gte.${today}`)
       .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(60);
@@ -264,11 +268,12 @@ export type MembershipPlan = {
   is_active: boolean;
   is_featured: boolean;
   sort_order: number;
-  quota_deals: number;
-  quota_products: number;
-  quota_featured_slots: number;
-  quota_partner_posts: number;
-  quota_blog_posts: number;
+  // Tên cột thực tế trên DB production
+  max_deals: number;
+  max_products: number;
+  featured_slots: number;
+  max_partner_posts: number;
+  max_blog_posts: number;
   created_at: string;
   updated_at: string;
 };

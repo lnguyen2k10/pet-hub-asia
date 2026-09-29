@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -209,11 +209,11 @@ export type Database = {
           is_active: boolean
           is_featured: boolean
           sort_order: number
-          quota_deals: number
-          quota_products: number
-          quota_featured_slots: number
-          quota_partner_posts: number
-          quota_blog_posts: number
+          max_deals: number
+          max_products: number
+          featured_slots: number
+          max_partner_posts: number
+          max_blog_posts: number
           created_at: string
           updated_at: string
         }
@@ -229,11 +229,11 @@ export type Database = {
           is_active?: boolean
           is_featured?: boolean
           sort_order?: number
-          quota_deals?: number
-          quota_products?: number
-          quota_featured_slots?: number
-          quota_partner_posts?: number
-          quota_blog_posts?: number
+          max_deals?: number
+          max_products?: number
+          featured_slots?: number
+          max_partner_posts?: number
+          max_blog_posts?: number
           created_at?: string
           updated_at?: string
         }
@@ -249,11 +249,11 @@ export type Database = {
           is_active?: boolean
           is_featured?: boolean
           sort_order?: number
-          quota_deals?: number
-          quota_products?: number
-          quota_featured_slots?: number
-          quota_partner_posts?: number
-          quota_blog_posts?: number
+          max_deals?: number
+          max_products?: number
+          featured_slots?: number
+          max_partner_posts?: number
+          max_blog_posts?: number
           created_at?: string
           updated_at?: string
         }
@@ -269,6 +269,7 @@ export type Database = {
           expires_at: string | null
           id: string
           note: string | null
+          plan_id: string | null
           proof_url: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -287,6 +288,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           note?: string | null
+          plan_id?: string | null
           proof_url?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -305,6 +307,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           note?: string | null
+          plan_id?: string | null
           proof_url?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -320,6 +323,13 @@ export type Database = {
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "membership_requests_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "membership_plans"
             referencedColumns: ["id"]
           },
         ]
@@ -643,6 +653,12 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      redeem_promo_code: {
+        Args: {
+          p_code: string
+        }
+        Returns: Json
       }
     }
     Enums: {

@@ -3,7 +3,7 @@ import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 
-const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
+const ONE_YEAR = 60 * 60 * 24 * 365;
 
 export async function uploadShopImage(file: File, userId: string, folder: string) {
   if (file.size > 5 * 1024 * 1024) throw new Error("Ảnh tối đa 5MB.");
@@ -15,7 +15,7 @@ export async function uploadShopImage(file: File, userId: string, folder: string
   if (error) throw error;
   const { data, error: signError } = await supabase.storage
     .from("shop-media")
-    .createSignedUrl(path, TEN_YEARS);
+    .createSignedUrl(path, ONE_YEAR);
   if (signError || !data?.signedUrl) throw signError ?? new Error("Không tạo được liên kết ảnh.");
   return data.signedUrl;
 }

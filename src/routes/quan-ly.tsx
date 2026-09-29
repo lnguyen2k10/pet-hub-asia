@@ -267,7 +267,7 @@ function ShopForm({ shop, userId }: { shop: ShopWithDeals | null; userId: string
     cover_url_3: "",
     hero_title: "",
     hero_subtitle: "",
-    is_published: true,
+    is_published: false,
   });
 
   const profileQ = useQuery(myProfileQuery);

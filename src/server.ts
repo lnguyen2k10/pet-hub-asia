@@ -123,7 +123,21 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
 
         if (requestRecord) {
           const now = new Date();
-          
+
+          // Kiểm tra user đã có đơn approved còn hiệu lực cho plan này chưa
+          const { data: existingApproved } = await supabaseAdmin
+            .from("membership_requests")
+            .select("id, expires_at")
+            .eq("user_id", requestRecord.user_id)
+            .eq("plan_id", requestRecord.plan_id)
+            .eq("status", "approved")
+            .gt("expires_at", now.toISOString())
+            .limit(1)
+            .maybeSingle();
+
+          if (existingApproved) {
+            console.log(`⚠️ User ${requestRecord.user_id} đã có gói active đến ${existingApproved.expires_at}. Bỏ qua để tránh trùng lặp. Đơn ID: ${requestRecord.id}`);
+          } else {
           // Lấy thời hạn từ gói (nếu có), mặc định 365 ngày
           const plan = (requestRecord as { membership_plans?: { duration_days?: number } }).membership_plans;
           const durationDays: number = plan?.duration_days ?? 365;
@@ -138,7 +152,7 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
               reviewed_at: now.toISOString(),
               starts_at: now.toISOString(),
               expires_at: expiresAt.toISOString(),
-              admin_note: `Duyệt tự động qua SePay (Giao dịch: ${payload.id}, Số tiền: ${transferAmount}đ, Thời hạn: ${durationDays} ngày)`
+              admin_note: `Duyệt tự động qua SePay (GD: ${payload.id ?? "N/A"}, Tiền: ${transferAmount}đ, Hạn: ${durationDays} ngày)`
             })
             .eq("id", requestRecord.id);
 
@@ -154,6 +168,7 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
             console.error("Lỗi khi duyệt tự động:", updateError);
           } else {
             console.log(`✅ Đã kích hoạt gói ${durationDays} ngày cho đơn ${requestRecord.id} (code: ${paymentCode})`);
+          }
           }
         } else {
           console.log(`⚠️ Không tìm thấy đơn chờ duyệt cho Code: ${paymentCode}`);
