@@ -10,10 +10,10 @@ const ALLOWED_MIME = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 export async function uploadShopImage(file: File, userId: string, folder: string) {
   if (file.size > 5 * 1024 * 1024) throw new Error("Ảnh tối đa 5MB.");
   // Validate MIME type thực sự (không dùng extension)
-  if (!ALLOWED_MIME.includes(file.type)) {
+  if (!ALLOWED_MIME.includes(file.type as (typeof ALLOWED_MIME)[number])) {
     throw new Error("Chỉ chấp nhận JPG, PNG, WebP hoặc GIF.");
   }
-  const ext = file.type.split("/")[1].replace("jpeg", "jpg");
+  const ext = (file.type.split("/")[1] ?? "jpg").replace("jpeg", "jpg");
   const path = `${userId}/${folder}/${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage
     .from("shop-media")
@@ -31,7 +31,7 @@ export async function deleteShopImage(signedUrl: string) {
   try {
     // Trích xuất path từ signed URL (dạng /storage/v1/object/sign/shop-media/<path>?token=...)
     const match = signedUrl.match(/shop-media\/([^?]+)/);
-    if (!match) return;
+    if (!match?.[1]) return;
     await supabase.storage.from("shop-media").remove([decodeURIComponent(match[1])]);
   } catch {
     // Không block luồng chính nếu xóa thất bại

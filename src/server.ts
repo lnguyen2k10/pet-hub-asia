@@ -292,9 +292,9 @@ async function handleContactSubmit(request: Request): Promise<Response> {
     const raw = await request.json() as Record<string, unknown>;
 
     // Validate độ dài tối đa
-    const name    = String(raw.name    ?? "").slice(0, 100);
-    const contact = String(raw.contact ?? "").slice(0, 100);
-    const message = String(raw.message ?? "").slice(0, 2000);
+    const name    = String(raw["name"]    ?? "").slice(0, 100);
+    const contact = String(raw["contact"] ?? "").slice(0, 100);
+    const message = String(raw["message"] ?? "").slice(0, 2000);
 
     if (!message.trim()) {
       return new Response(JSON.stringify({ success: false, error: "Tin nhắn không được để trống." }), {
