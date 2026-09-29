@@ -25,6 +25,7 @@ export type Shop = {
   review_count: number;
   is_featured: boolean;
   is_published: boolean;
+  trial_ends_at: string | null;
 };
 
 export type Deal = {

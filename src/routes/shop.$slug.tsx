@@ -126,6 +126,35 @@ function ShopLanding() {
           </div>
         ) : (
           <>
+            {/* Trial expired overlay */}
+            {(() => {
+              const trialEnded =
+                shop.trial_ends_at && new Date(shop.trial_ends_at) < new Date();
+              if (!trialEnded) return null;
+              return (
+                <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm px-6 text-center">
+                  <div className="max-w-sm rounded-3xl bg-background p-8 shadow-2xl ring-1 ring-border">
+                    <div className="text-5xl mb-4">⏰</div>
+                    <h2 className="text-xl font-bold font-display mb-2">Thời gian dùng thử đã kết thúc</h2>
+                    <p className="text-sm text-ink-soft mb-6 leading-relaxed">
+                      Trang shop của bạn hiện đang tạm ẩn. Hãy đăng ký gói Premium để tiếp tục hiển thị và tiếp cận khách hàng yêu thú cưng trên 1Pet.Asia.
+                    </p>
+                    <a
+                      href="/membership"
+                      className="block w-full rounded-full bg-terra py-3 text-sm font-semibold text-white hover:bg-terra-deep transition"
+                    >
+                      🚀 Đăng ký Premium ngay
+                    </a>
+                    <a
+                      href="/lien-he"
+                      className="mt-3 block text-xs text-ink-soft hover:underline"
+                    >
+                      Liên hệ tư vấn
+                    </a>
+                  </div>
+                </div>
+              );
+            })()}
             <section className="relative overflow-hidden">
               <div className="mx-auto max-w-6xl px-5 pt-6">
                 <ShopHeroCarousel shop={shop} />

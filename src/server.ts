@@ -189,6 +189,96 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
   }
 }
 
+// Admin: tạo tài khoản + shop cho chủ shop (dùng service role)
+async function handleAdminCreateUser(request: Request): Promise<Response> {
+  try {
+    const supabaseUrl = process.env["SUPABASE_URL"] || process.env["VITE_SUPABASE_URL"] || "";
+    const serviceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"] || "";
+    if (!serviceKey) {
+      return new Response(JSON.stringify({ success: false, error: "No service key" }), { status: 500, headers: { "content-type": "application/json" } });
+    }
+    const adminClient = createClient(supabaseUrl, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
+
+    const payload = await request.json() as {
+      email: string;
+      password: string;
+      full_name?: string;
+      shop_name?: string;
+      shop_slug?: string;
+      shop_category?: string;
+      shop_city?: string;
+      shop_phone?: string;
+      shop_address?: string;
+    };
+
+    if (!payload.email || !payload.password) {
+      return new Response(JSON.stringify({ success: false, error: "Email và mật khẩu bắt buộc" }), { status: 400, headers: { "content-type": "application/json" } });
+    }
+
+    // Tạo auth user (email đã xác nhận sẵn)
+    const { data: authData, error: authErr } = await adminClient.auth.admin.createUser({
+      email: payload.email,
+      password: payload.password,
+      email_confirm: true,
+    });
+    if (authErr || !authData.user) {
+      return new Response(JSON.stringify({ success: false, error: authErr?.message ?? "Tạo tài khoản thất bại" }), { status: 400, headers: { "content-type": "application/json" } });
+    }
+
+    const userId = authData.user.id;
+
+    // Cập nhật full_name vào profile (trigger tự tạo profile khi user mới)
+    if (payload.full_name) {
+      await adminClient.from("profiles").upsert({ id: userId, full_name: payload.full_name });
+    }
+
+    let shopId: string | null = null;
+    let shopSlug: string | null = null;
+
+    // Tạo shop nếu cung cấp tên
+    if (payload.shop_name && payload.shop_slug) {
+      const { data: shopData, error: shopErr } = await adminClient.from("shops").insert({
+        owner_id: userId,
+        name: payload.shop_name,
+        slug: payload.shop_slug,
+        category: payload.shop_category || "pet-shop",
+        city: payload.shop_city || "TP.HCM",
+        phone: payload.shop_phone || null,
+        address: payload.shop_address || null,
+        is_published: true,
+        is_featured: false,
+      } as any).select("id, slug").single();
+
+      if (shopErr) {
+        console.error("Lỗi tạo shop:", shopErr.message);
+        // Không rollback user — trả về để admin biết và sửa thủ công
+        return new Response(JSON.stringify({
+          success: true,
+          user_id: userId,
+          shop_created: false,
+          shop_error: shopErr.message,
+        }), { status: 200, headers: { "content-type": "application/json" } });
+      }
+
+      shopId = (shopData as any)?.id ?? null;
+      shopSlug = (shopData as any)?.slug ?? null;
+    }
+
+    return new Response(JSON.stringify({
+      success: true,
+      user_id: userId,
+      email: payload.email,
+      shop_id: shopId,
+      shop_slug: shopSlug,
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  } catch (error) {
+    console.error("handleAdminCreateUser error:", error);
+    return new Response(JSON.stringify({ success: false, error: String(error) }), {
+      status: 500, headers: { "content-type": "application/json" },
+    });
+  }
+}
+
 async function handleContactSubmit(request: Request): Promise<Response> {
   try {
     const payload = await request.json();
@@ -247,6 +337,9 @@ export default {
       }
       if (url.pathname === '/api/contact' && request.method === 'POST') {
         return await handleContactSubmit(request);
+      }
+      if (url.pathname === '/api/admin/create-user' && request.method === 'POST') {
+        return await handleAdminCreateUser(request);
       }
 
       const handler = await getServerEntry();
