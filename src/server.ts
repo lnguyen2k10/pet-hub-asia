@@ -115,6 +115,7 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
           process.env["SUPABASE_SERVICE_ROLE_KEY"] || ""
         );
 
+        let webhookLogged = false;
         // Deduplicate webhook (Idempotency)
         if (payload.id) {
           const { error: logErr } = await supabaseAdmin.from("sepay_webhooks_log").insert({
@@ -127,6 +128,7 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
             console.log(`⚠️ Bỏ qua webhook trùng lặp: ${payload.id}`);
             return new Response(JSON.stringify({ success: true, message: "Duplicate" }), { status: 200 });
           }
+          if (!logErr) webhookLogged = true;
         }
 
         // Lấy tất cả đơn pending
@@ -136,9 +138,9 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
           .eq("status", "pending")
           .order("created_at", { ascending: false });
 
-        // Tìm đơn của user có user_id bắt đầu bằng paymentCode
-        const userRequests = pendingRequests?.filter((r: { user_id: string }) => 
-          (r.user_id.split("-")[0] || "").substring(0, 6).toUpperCase() === paymentCode
+        // Tìm đơn của user có request.id bắt đầu bằng paymentCode
+        const userRequests = pendingRequests?.filter((r: { id: string }) => 
+          (r.id.split("-")[0] || "").toUpperCase() === paymentCode
         ) || [];
 
         const transferAmount = payload.transferAmount ?? 0;
@@ -212,6 +214,10 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
 
           if (updateError) {
             console.error("Lỗi khi duyệt tự động:", updateError);
+            if (webhookLogged) {
+              await supabaseAdmin.from("sepay_webhooks_log").delete().eq("id", String(payload.id));
+            }
+            return new Response(JSON.stringify({ success: false, message: "Update failed" }), { status: 500 });
           } else {
             console.log(`✅ Đã kích hoạt gói ${durationDays} ngày cho đơn ${requestRecord.id} (code: ${paymentCode})`);
           }
@@ -349,26 +355,28 @@ async function handleContactSubmit(request: Request): Promise<Response> {
     const supabaseUrl = process.env["SUPABASE_URL"] || process.env["VITE_SUPABASE_URL"] || "";
     const serviceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"] || "";
     
-    if (serviceKey && ip !== "unknown-ip") {
-      const adminClient = createClient(supabaseUrl, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
-      const nowStr = new Date().toISOString();
-      const expiresStr = new Date(Date.now() + 15 * 60 * 1000).toISOString();
-      
-      const { data: currentLimit } = await adminClient
-        .from("contact_rate_limits")
-        .select("*")
-        .eq("ip", ip)
-        .maybeSingle();
+    if (!serviceKey || !supabaseUrl) {
+      return new Response(JSON.stringify({ success: false, error: "Hệ thống chưa cấu hình đủ biến môi trường." }), {
+        status: 503, headers: { "content-type": "application/json" }
+      });
+    }
 
-      if (currentLimit && new Date(currentLimit.expires_at) > new Date()) {
-        if (currentLimit.request_count >= 5) {
-          return new Response(JSON.stringify({ success: false, error: "Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau." }), {
-            status: 429, headers: { "content-type": "application/json" }
-          });
-        }
-        await adminClient.from("contact_rate_limits").update({ request_count: currentLimit.request_count + 1 }).eq("ip", ip);
-      } else {
-        await adminClient.from("contact_rate_limits").upsert({ ip, request_count: 1, expires_at: expiresStr });
+    if (ip !== "unknown-ip") {
+      const adminClient = createClient(supabaseUrl, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
+      
+      const { data: requestCount, error: rpcError } = await adminClient.rpc("increment_contact_rate_limit", { p_ip: ip });
+      
+      if (rpcError) {
+        console.error("Lỗi rate limit:", rpcError);
+        return new Response(JSON.stringify({ success: false, error: "Lỗi hệ thống, vui lòng thử lại sau." }), {
+          status: 500, headers: { "content-type": "application/json" }
+        });
+      }
+
+      if (requestCount && requestCount > 5) {
+        return new Response(JSON.stringify({ success: false, error: "Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau 15 phút." }), {
+          status: 429, headers: { "content-type": "application/json" }
+        });
       }
     }
 

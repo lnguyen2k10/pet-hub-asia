@@ -235,8 +235,6 @@ function RequestSection({
   const MAX_POLL_COUNT = 120; // 120 × 5s = 10 phút
   const POLL_INTERVAL = 5000;
 
-  const paymentCode = (userId.split("-")[0] || "").substring(0, 6).toUpperCase();
-
   // Kiểm tra đơn active cho đúng gói này
   const activePlanRequest = requests.find(
     (r) => r.status === "approved" && r.plan_id === plan.id && r.expires_at && new Date(r.expires_at) > new Date()
@@ -301,9 +299,9 @@ function RequestSection({
         plan_id: plan.id,
         contact_name: "Khách hàng",
         contact_phone: "0000000000",
-        note: `Tự kích hoạt qua QR - Mã: PET${paymentCode}`,
+        note: `Tự kích hoạt qua QR`,
         amount: plan.price_amount,
-        status: plan.price_amount === 0 ? "pending" : "pending",
+        status: "pending",
       } as any);
       if (error) throw error;
     },
@@ -311,7 +309,7 @@ function RequestSection({
       if (plan.price_amount === 0) {
         toast.success("Đã gửi yêu cầu nhận quà tặng! Hệ thống đang xử lý...");
       } else {
-        toast.success("Đã ghi nhận yêu cầu! Hệ thống sẽ tự động kích hoạt sau khi xác nhận thanh toán.");
+        toast.success("Đã tạo đơn thành công! Vui lòng quét mã QR để thanh toán.");
       }
       void qc.invalidateQueries({ queryKey: ["membership_requests"] });
       onRefreshRequests();
@@ -345,7 +343,9 @@ function RequestSection({
   }
 
   // ─── Đang chờ xác nhận (đã bấm, đang polling) ───
-  if (pendingForThisPlan) {
+  if (pendingForThisPlan?.id) {
+    const paymentCode = pendingForThisPlan.id.split("-")[0].toUpperCase();
+
     return (
       <div className="mt-8 rounded-3xl bg-amber-50 p-6 ring-1 ring-amber-200">
         <div className="flex items-start gap-4">
@@ -357,7 +357,7 @@ function RequestSection({
               {plan.price_amount > 0 ? (
                 <>
                   Sau khi bạn chuyển khoản với nội dung{" "}
-                  <strong className="font-mono">PET{paymentCode}</strong>, hệ thống sẽ tự động kích hoạt gói{" "}
+                  <strong className="font-mono text-terra">PET{paymentCode}</strong>, hệ thống sẽ tự động kích hoạt gói{" "}
                   <strong>{plan.name}</strong> trong vòng <strong>1–3 phút</strong>.
                   {isPolling && (
                     <span className="mt-1 block text-xs text-amber-600">
@@ -378,21 +378,24 @@ function RequestSection({
         </div>
 
         {plan.price_amount > 0 && (
-          <div className="mt-6 rounded-2xl bg-white p-4 ring-1 ring-border">
-            <h3 className="font-semibold text-sm mb-3 text-center">Thông tin chuyển khoản</h3>
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              <img
-                decoding="async"
-                src={`https://qr.sepay.vn/img?acc=00003554020&bank=TPBank&amount=${plan.price_amount}&des=PET${paymentCode}`}
-                alt="QR Code"
-                className="w-36 h-36 rounded-xl ring-1 ring-border shrink-0"
-              />
-              <div className="text-sm space-y-1.5">
-                <p>Ngân hàng: <strong>TPBank</strong></p>
-                <p>Số TK: <strong>00003554020</strong></p>
-                <p>Số tiền: <strong className="text-terra">{formatPrice(plan.price_amount)}</strong></p>
-                <p>Nội dung CK: <strong className="font-mono text-terra text-base">PET{paymentCode}</strong></p>
-                <p className="text-xs text-ink-soft pt-1">⚡ Kích hoạt tự động sau khi thanh toán thành công.</p>
+          <div className="mt-6 rounded-2xl bg-white p-6 ring-1 ring-border shadow-sm">
+            <h3 className="font-semibold text-base mb-4 text-center">Quét QR để thanh toán</h3>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
+              <div className="rounded-2xl overflow-hidden ring-2 ring-terra/20 p-2 shadow-sm bg-white shrink-0">
+                <img
+                  decoding="async"
+                  src={`https://qr.sepay.vn/img?acc=00003554020&bank=TPBank&amount=${plan.price_amount}&des=PET${paymentCode}`}
+                  alt="QR Code"
+                  className="w-48 h-48"
+                />
+              </div>
+              <div className="text-sm space-y-2.5">
+                <p>Ngân hàng: <strong className="text-base">TPBank</strong></p>
+                <p>Số TK: <strong className="text-base">00003554020</strong></p>
+                <p>Chủ TK: <strong className="text-base">1PET ASIA</strong></p>
+                <p>Số tiền: <strong className="text-terra text-xl">{formatPrice(plan.price_amount)}</strong></p>
+                <p>Nội dung CK: <strong className="font-mono text-terra text-xl bg-terra/10 px-2 py-1 rounded">PET{paymentCode}</strong></p>
+                <p className="text-xs text-ink-soft pt-2">⚡ Hãy chuyển đúng nội dung để được duyệt tự động ngay lập tức.</p>
               </div>
             </div>
           </div>
@@ -445,51 +448,30 @@ function RequestSection({
         </p>
 
         {plan.price_amount > 0 ? (
-          // Gói có phí: Hiện QR trước, bấm 1 nút để xác nhận ý định CK
-          <div className="flex flex-col sm:flex-row items-start gap-8">
-            {/* QR Code */}
-            <div className="flex flex-col items-center rounded-3xl bg-sand-deep/30 p-5 ring-1 ring-border/50 w-full sm:w-auto">
-              <p className="font-semibold text-sm mb-3 text-center">Bước 1: Quét QR để thanh toán</p>
-              <div className="rounded-2xl overflow-hidden bg-white ring-2 ring-terra/20 p-2 shadow-sm">
-                <img
-                  decoding="async"
-                  src={`https://qr.sepay.vn/img?acc=00003554020&bank=TPBank&amount=${plan.price_amount}&des=PET${paymentCode}`}
-                  alt="QR Code Thanh Toán"
-                  className="w-48 h-48 object-contain"
-                />
-              </div>
-              <div className="mt-3 space-y-1 text-sm text-center">
-                <p>Ngân hàng: <strong>TPBank</strong></p>
-                <p>Số tài khoản: <strong>00003554020</strong></p>
-                <p>Số tiền: <strong className="text-terra">{formatPrice(plan.price_amount)}</strong></p>
-                <p>Nội dung CK: <strong className="font-mono text-terra text-base">PET{paymentCode}</strong></p>
-              </div>
+          // Gói có phí: Hiện thông tin ngắn gọn và nút tạo đơn
+          <div className="flex flex-col gap-6 items-center max-w-lg mx-auto text-center">
+            <div className="rounded-2xl bg-blue-50 p-5 ring-1 ring-blue-200 text-left w-full">
+              <p className="text-base text-blue-800 font-semibold mb-3">📋 Hướng dẫn thanh toán tự động:</p>
+              <ol className="space-y-2 text-sm text-blue-800 list-decimal list-inside">
+                <li>Bấm <strong>Tạo đơn & Mã QR thanh toán</strong>.</li>
+                <li>Quét mã QR bằng ứng dụng ngân hàng.</li>
+                <li>Hệ thống sẽ ghi nhận và kích hoạt gói ngay lập tức.</li>
+              </ol>
             </div>
-
-            {/* Nút xác nhận */}
-            <div className="flex-1 flex flex-col justify-center gap-4">
-              <div className="rounded-2xl bg-blue-50 p-4 ring-1 ring-blue-200">
-                <p className="text-sm text-blue-800 font-medium">📋 Hướng dẫn:</p>
-                <ol className="mt-2 space-y-1 text-sm text-blue-700 list-decimal list-inside">
-                  <li>Mở app ngân hàng và quét mã QR.</li>
-                  <li>Kiểm tra đúng số tiền và nội dung <strong className="font-mono">PET{paymentCode}</strong>.</li>
-                  <li>Xác nhận chuyển khoản.</li>
-                  <li>Bấm nút bên dưới — hệ thống tự động kích hoạt gói.</li>
-                </ol>
-              </div>
-              <button
-                type="button"
-                disabled={submit.isPending}
-                onClick={() => submit.mutate()}
-                className="w-full rounded-full bg-terra px-5 py-3.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-60 shadow-md shadow-terra/20"
-              >
-                {submit.isPending ? "Đang xử lý..." : "Bước 2: Tôi đã chuyển khoản xong ✓"}
-              </button>
-              <p className="text-xs text-ink-soft text-center">
-                ⚡ Sau khi bấm, hệ thống sẽ tự kiểm tra và kích hoạt gói trong 1–3 phút.
-              </p>
-            </div>
+            
+            <button
+              type="button"
+              disabled={submit.isPending}
+              onClick={() => submit.mutate()}
+              className="w-full rounded-full bg-terra px-6 py-4 text-base font-bold text-primary-foreground transition hover:scale-105 disabled:opacity-60 disabled:hover:scale-100 shadow-lg shadow-terra/20"
+            >
+              {submit.isPending ? "Đang tạo mã QR..." : "Tạo đơn & Mã QR thanh toán"}
+            </button>
+            <p className="text-xs text-ink-soft -mt-2">
+              Hoàn toàn bảo mật và tự động.
+            </p>
           </div>
+
         ) : (
           // Gói miễn phí
           <div className="space-y-4">

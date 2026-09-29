@@ -56,9 +56,9 @@ CREATE OR REPLACE FUNCTION public.process_approved_membership()
         WHERE id = NEW.user_id;
       END IF;
 
-      -- Tự động publish shop nếu có shop_id
+      -- Tự động publish shop nếu có shop_id VÀ thuộc sở hữu của user
       IF NEW.shop_id IS NOT NULL THEN
-        UPDATE public.shops SET is_published = true WHERE id = NEW.shop_id;
+        UPDATE public.shops SET is_published = true WHERE id = NEW.shop_id AND owner_id = NEW.user_id;
       END IF;
     END IF;
 
