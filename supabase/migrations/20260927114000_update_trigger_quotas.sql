@@ -2,7 +2,7 @@ CREATE OR REPLACE FUNCTION public.process_approved_membership()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
-AS $
+AS $$
 DECLARE
   plan_rec record;
 BEGIN
@@ -23,4 +23,4 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
-$;
+$$;

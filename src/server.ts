@@ -115,6 +115,20 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
           process.env["SUPABASE_SERVICE_ROLE_KEY"] || ""
         );
 
+        // Deduplicate webhook (Idempotency)
+        if (payload.id) {
+          const { error: logErr } = await supabaseAdmin.from("sepay_webhooks_log").insert({
+            id: String(payload.id),
+            amount: payload.transferAmount,
+            content: payload.content
+          });
+          // PostgreSQL Error 23505 = Unique Violation
+          if (logErr && logErr.code === "23505") {
+            console.log(`⚠️ Bỏ qua webhook trùng lặp: ${payload.id}`);
+            return new Response(JSON.stringify({ success: true, message: "Duplicate" }), { status: 200 });
+          }
+        }
+
         // Lấy tất cả đơn pending
         const { data: pendingRequests } = await supabaseAdmin
           .from("membership_requests")
@@ -129,16 +143,17 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
 
         const transferAmount = payload.transferAmount ?? 0;
         
-        // Chỉ duyệt khi số tiền khớp trong ngưỡng ±5% — KHÔNG fallback lấy đơn tùy tiện
+        // Chỉ duyệt khi số tiền khớp trong ngưỡng ±5% — Bắt buộc có gói
         let requestRecord = null;
         if (userRequests.length > 0) {
           requestRecord = userRequests.find((r: any) => {
-            // Dùng giá trị gốc của plan (price_amount) để tránh user spoof amount lúc tạo đơn
-            const planPrice = r.membership_plans?.price_amount ?? r.amount;
+            // Bắt buộc phải có plan_id và giá của plan, chặn đứng fallback amount
+            if (!r.plan_id || !r.membership_plans?.price_amount) return false;
+            const planPrice = r.membership_plans.price_amount;
             return Math.abs(planPrice - transferAmount) / Math.max(planPrice, 1) < 0.05;
           }) ?? null;
           if (!requestRecord) {
-            console.warn(`⚠️ Không tìm được đơn khớp tiền cho mã ${paymentCode}. Chuyển khoản: ${transferAmount}đ. Bỏ qua.`);
+            console.warn(`⚠️ Không tìm được đơn khớp tiền (hoặc đơn không có gói) cho mã ${paymentCode}. Chuyển khoản: ${transferAmount}đ. Bỏ qua.`);
           }
         }
 
@@ -177,12 +192,22 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
             })
             .eq("id", requestRecord.id);
 
-          // Nếu shop chưa publish → publish luôn
+          // Nếu shop chưa publish → publish luôn (PHẢI kiểm tra quyền sở hữu)
           if (!updateError && requestRecord.shop_id) {
-            await supabaseAdmin
+            const { data: shopRecord } = await supabaseAdmin
               .from("shops")
-              .update({ is_published: true })
-              .eq("id", requestRecord.shop_id);
+              .select("owner_id")
+              .eq("id", requestRecord.shop_id)
+              .maybeSingle();
+            
+            if (shopRecord && shopRecord.owner_id === requestRecord.user_id) {
+              await supabaseAdmin
+                .from("shops")
+                .update({ is_published: true })
+                .eq("id", requestRecord.shop_id);
+            } else {
+              console.warn(`⚠️ User ${requestRecord.user_id} không sở hữu shop ${requestRecord.shop_id}. Không tự động publish.`);
+            }
           }
 
           if (updateError) {
@@ -318,24 +343,33 @@ async function handleAdminCreateUser(request: Request): Promise<Response> {
   }
 }
 
-const contactRateLimits = new Map<string, { count: number; expires: number }>();
-
 async function handleContactSubmit(request: Request): Promise<Response> {
   try {
     const ip = request.headers.get("cf-connecting-ip") || "unknown-ip";
-    const now = Date.now();
-    const rateData = contactRateLimits.get(ip) || { count: 0, expires: now + 15 * 60 * 1000 };
-    if (now > rateData.expires) {
-      rateData.count = 0;
-      rateData.expires = now + 15 * 60 * 1000;
-    }
-    rateData.count++;
-    contactRateLimits.set(ip, rateData);
+    const supabaseUrl = process.env["SUPABASE_URL"] || process.env["VITE_SUPABASE_URL"] || "";
+    const serviceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"] || "";
+    
+    if (serviceKey && ip !== "unknown-ip") {
+      const adminClient = createClient(supabaseUrl, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
+      const nowStr = new Date().toISOString();
+      const expiresStr = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+      
+      const { data: currentLimit } = await adminClient
+        .from("contact_rate_limits")
+        .select("*")
+        .eq("ip", ip)
+        .maybeSingle();
 
-    if (rateData.count > 5) {
-      return new Response(JSON.stringify({ success: false, error: "Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau." }), {
-        status: 429, headers: { "content-type": "application/json" }
-      });
+      if (currentLimit && new Date(currentLimit.expires_at) > new Date()) {
+        if (currentLimit.request_count >= 5) {
+          return new Response(JSON.stringify({ success: false, error: "Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau." }), {
+            status: 429, headers: { "content-type": "application/json" }
+          });
+        }
+        await adminClient.from("contact_rate_limits").update({ request_count: currentLimit.request_count + 1 }).eq("ip", ip);
+      } else {
+        await adminClient.from("contact_rate_limits").upsert({ ip, request_count: 1, expires_at: expiresStr });
+      }
     }
 
     const raw = await request.json() as Record<string, unknown>;

@@ -41,7 +41,7 @@ CREATE OR REPLACE FUNCTION public.process_approved_shop_claim()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
-AS $
+AS $$
 BEGIN
   IF NEW.status = 'approved' AND OLD.status != 'approved' THEN
     -- Update the shop to assign the new owner
@@ -58,7 +58,7 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
-$;
+$$;
 
 CREATE TRIGGER on_shop_claim_approved
     AFTER UPDATE ON public.shop_claims

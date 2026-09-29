@@ -12,7 +12,7 @@ DECLARE
   v_owner uuid;
 BEGIN
   SELECT owner_id INTO v_owner FROM public.shops WHERE id = NEW.shop_id;
-  SELECT quota_deals INTO v_quota FROM public.profiles WHERE id = v_owner;
+  SELECT quota_deals INTO v_quota FROM public.profiles WHERE id = v_owner FOR UPDATE;
   IF v_quota IS NOT NULL AND v_quota <> -1 THEN
     SELECT COUNT(*) INTO v_count FROM public.deals WHERE shop_id = NEW.shop_id;
     IF v_count >= v_quota THEN
@@ -34,7 +34,7 @@ DECLARE
   v_owner uuid;
 BEGIN
   SELECT owner_id INTO v_owner FROM public.shops WHERE id = NEW.shop_id;
-  SELECT quota_products INTO v_quota FROM public.profiles WHERE id = v_owner;
+  SELECT quota_products INTO v_quota FROM public.profiles WHERE id = v_owner FOR UPDATE;
   IF v_quota IS NOT NULL AND v_quota <> -1 THEN
     SELECT COUNT(*) INTO v_count FROM public.products WHERE shop_id = NEW.shop_id;
     IF v_count >= v_quota THEN
@@ -54,7 +54,7 @@ DECLARE
   v_quota int;
   v_count int;
 BEGIN
-  SELECT quota_partner_posts INTO v_quota FROM public.profiles WHERE id = NEW.owner_id;
+  SELECT quota_partner_posts INTO v_quota FROM public.profiles WHERE id = NEW.owner_id FOR UPDATE;
   IF v_quota IS NOT NULL AND v_quota <> -1 THEN
     SELECT COUNT(*) INTO v_count FROM public.partner_listings WHERE owner_id = NEW.owner_id;
     IF v_count >= v_quota THEN
