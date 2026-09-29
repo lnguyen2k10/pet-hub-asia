@@ -289,32 +289,43 @@ async function handleAdminCreateUser(request: Request): Promise<Response> {
 
 async function handleContactSubmit(request: Request): Promise<Response> {
   try {
-    const payload = await request.json();
-    const botToken = process.env["TELEGRAM_BOT_TOKEN"] || process.env["VITE_TELEGRAM_BOT_TOKEN"];
-    const chatId = process.env["TELEGRAM_CHAT_ID"] || process.env["VITE_TELEGRAM_CHAT_ID"];
+    const raw = await request.json() as Record<string, unknown>;
 
-    if (!botToken || !chatId) {
-      console.warn("Chưa cấu hình Telegram Bot. Vui lòng thêm TELEGRAM_BOT_TOKEN và TELEGRAM_CHAT_ID vào .env");
-      return new Response(JSON.stringify({ success: true, message: "No telegram config" }), { 
-        status: 200, 
-        headers: { "content-type": "application/json" } 
+    // Validate độ dài tối đa
+    const name    = String(raw.name    ?? "").slice(0, 100);
+    const contact = String(raw.contact ?? "").slice(0, 100);
+    const message = String(raw.message ?? "").slice(0, 2000);
+
+    if (!message.trim()) {
+      return new Response(JSON.stringify({ success: false, error: "Tin nhắn không được để trống." }), {
+        status: 400, headers: { "content-type": "application/json" }
       });
     }
 
-    const message = `🔔 **Có tin nhắn liên hệ mới từ 1Pet.Asia**\n\n` +
-      `👤 **Tên:** ${payload.name || "Không có tên"}\n` +
-      `📞 **SĐT/Email:** ${payload.contact || "Không có SĐT/Email"}\n` +
-      `💬 **Tin nhắn:**\n${payload.message || "Không có nội dung"}`;
+    const botToken = process.env["TELEGRAM_BOT_TOKEN"] || process.env["VITE_TELEGRAM_BOT_TOKEN"];
+    const chatId   = process.env["TELEGRAM_CHAT_ID"]   || process.env["VITE_TELEGRAM_CHAT_ID"];
 
-    const tgUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
-    const tgRes = await fetch(tgUrl, {
+    if (!botToken || !chatId) {
+      console.warn("Chưa cấu hình Telegram Bot.");
+      // Trả 503 thay vì 200 giả — frontend biết là chưa gửi được
+      return new Response(JSON.stringify({ success: false, error: "Liên hệ chưa cấu hình, vui lòng thử lại sau." }), {
+        status: 503, headers: { "content-type": "application/json" }
+      });
+    }
+
+    // Escape Markdown đặc biệt để tránh lỗi Telegram parse
+    const esc = (s: string) => s.replace(/[_*[\]()~`>#+=|{}.!\\-]/g, "\\$&");
+
+    const text =
+      `🔔 *Liên hệ mới từ 1Pet\.Asia*\n\n` +
+      `👤 *Tên:* ${esc(name || "Không có tên")}\n` +
+      `📞 *SĐT/Email:* ${esc(contact || "Không có")}\n` +
+      `💬 *Tin nhắn:*\n${esc(message)}`;
+
+    const tgRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: message,
-        parse_mode: "Markdown"
-      })
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: "MarkdownV2" })
     });
 
     if (!tgRes.ok) {
@@ -323,15 +334,13 @@ async function handleContactSubmit(request: Request): Promise<Response> {
       throw new Error("Telegram API error");
     }
 
-    return new Response(JSON.stringify({ success: true }), { 
-      status: 200, 
-      headers: { "content-type": "application/json" } 
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200, headers: { "content-type": "application/json" }
     });
   } catch (error) {
     console.error("Lỗi xử lý form liên hệ:", error);
     return new Response(JSON.stringify({ success: false }), {
-      status: 400,
-      headers: { "content-type": "application/json" },
+      status: 400, headers: { "content-type": "application/json" },
     });
   }
 }

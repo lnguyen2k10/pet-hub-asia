@@ -5,19 +5,37 @@ import { supabase } from "@/integrations/supabase/client";
 
 const ONE_YEAR = 60 * 60 * 24 * 365;
 
+const ALLOWED_MIME = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
 export async function uploadShopImage(file: File, userId: string, folder: string) {
   if (file.size > 5 * 1024 * 1024) throw new Error("Ảnh tối đa 5MB.");
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  // Validate MIME type thực sự (không dùng extension)
+  if (!ALLOWED_MIME.includes(file.type)) {
+    throw new Error("Chỉ chấp nhận JPG, PNG, WebP hoặc GIF.");
+  }
+  const ext = file.type.split("/")[1].replace("jpeg", "jpg");
   const path = `${userId}/${folder}/${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage
     .from("shop-media")
-    .upload(path, file, { cacheControl: "31536000", upsert: false });
+    .upload(path, file, { cacheControl: "31536000", upsert: false, contentType: file.type });
   if (error) throw error;
   const { data, error: signError } = await supabase.storage
     .from("shop-media")
     .createSignedUrl(path, ONE_YEAR);
   if (signError || !data?.signedUrl) throw signError ?? new Error("Không tạo được liên kết ảnh.");
-  return data.signedUrl;
+  return { url: data.signedUrl, path };
+}
+
+/** Xóa file cũ khỏi storage để tránh rác tích tụ */
+export async function deleteShopImage(signedUrl: string) {
+  try {
+    // Trích xuất path từ signed URL (dạng /storage/v1/object/sign/shop-media/<path>?token=...)
+    const match = signedUrl.match(/shop-media\/([^?]+)/);
+    if (!match) return;
+    await supabase.storage.from("shop-media").remove([decodeURIComponent(match[1])]);
+  } catch {
+    // Không block luồng chính nếu xóa thất bại
+  }
 }
 
 type Props = {
@@ -36,7 +54,10 @@ export function ImageUpload({ label, value, onChange, userId, folder, aspect = "
   async function handle(file: File) {
     setBusy(true);
     try {
-      onChange(await uploadShopImage(file, userId, folder));
+      const result = await uploadShopImage(file, userId, folder);
+      // Xóa ảnh cũ trước khi gán URL mới
+      if (value) void deleteShopImage(value);
+      onChange(result.url);
       toast.success("Đã tải ảnh lên!");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Tải ảnh thất bại.");
@@ -76,7 +97,10 @@ export function ImageUpload({ label, value, onChange, userId, folder, aspect = "
             {value ? (
               <button
                 type="button"
-                onClick={() => onChange("")}
+                onClick={() => {
+                  void deleteShopImage(value);
+                  onChange("");
+                }}
                 className="rounded-full px-3 py-1.5 text-xs font-medium text-ink-soft hover:text-terra-deep"
               >
                 Gỡ ảnh
