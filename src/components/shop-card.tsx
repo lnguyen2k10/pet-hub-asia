@@ -51,10 +51,15 @@ export function ShopCard({ shop }: { shop: Shop }) {
         <h3 className="truncate font-display text-lg font-semibold">{shop.name}</h3>
         <p className="truncate text-sm text-ink-soft">{shop.city}</p>
         <div className="mt-3 flex items-center justify-between gap-2">
-          <span className="flex items-center gap-1 text-sm font-semibold">
-            <span className="text-terra">★</span> {shop.rating}
-            <span className="font-normal text-ink-soft">({shop.review_count})</span>
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1 text-sm font-semibold">
+              <span className="text-terra">★</span> {shop.rating}
+              <span className="font-normal text-ink-soft">({shop.review_count})</span>
+            </span>
+            <span className="flex items-center gap-1 text-sm text-ink-soft">
+              👁 {shop.views_count || 0}
+            </span>
+          </div>
           <span className="text-sm font-semibold text-terra-deep">Xem shop →</span>
         </div>
       </div>

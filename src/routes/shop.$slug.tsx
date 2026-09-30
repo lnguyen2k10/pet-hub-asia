@@ -174,9 +174,14 @@ function ShopLanding() {
                     )}
                     <div>
                       <h1 className="font-display text-2xl font-semibold">{shop.name}</h1>
-                      <p className="text-sm text-ink-soft">
-                        <span className="text-terra">★</span> {shop.rating} ({shop.review_count}{" "}
-                        đánh giá)
+                      <p className="text-sm text-ink-soft flex items-center gap-3">
+                        <span>
+                          <span className="text-terra">★</span> {shop.rating} ({shop.review_count}{" "}
+                          đánh giá)
+                        </span>
+                        <span className="flex items-center gap-1">
+                          👁 {shop.views_count || 0} lượt xem
+                        </span>
                       </p>
                     </div>
                   </div>
