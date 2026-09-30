@@ -331,6 +331,7 @@ export type MembershipRequest = {
   starts_at: string | null;
   expires_at: string | null;
   created_at: string;
+  shops?: { name: string; slug: string } | null;
 };
 
 export const myMembershipRequestsQuery = queryOptions({
@@ -355,7 +356,7 @@ export const allMembershipRequestsQuery = queryOptions({
   queryFn: async (): Promise<MembershipRequest[]> => {
     const { data, error } = await supabase
       .from("membership_requests")
-      .select("*")
+      .select("*, shops(name, slug)")
       .order("created_at", { ascending: false })
       .limit(200);
     if (error) console.error("Supabase query error:", error.message || error);

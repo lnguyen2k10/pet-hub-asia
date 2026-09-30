@@ -783,9 +783,14 @@ function RequestsTable() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold">
-                        {r.contact_name ?? "Không rõ"} • {r.contact_phone ?? "—"}
-                      </p>
+                      <div className="flex flex-col">
+                        <p className="font-semibold text-lg text-ink">
+                          {r.shops ? r.shops.name : "Shop chưa rõ"}
+                        </p>
+                        <p className="text-sm text-ink-soft">
+                          👤 {r.contact_name ?? "Không rõ"} • 📞 {r.contact_phone ?? "—"}
+                        </p>
+                      </div>
                       {plan && (
                         <span className="rounded-full bg-terra/10 px-2 py-0.5 text-xs font-semibold text-terra">
                           {plan.name}
@@ -1039,7 +1044,7 @@ function UserManager() {
                             <span className="italic text-ink-soft">Chưa có tên</span>
                           )}
                         </p>
-                        <p className="text-xs font-mono text-ink-soft">{p.id.slice(0, 14)}…</p>
+                        <p className="text-xs font-mono text-ink-soft">ID: {p.id.slice(0, 14)}…</p>
                         <p className="text-xs text-ink-soft">
                           Tham gia: {new Date(p.created_at).toLocaleDateString("vi-VN")}
                         </p>
