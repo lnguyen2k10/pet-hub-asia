@@ -48,12 +48,12 @@ import { createClient } from "@supabase/supabase-js";
 
 import * as crypto from "node:crypto";
 
-async function handleSepayWebhook(request: Request): Promise<Response> {
+async function handleSepayWebhook(request: Request, env: any): Promise<Response> {
   try {
     const authHeader = request.headers.get("Authorization") || "";
     const signature = request.headers.get("X-SePay-Signature");
     const timestamp = request.headers.get("X-SePay-Timestamp");
-    const expectedToken = (process.env["SEPAY_WEBHOOK_TOKEN"] || "").trim();
+    const expectedToken = (env?.SEPAY_WEBHOOK_TOKEN || process.env["SEPAY_WEBHOOK_TOKEN"] || "").trim();
 
     if (!expectedToken) {
       console.error("SEPAY_WEBHOOK_TOKEN chưa được cấu hình — từ chối request.");
@@ -290,10 +290,10 @@ async function handleSepayWebhook(request: Request): Promise<Response> {
 }
 
 // Admin: tạo tài khoản + shop cho chủ shop (dùng service role)
-async function handleAdminCreateUser(request: Request): Promise<Response> {
+async function handleAdminCreateUser(request: Request, env: any): Promise<Response> {
   try {
-    const supabaseUrl = process.env["SUPABASE_URL"] || process.env["VITE_SUPABASE_URL"] || "";
-    const serviceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"] || "";
+    const supabaseUrl = env?.SUPABASE_URL || env?.VITE_SUPABASE_URL || process.env["SUPABASE_URL"] || process.env["VITE_SUPABASE_URL"] || "";
+    const serviceKey = env?.SUPABASE_SERVICE_ROLE_KEY || process.env["SUPABASE_SERVICE_ROLE_KEY"] || "";
     if (!serviceKey) {
       return new Response(JSON.stringify({ success: false, error: "No service key" }), {
         status: 500,
@@ -433,11 +433,11 @@ async function handleAdminCreateUser(request: Request): Promise<Response> {
   }
 }
 
-async function handleContactSubmit(request: Request): Promise<Response> {
+async function handleContactSubmit(request: Request, env: any): Promise<Response> {
   try {
     const ip = request.headers.get("cf-connecting-ip") || "unknown-ip";
-    const supabaseUrl = process.env["SUPABASE_URL"] || process.env["VITE_SUPABASE_URL"] || "";
-    const serviceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"] || "";
+    const supabaseUrl = env?.SUPABASE_URL || env?.VITE_SUPABASE_URL || process.env["SUPABASE_URL"] || process.env["VITE_SUPABASE_URL"] || "";
+    const serviceKey = env?.SUPABASE_SERVICE_ROLE_KEY || process.env["SUPABASE_SERVICE_ROLE_KEY"] || "";
 
     if (!serviceKey || !supabaseUrl) {
       return new Response(
@@ -501,8 +501,8 @@ async function handleContactSubmit(request: Request): Promise<Response> {
       );
     }
 
-    const botToken = process.env["TELEGRAM_BOT_TOKEN"] || process.env["VITE_TELEGRAM_BOT_TOKEN"];
-    const chatId = process.env["TELEGRAM_CHAT_ID"] || process.env["VITE_TELEGRAM_CHAT_ID"];
+    const botToken = env?.TELEGRAM_BOT_TOKEN || process.env["TELEGRAM_BOT_TOKEN"] || process.env["VITE_TELEGRAM_BOT_TOKEN"];
+    const chatId = env?.TELEGRAM_CHAT_ID || process.env["TELEGRAM_CHAT_ID"] || process.env["VITE_TELEGRAM_CHAT_ID"];
 
     if (!botToken || !chatId) {
       console.warn("Chưa cấu hình Telegram Bot.");
@@ -555,13 +555,13 @@ export default {
     try {
       const url = new URL(request.url);
       if (url.pathname === "/api/sepay" && request.method === "POST") {
-        return await handleSepayWebhook(request);
+        return await handleSepayWebhook(request, env);
       }
       if (url.pathname === "/api/contact" && request.method === "POST") {
-        return await handleContactSubmit(request);
+        return await handleContactSubmit(request, env);
       }
       if (url.pathname === "/api/admin/create-user" && request.method === "POST") {
-        return await handleAdminCreateUser(request);
+        return await handleAdminCreateUser(request, env);
       }
 
       const handler = await getServerEntry();
