@@ -17,9 +17,11 @@ import {
   membershipSettingsQuery,
   allProfilesAdminQuery,
   allUserRolesAdminQuery,
+  allPromoCodesQuery,
   userRoleQuery,
   shopCategoriesQuery,
   shopLocationsQuery,
+  type PromoCode,
   type MembershipPlan,
   type MembershipRequest,
   type MembershipSettings,
@@ -94,6 +96,7 @@ function AdminPage() {
     { id: "shops", label: "Danh bạ Shop", show: true },
     { id: "blog", label: "Quản lý Blog", show: true },
     { id: "plans", label: "Gói thành viên", show: isAdmin },
+    { id: "promo_codes", label: "Mã ưu đãi (Promo)", show: isAdmin },
     { id: "settings", label: "Cài đặt thanh toán", show: isAdmin },
     { id: "locations", label: "Địa điểm & Danh mục", show: isAdmin },
     { id: "users", label: "Phân quyền & User", show: isAdmin },
@@ -163,6 +166,12 @@ function AdminPage() {
             <div>
               <h1 className="mb-6 text-3xl sm:text-4xl">Gói thành viên</h1>
               <PlansManager userId={user.id} />
+            </div>
+          )}
+          {activeTab === "promo_codes" && isAdmin && (
+            <div>
+              <h1 className="mb-6 text-3xl sm:text-4xl">Quản lý Mã Ưu Đãi</h1>
+              <PromoCodesManager />
             </div>
           )}
           {activeTab === "settings" && isAdmin && (
@@ -1492,6 +1501,294 @@ function CategoryLocationManager() {
           ))}
         </ul>
       </section>
+    </div>
+  );
+}
+
+// ─── Promo Codes Manager ─────────────────────────────────────────────────────
+function PromoCodesManager() {
+  const qc = useQueryClient();
+  const promoQ = useQuery(allPromoCodesQuery);
+  const [editingCode, setEditingCode] = useState<PromoCode | null>(null);
+  const [showForm, setShowForm] = useState(false);
+
+  const deleteCode = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("promo_codes").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Đã xóa mã.");
+      void qc.invalidateQueries({ queryKey: ["admin_promo_codes"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Xóa thất bại."),
+  });
+
+  const codes = promoQ.data ?? [];
+
+  return (
+    <section className="mt-8 rounded-3xl bg-background p-6 ring-1 ring-border">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl">Danh sách Mã Ưu Đãi</h2>
+        <button
+          type="button"
+          onClick={() => {
+            setEditingCode(null);
+            setShowForm(true);
+          }}
+          className="rounded-full bg-terra px-4 py-2 text-sm font-semibold text-primary-foreground"
+        >
+          + Tạo mã mới
+        </button>
+      </div>
+
+      {(showForm || editingCode) && (
+        <PromoCodeForm
+          promoCode={editingCode}
+          onClose={() => {
+            setShowForm(false);
+            setEditingCode(null);
+          }}
+          onSaved={() => {
+            void qc.invalidateQueries({ queryKey: ["admin_promo_codes"] });
+            setShowForm(false);
+            setEditingCode(null);
+          }}
+        />
+      )}
+
+      {promoQ.isLoading ? (
+        <div className="mt-4 h-24 animate-pulse rounded-3xl bg-sand-deep/60" />
+      ) : codes.length === 0 ? (
+        <p className="mt-4 text-sm text-ink-soft">
+          Chưa có mã nào. Bấm "+ Tạo mã mới" để bắt đầu.
+        </p>
+      ) : (
+        <div className="mt-4 space-y-3">
+          {codes.map((code) => {
+            const isExpired = code.expires_at && new Date(code.expires_at) < new Date();
+            const isExhausted = code.max_uses > 0 && code.uses_count >= code.max_uses;
+            const isInvalid = isExpired || isExhausted;
+            
+            return (
+              <div
+                key={code.id}
+                className={`rounded-2xl p-4 ring-1 ${isInvalid ? "bg-sand-deep/30 ring-border/40 opacity-70" : "bg-background ring-border"}`}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-lg font-mono text-terra-deep">{code.code}</span>
+                      {isExpired && <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs text-rose-700">Hết hạn</span>}
+                      {isExhausted && <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs text-rose-700">Hết lượt</span>}
+                    </div>
+                    <p className="text-sm text-ink-soft mt-1">{code.description || "Không có mô tả"}</p>
+                    <p className="text-xs mt-1.5 font-mono">
+                      <span className="text-emerald-700">
+                        quota: {code.quota_deals} ưu đãi • {code.quota_products} sản phẩm • {code.quota_blog_posts} blog • {code.quota_partner_posts} hợp tác • {code.quota_featured_slots} đẩy shop
+                      </span>
+                    </p>
+                    <p className="text-xs mt-1 text-ink-soft">
+                      Đã dùng: <strong>{code.uses_count}</strong> {code.max_uses > 0 ? `/ ${code.max_uses}` : "(Không giới hạn)"} lượt
+                      {code.expires_at && ` • HSD: ${new Date(code.expires_at).toLocaleDateString("vi-VN")}`}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditingCode(code)}
+                      className="rounded-xl border border-border px-3 py-1.5 text-xs font-medium hover:bg-sand-deep/40 transition"
+                    >
+                      Sửa
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (confirm(`Xóa mã "${code.code}"?`)) {
+                          deleteCode.mutate(code.id);
+                        }
+                      }}
+                      className="rounded-xl border border-rose-200 px-3 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50 transition"
+                    >
+                      Xóa
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function PromoCodeForm({
+  promoCode,
+  onClose,
+  onSaved,
+}: {
+  promoCode: PromoCode | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [form, setForm] = useState({
+    code: promoCode?.code ?? "",
+    description: promoCode?.description ?? "",
+    quota_deals: String(promoCode?.quota_deals ?? 0),
+    quota_products: String(promoCode?.quota_products ?? 0),
+    quota_featured_slots: String(promoCode?.quota_featured_slots ?? 0),
+    quota_partner_posts: String(promoCode?.quota_partner_posts ?? 0),
+    quota_blog_posts: String(promoCode?.quota_blog_posts ?? 0),
+    max_uses: String(promoCode?.max_uses ?? 0),
+    expires_at: promoCode?.expires_at ? promoCode.expires_at.split("T")[0] : "",
+  });
+
+  const save = useMutation({
+    mutationFn: async () => {
+      if (!form.code.trim()) throw new Error("Mã không được để trống.");
+      const payload = {
+        code: form.code.trim().toUpperCase(),
+        description: form.description.trim() || null,
+        quota_deals: Number(form.quota_deals) || 0,
+        quota_products: Number(form.quota_products) || 0,
+        quota_featured_slots: Number(form.quota_featured_slots) || 0,
+        quota_partner_posts: Number(form.quota_partner_posts) || 0,
+        quota_blog_posts: Number(form.quota_blog_posts) || 0,
+        max_uses: Number(form.max_uses) || 0,
+        expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null,
+      };
+      if (promoCode) {
+        const { error } = await supabase.from("promo_codes").update(payload).eq("id", promoCode.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("promo_codes").insert(payload);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      toast.success(promoCode ? "Đã cập nhật mã." : "Đã tạo mã mới.");
+      onSaved();
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Lỗi lưu mã."),
+  });
+
+  return (
+    <div className="mb-6 rounded-2xl bg-sand-deep/30 p-5 ring-1 ring-border">
+      <h3 className="font-semibold mb-4">{promoCode ? "Sửa mã" : "Tạo mã mới"}</h3>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="block sm:col-span-2">
+          <span className="text-sm font-medium">Mã Ưu Đãi (viết liền, không dấu) *</span>
+          <input
+            className={inputCls}
+            value={form.code}
+            onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
+            placeholder="VD: KHAI_TRUONG_2026"
+          />
+        </label>
+        <label className="block sm:col-span-2">
+          <span className="text-sm font-medium">Mô tả</span>
+          <input
+            className={inputCls}
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            placeholder="Mô tả cho mã (chỉ admin thấy)"
+          />
+        </label>
+        
+        {/* Cấu hình Quota */}
+        <div className="col-span-1 sm:col-span-2 mt-2 rounded-xl bg-black/5 p-4 ring-1 ring-border">
+          <div className="mb-4">
+            <h4 className="font-semibold">Cộng Quota khi nhập</h4>
+            <p className="text-xs text-ink-soft">
+              Người dùng sẽ được cộng thêm số lượng quota này vào tài khoản khi nhập mã.
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+            <label className="block">
+              <span className="text-sm font-medium">Quota Ưu đãi</span>
+              <input
+                className={inputCls}
+                inputMode="numeric"
+                value={form.quota_deals}
+                onChange={(e) => setForm({ ...form, quota_deals: e.target.value })}
+              />
+            </label>
+            <label className="block">
+              <span className="text-sm font-medium">Quota Sản phẩm</span>
+              <input
+                className={inputCls}
+                inputMode="numeric"
+                value={form.quota_products}
+                onChange={(e) => setForm({ ...form, quota_products: e.target.value })}
+              />
+            </label>
+            <label className="block">
+              <span className="text-sm font-medium">Đẩy Nổi bật</span>
+              <input
+                className={inputCls}
+                inputMode="numeric"
+                value={form.quota_featured_slots}
+                onChange={(e) => setForm({ ...form, quota_featured_slots: e.target.value })}
+              />
+            </label>
+            <label className="block">
+              <span className="text-sm font-medium">Bài Hợp tác</span>
+              <input
+                className={inputCls}
+                inputMode="numeric"
+                value={form.quota_partner_posts}
+                onChange={(e) => setForm({ ...form, quota_partner_posts: e.target.value })}
+              />
+            </label>
+            <label className="block">
+              <span className="text-sm font-medium">Bài Blog</span>
+              <input
+                className={inputCls}
+                inputMode="numeric"
+                value={form.quota_blog_posts}
+                onChange={(e) => setForm({ ...form, quota_blog_posts: e.target.value })}
+              />
+            </label>
+          </div>
+        </div>
+
+        <label className="block">
+          <span className="text-sm font-medium">Giới hạn số lần dùng (0 = vô hạn)</span>
+          <input
+            className={inputCls}
+            inputMode="numeric"
+            value={form.max_uses}
+            onChange={(e) => setForm({ ...form, max_uses: e.target.value })}
+          />
+        </label>
+        <label className="block">
+          <span className="text-sm font-medium">Hạn sử dụng (Bỏ trống = vĩnh viễn)</span>
+          <input
+            type="date"
+            className={inputCls}
+            value={form.expires_at}
+            onChange={(e) => setForm({ ...form, expires_at: e.target.value })}
+          />
+        </label>
+      </div>
+      <div className="mt-4 flex gap-3">
+        <button
+          type="button"
+          disabled={save.isPending}
+          onClick={() => save.mutate()}
+          className="rounded-full bg-terra px-5 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+        >
+          {save.isPending ? "Đang lưu..." : promoCode ? "Cập nhật mã" : "Tạo mã"}
+        </button>
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-full bg-secondary px-5 py-2.5 text-sm font-semibold text-ink"
+        >
+          Huỷ
+        </button>
+      </div>
     </div>
   );
 }

@@ -558,3 +558,31 @@ export function useCategoryLabel(slug: string | null | undefined) {
   const { data } = useQuery(shopCategoriesQuery);
   return data?.find((c) => c.slug === slug)?.name ?? "Cửa hàng thú cưng";
 }
+
+export type PromoCode = {
+  id: string;
+  code: string;
+  description: string | null;
+  quota_deals: number;
+  quota_products: number;
+  quota_featured_slots: number;
+  quota_partner_posts: number;
+  quota_blog_posts: number;
+  max_uses: number;
+  uses_count: number;
+  expires_at: string | null;
+  created_at: string;
+};
+
+export const allPromoCodesQuery = queryOptions({
+  queryKey: ["admin_promo_codes"],
+  staleTime: 5 * 60 * 1000,
+  queryFn: async (): Promise<PromoCode[]> => {
+    const { data, error } = await supabase
+      .from("promo_codes")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) console.error(error);
+    return (data ?? []) as PromoCode[];
+  },
+});
