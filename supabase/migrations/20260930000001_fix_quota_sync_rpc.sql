@@ -69,10 +69,10 @@ BEGIN
   END LOOP;
 
   RETURN jsonb_build_object(
-    ''synced'', v_count,
-    ''message'', CASE v_count
-      WHEN 0 THEN ''Khong co goi moi can dong bo.''
-      ELSE v_count || '' goi da duoc dong bo quota thanh cong.''
+    'synced', v_count,
+    'message', CASE v_count
+      WHEN 0 THEN 'Khong co goi moi can dong bo.'
+      ELSE v_count || ' goi da duoc dong bo quota thanh cong.'
     END
   );
 END;
