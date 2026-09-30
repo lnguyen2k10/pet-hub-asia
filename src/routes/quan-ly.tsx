@@ -211,16 +211,25 @@ function DashboardPage() {
 function MembershipStatus() {
   const reqQ = useQuery(myMembershipRequestsQuery);
   const adminQ = useQuery(isAdminQuery);
+  const plansQ = useQuery(membershipPlansQuery);
   const latest = (reqQ.data ?? [])[0];
   const approved = (reqQ.data ?? []).find(
     (r) => r.status === "approved" && (!r.expires_at || new Date(r.expires_at) >= new Date()),
   );
+
+  // Tìm tên gói đang active
+  const activePlan = approved?.plan_id
+    ? (plansQ.data ?? []).find((p) => p.id === approved.plan_id)
+    : null;
 
   return (
     <section className="mt-6 rounded-3xl bg-background p-5 ring-1 ring-border">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm font-semibold">Trạng thái thành viên</p>
+          {activePlan && (
+            <p className="mt-0.5 text-xs font-bold text-terra-deep">{activePlan.name}</p>
+          )}
           <p className="mt-1 text-sm text-ink-soft">
             {approved
               ? `Đang hoạt động${approved.expires_at ? ` đến ${new Date(approved.expires_at).toLocaleDateString("vi-VN")}` : ""}`
@@ -1441,12 +1450,71 @@ function MembershipManager() {
   const plans = plansQ.data ?? [];
   const requests = reqQ.data ?? [];
 
+  // Tìm gói đang active (có approved request còn hạn)
+  const activeRequest = requests.find(
+    (r) => r.status === "approved" && r.expires_at && new Date(r.expires_at) >= new Date(),
+  );
+  const activePlan = activeRequest?.plan_id
+    ? plans.find((p) => p.id === activeRequest.plan_id)
+    : null;
+
   return (
     <section className="space-y-8">
       <div>
         <h2 className="font-hand text-3xl text-terra-deep">Gói thành viên của tôi</h2>
         <p className="mt-2 text-ink-soft">Theo dõi và quản lý các quyền lợi từ gói thành viên.</p>
       </div>
+
+      {/* Banner gói đang active */}
+      {activeRequest ? (
+        <div className="flex flex-wrap items-center gap-4 rounded-2xl border-2 border-emerald-200 bg-emerald-50 px-5 py-4">
+          <span className="text-2xl">✅</span>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-emerald-800 text-base">
+              {activePlan?.name ?? "Gói thành viên"} — đang hoạt động
+            </p>
+            {activeRequest.expires_at && (
+              <p className="text-sm text-emerald-700 mt-0.5">
+                Hiệu lực đến:{" "}
+                <strong>{new Date(activeRequest.expires_at).toLocaleDateString("vi-VN")}</strong>
+              </p>
+            )}
+          </div>
+          <Link
+            to="/kich-hoat"
+            className="shrink-0 rounded-full bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800"
+          >
+            Gia hạn / Nâng cấp
+          </Link>
+        </div>
+      ) : (
+        <div className="flex items-center gap-4 rounded-2xl bg-amber-50 px-5 py-4 ring-1 ring-amber-200">
+          <span className="text-2xl">⚠️</span>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-amber-900">Chưa có gói thành viên nào đang hoạt động</p>
+            <p className="text-sm text-amber-700 mt-0.5">Kích hoạt gói để mở khoá quota và hiển thị shop.</p>
+          </div>
+          <Link
+            to="/kich-hoat"
+            className="shrink-0 rounded-full bg-terra px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-terra-deep"
+          >
+            Kích hoạt ngay
+          </Link>
+        </div>
+      )}
+
+      {/* Cảnh báo khi gói active nhưng quota vẫn = 0 */}
+      {activeRequest &&
+        (profile?.quota_deals ?? 0) === 0 &&
+        (profile?.quota_products ?? 0) === 0 &&
+        (profile?.quota_blog_posts ?? 0) === 0 && (
+        <div className="rounded-xl bg-amber-50 px-4 py-3 ring-1 ring-amber-200 text-sm text-amber-800">
+          <strong>ℹ️ Tại sao quota vẫn = 0?</strong> Gói{" "}
+          <strong>{activePlan?.name ?? "của bạn"}</strong> được kích hoạt đúng, nhưng
+          admin chưa cấu hình số lượng quota cho gói này. Quota được hệ thống tự động
+          cộng ngay khi gói được duyệt — vui lòng liên hệ admin để cập nhật lại gói.
+        </div>
+      )}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-2xl bg-sand-deep/20 p-5 ring-1 ring-border">
@@ -1477,6 +1545,7 @@ function MembershipManager() {
             {profile?.quota_blog_posts ?? 0}
           </p>
         </div>
+
       </div>
 
       <div className="mt-8 border-t border-border pt-8">
@@ -1498,7 +1567,9 @@ function MembershipManager() {
         </div>
       </div>
 
-      <PromoCodeForm onRedeemed={() => qc.invalidateQueries({ queryKey: ["profile", "mine"] })} />
+      <PromoCodeForm onRedeemed={() => {
+        void qc.invalidateQueries({ queryKey: ["profile", "mine"] });
+      }} />
 
       <div className="mt-8 border-t border-border pt-8">
         <h3 className="font-hand text-2xl text-ink">Lịch sử đăng ký / Nâng cấp</h3>

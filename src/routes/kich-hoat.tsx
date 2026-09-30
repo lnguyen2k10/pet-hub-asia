@@ -285,6 +285,8 @@ function RequestSection({
       const cached = qc.getQueryData<MembershipRequest[]>(["membership_requests", "mine"]);
       const approved = cached?.find((r) => r.status === "approved" && r.plan_id === plan.id);
       if (approved) {
+        // Cập nhật quota trong profile
+        void qc.invalidateQueries({ queryKey: ["profile", "mine"] });
         stopPolling();
         return;
       }
@@ -328,6 +330,8 @@ function RequestSection({
       }
       void qc.invalidateQueries({ queryKey: ["membership_requests"] });
       onRefreshRequests();
+      // Invalidate profile ngay (trường hợp gói miễn phí approve tức thì)
+      void qc.invalidateQueries({ queryKey: ["profile", "mine"] });
       // Bắt đầu polling để theo dõi kích hoạt
       startPolling();
     },

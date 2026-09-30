@@ -283,6 +283,16 @@ function PlansManager({ userId: _userId }: { userId: string }) {
                     {formatPrice(plan.price_amount)} / {plan.period_label} • {plan.duration_days}{" "}
                     ngày
                   </p>
+                  {/* Quota summary */}
+                  <p className="text-xs mt-1 font-mono">
+                    <span className="text-ink-soft">Quota: </span>
+                    {plan.max_deals === 0 && plan.max_products === 0 && plan.featured_slots === 0 && plan.max_partner_posts === 0 && plan.max_blog_posts === 0
+                      ? <span className="text-rose-500 font-semibold">⚠️ Chưa set quota (tất cả = 0)</span>
+                      : <span className="text-emerald-700">
+                          ưu đãi: {plan.max_deals} • sản phẩm: {plan.max_products === -1 ? '∞' : plan.max_products} • blog: {plan.max_blog_posts} • hợp tác: {plan.max_partner_posts}
+                        </span>
+                    }
+                  </p>
                   {plan.features.length > 0 && (
                     <p className="text-xs text-ink-soft mt-1">
                       {plan.features.slice(0, 3).join(" • ")}
@@ -537,6 +547,18 @@ function PlanForm({
         </label>
       </div>
       <div className="mt-4 flex gap-3">
+        {/* Warning khi quota all = 0 mà gói có phí */}
+        {Number(form.price_amount) > 0 &&
+          Number(form.max_deals) === 0 &&
+          Number(form.max_products) === 0 &&
+          Number(form.featured_slots) === 0 &&
+          Number(form.max_partner_posts) === 0 &&
+          Number(form.max_blog_posts) === 0 && (
+          <div className="w-full mb-3 rounded-xl bg-rose-50 px-4 py-3 ring-1 ring-rose-200 text-sm text-rose-700">
+            ⚠️ <strong>Tất cả quota đang = 0!</strong> User mua gói này sẽ không được cấp thêm quota nào.
+            Hãy nhập số vào phần "Cấu hình Quota" bên trên trước khi lưu.
+          </div>
+        )}
         <button
           type="button"
           disabled={save.isPending}
