@@ -1,4 +1,4 @@
-﻿-- =============================================================================
+-- =============================================================================
 -- Migration: Fix quota sync for approved membership requests
 -- Date: 2026-09-30
 -- Problem:
@@ -28,14 +28,14 @@ DECLARE
 BEGIN
   v_user_id := auth.uid();
   IF v_user_id IS NULL THEN
-    RAISE EXCEPTION ''Not authenticated'';
+    RAISE EXCEPTION 'Not authenticated';
   END IF;
 
   FOR req_row IN
     SELECT mr.*
     FROM public.membership_requests mr
     WHERE mr.user_id = v_user_id
-      AND mr.status  = ''approved''
+      AND mr.status  = 'approved'
       AND mr.plan_id IS NOT NULL
       AND mr.quota_synced_at IS NULL
     ORDER BY mr.created_at ASC
